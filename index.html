@@ -353,6 +353,30 @@ async function load() {
           }
         }
       }
+    } else if (rec.type === 'wash_free') {
+      // 不對應房間的獨立洗碼 — 直接加到匯總
+      const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+      if (agentKey) {
+        allData.agents[agentKey][rec.hotel].washed += rec.amt;
+      }
+      // 也在拿房記錄表顯示一條獨立洗碼
+      allData.records.push({
+        date: rec.date || '',
+        agent: rec.agent,
+        hotel: rec.hotel,
+        area: '(獨立洗碼)',
+        code: '-',
+        name: '獨立洗碼',
+        req: 0,
+        nights: 0,
+        total_req: 0,
+        washed: rec.amt,
+        hall: rec.hall || '',
+        commission_taken: false,
+        status: 'done',
+        ts: rec.ts,
+        isWashFree: true
+      });
     } else if (rec.type === 'delete') {
       // 刪除匹配的記錄
       const delIdx = allData.records.findIndex(r2 =>
@@ -623,16 +647,41 @@ function showPanel(agentName) {
 
 // 洗碼對話框
 let currentWashIdx = -1;
+let washMode = 'linked'; // 'linked' or 'free'
+
+function setWashMode(mode) {
+  washMode = mode;
+  document.getElementById('washModeLinked').style.background = mode === 'linked' ? '#1F4E79' : '#f0f0f0';
+  document.getElementById('washModeLinked').style.color = mode === 'linked' ? '#fff' : '#666';
+  document.getElementById('washModeFree').style.background = mode === 'free' ? '#1F4E79' : '#f0f0f0';
+  document.getElementById('washModeFree').style.color = mode === 'free' ? '#fff' : '#666';
+  document.getElementById('washLinkedSection').style.display = mode === 'linked' ? 'block' : 'none';
+  document.getElementById('washFreeSection').style.display = mode === 'free' ? 'block' : 'none';
+}
 
 function openWashModal(idx) {
   currentWashIdx = idx;
   const rec = allData.records[idx];
   const modal = document.getElementById('washModal');
 
+  // 預設對應模式
+  setWashMode('linked');
+
   // 顯示記錄資訊
   document.getElementById('washModalInfo').innerHTML =
     `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>` +
     `${rec.name} · 轉碼需求 ${rec.total_req}萬 · ${rec.nights}晚`;
+
+  // 填充不對應模式的 Agent 下拉
+  const agentSel = document.getElementById('washFreeAgent');
+  agentSel.innerHTML = '';
+  if (allData) {
+    for (const name of Object.keys(allData.agents)) {
+      if (name !== '全部總計') {
+        agentSel.innerHTML += `<option value="${name}" ${name===rec.agent?'selected':''}>${name}</option>`;
+      }
+    }
+  }
 
   // 填充廳選項
   const hallSel = document.getElementById('washModalHall');
@@ -644,6 +693,7 @@ function openWashModal(idx) {
   }
 
   document.getElementById('washModalAmt').value = '';
+  document.getElementById('washFreeDate').value = '';
   modal.style.display = 'flex';
 }
 
@@ -655,25 +705,30 @@ function closeWashModal() {
 function confirmWash() {
   const amt = parseInt(document.getElementById('washModalAmt').value);
   if (!amt) { alert('請輸入洗碼量'); return; }
-  if (currentWashIdx < 0) return;
-
   const hall = document.getElementById('washModalHall').value;
 
-  // 儲存到 localStorage
   let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-  local.push({
-    type: 'wash',
-    agent: allData.records[currentWashIdx].agent,
-    hotel: allData.records[currentWashIdx].hotel,
-    amt: amt,
-    hall: hall,
-    targetIdx: currentWashIdx,
-    ts: new Date().toISOString()
-  });
-  localStorage.setItem('pendingRecords', JSON.stringify(local));
 
+  if (washMode === 'linked' && currentWashIdx >= 0) {
+    const rec = allData.records[currentWashIdx];
+    local.push({
+      type: 'wash', agent: rec.agent, hotel: rec.hotel,
+      amt, hall, targetIdx: currentWashIdx,
+      ts: new Date().toISOString()
+    });
+  } else {
+    const agent = document.getElementById('washFreeAgent').value;
+    const hotel = document.getElementById('washFreeHotel').value;
+    const date = document.getElementById('washFreeDate').value || '';
+    local.push({
+      type: 'wash_free', agent, hotel, date, amt, hall,
+      ts: new Date().toISOString()
+    });
+  }
+
+  localStorage.setItem('pendingRecords', JSON.stringify(local));
   closeWashModal();
-  load();
+  setTimeout(() => { location.reload(); }, 800);
 }
 
 function deleteRecord(idx) {
@@ -701,7 +756,38 @@ load();
 <div id="washModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
   <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
     <div style="font-size:16px;font-weight:bold;color:#1F4E79;margin-bottom:12px;">💰 填入洗碼</div>
-    <div id="washModalInfo" style="font-size:13px;color:#666;margin-bottom:12px;padding:8px;background:#f8f9fa;border-radius:6px;"></div>
+
+    <!-- 對應模式切換 -->
+    <div style="display:flex;gap:0;margin-bottom:12px;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+      <button id="washModeLinked" onclick="setWashMode('linked')" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:bold;cursor:pointer;background:#1F4E79;color:#fff;">對應房間</button>
+      <button id="washModeFree" onclick="setWashMode('free')" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:bold;cursor:pointer;background:#f0f0f0;color:#666;">不對應房間</button>
+    </div>
+
+    <!-- 對應房間：顯示記錄資訊 -->
+    <div id="washLinkedSection">
+      <div id="washModalInfo" style="font-size:13px;color:#666;margin-bottom:12px;padding:8px;background:#f8f9fa;border-radius:6px;"></div>
+    </div>
+
+    <!-- 不對應房間：選擇 Agent 和酒店 -->
+    <div id="washFreeSection" style="display:none;">
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">Agent</label>
+        <select id="washFreeAgent" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">酒店</label>
+        <select id="washFreeHotel" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+          <option value="银河">銀河</option>
+          <option value="伦敦人">倫敦人</option>
+          <option value="新濠天地">新濠天地</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">日期</label>
+        <input id="washFreeDate" type="text" placeholder="例如 6/1" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      </div>
+    </div>
+
     <div style="margin-bottom:10px;">
       <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">洗碼量 (萬)</label>
       <input id="washModalAmt" type="number" placeholder="例如 808" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
