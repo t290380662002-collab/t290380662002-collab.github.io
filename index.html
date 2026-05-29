@@ -847,14 +847,20 @@ function showPanel(agentName) {
       if (hasWash && hallRate) {
         commissionVal = rec.washed * 10000 * (hallRate.rate / 100);
         totalCommission += commissionVal;
-        if (rec.commission_taken) totalTaken += commissionVal;
+        // 用實際已取金額，沒設 taken_amount 則視為全部已取
+        if (rec.commission_taken) totalTaken += (rec.taken_amount || commissionVal);
       }
+
+      const actualTaken = rec.commission_taken ? (rec.taken_amount || commissionVal) : 0;
+      const remain = commissionVal - actualTaken;
 
       const statusTag = !hasWash ? '<span class="status-done" style="background:#fff3cd;color:#856404;border-color:#ffc107;padding:2px 6px;border-radius:10px;font-size:11px;">⏳ 未洗碼</span>'
         : !hallRate ? '<span class="status-done" style="background:#e9ecef;color:#666;padding:2px 6px;border-radius:10px;font-size:11px;">—</span>'
-        : rec.commission_taken
-          ? `<span class="status-done">✅ 已取${rec.taken_amount ? ' '+rec.taken_amount.toLocaleString() : ''}</span>`
-          : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">💰 點我</span>`;
+        : !rec.commission_taken
+          ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">💰 點我</span>`
+          : remain > 0
+            ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}（餘${remain.toLocaleString()}）</span>`
+            : `<span class="status-done" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}</span>`;
 
       commHtml += `<tr style="border-bottom:1px solid #eee;">
         <td style="padding:7px 6px;white-space:nowrap;text-align:center;">${rec.date}</td>
@@ -879,7 +885,7 @@ function showPanel(agentName) {
       const formattedPending = (totalCommission - totalTaken).toLocaleString('en-US', {maximumFractionDigits:0});
       commHtml += `
         <div style="margin-top:8px;background:#f8f9fa;border-radius:8px;border:1px solid #dee2e6;overflow:hidden;">
-          <div style="display:flex;text-align:center;">
+          <div style="display:flex;text-align:center;align-items:flex-end;">
             <div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">
               <div style="font-size:10px;color:#888;">應得碼糧</div>
               <div style="font-size:15px;font-weight:bold;color:#1F4E79;">${formattedTotal}</div>
@@ -888,9 +894,12 @@ function showPanel(agentName) {
               <div style="font-size:10px;color:#888;">已取碼糧</div>
               <div style="font-size:15px;font-weight:bold;color:#155724;">${formattedTaken}</div>
             </div>
-            <div style="flex:1;padding:8px 4px;">
-              <div style="font-size:10px;color:#888;">未取碼糧</div>
-              <div style="font-size:15px;font-weight:bold;color:#856404;">${formattedPending}</div>
+            <div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <div>
+                <div style="font-size:10px;color:#888;">未取碼糧</div>
+                <div style="font-size:15px;font-weight:bold;color:#856404;">${formattedPending}</div>
+              </div>
+              ${formattedPending !== '0' ? `<button onclick="takeAllComm('${agentName}')" style="padding:3px 12px;background:#155724;color:#fff;border:none;border-radius:12px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;">全取 ✅</button>` : ''}
             </div>
           </div>
         </div>`;
@@ -1019,11 +1028,17 @@ function openTakenModal(idx, commissionVal) {
   const rec = allData.records[idx];
   const formatted = commissionVal.toLocaleString('en-US', {maximumFractionDigits:0});
 
-  document.getElementById('takenModalInfo').innerHTML =
-    `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>` +
-    `應得碼糧：<b style="color:#1F4E79;">${formatted}</b>`;
-  document.getElementById('takenModalAmt').value = '';
-  document.getElementById('takenModalAmt').placeholder = `全部已取 = ${formatted}`;
+  let infoHtml = `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>應得碼糧：<b style="color:#1F4E79;">${formatted}</b>`;
+  // 如果已經有已取金額，顯示並預填
+  if (rec.commission_taken && rec.taken_amount) {
+    infoHtml += `<br>目前已取：<b style="color:#155724;">${rec.taken_amount.toLocaleString()}</b>`;
+    document.getElementById('takenModalAmt').value = rec.taken_amount;
+    document.getElementById('takenModalAmt').placeholder = `全部已取 = ${formatted}`;
+  } else {
+    document.getElementById('takenModalAmt').value = '';
+    document.getElementById('takenModalAmt').placeholder = `留空 = 全部已取（${formatted}）`;
+  }
+  document.getElementById('takenModalInfo').innerHTML = infoHtml;
   document.getElementById('takenModal').style.display = 'flex';
 }
 
@@ -1052,6 +1067,38 @@ function confirmTaken() {
 
   closeTakenModal();
   setTimeout(() => { location.reload(); }, 800);
+}
+
+// 全取該 Agent 所有未取碼糧
+function takeAllComm(agentName) {
+  const rates = allData.commission_rates || [];
+  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+  let count = 0;
+
+  for (const rec of allData.records) {
+    if (rec.agent !== agentName) continue;
+    const hasWash = rec.washed && rec.washed > 0;
+    if (!hasWash || rec.commission_taken) continue;
+    // 只處理有貴賓廳的
+    const hallRate = rates.find(r => r.name === rec.hall);
+    if (!hallRate) continue;
+
+    local.push({
+      type: 'taken',
+      agent: rec.agent,
+      hotel: rec.hotel,
+      date: rec.date,
+      code: rec.code,
+      taken_amount: null, // null = 全部已取
+      ts: new Date().toISOString()
+    });
+    count++;
+  }
+
+  if (count > 0) {
+    localStorage.setItem('pendingRecords', JSON.stringify(local));
+  }
+  location.reload();
 }
 
 load();
