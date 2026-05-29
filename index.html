@@ -820,7 +820,6 @@ function showPanel(agentName) {
 
   // 碼糧明細（表格格式，跟拿房記錄一致）
   const agentRecords = allData.records.filter(r => r.agent === agentName);
-  const rates = allData.commission_rates || [];
   let commHtml = '';
   let totalCommission = 0;
   let totalTaken = 0;
@@ -844,14 +843,11 @@ function showPanel(agentName) {
       const hasWash = rec.washed && rec.washed > 0;
       const hallRate = rates.find(r => r.name === rec.hall);
       let commissionVal = 0;
-      let commissionCalc = '';
-      let hallDisplay = rec.hall || '-';
 
       if (hasWash && hallRate) {
         commissionVal = rec.washed * 10000 * (hallRate.rate / 100);
         totalCommission += commissionVal;
         if (rec.commission_taken) totalTaken += commissionVal;
-        const formatted = commissionVal.toLocaleString('en-US', {maximumFractionDigits:0});
       }
 
       const statusTag = !hasWash ? '<span class="status-done" style="background:#fff3cd;color:#856404;border-color:#ffc107;padding:2px 6px;border-radius:10px;font-size:11px;">⏳ 未洗碼</span>'
