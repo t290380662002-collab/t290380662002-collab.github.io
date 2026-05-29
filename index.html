@@ -145,7 +145,7 @@
 <div class="table-section">
   <h3>🏨 拿房記錄</h3>
   <table id="roomTable">
-    <thead><tr><th>入住</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>轉碼需求</th><th>晚數</th><th>總需求</th><th>已洗碼</th><th>狀態</th></tr></thead>
+    <thead><tr><th>入住</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>轉碼需求</th><th>晚數</th><th>總需求</th><th>已洗碼</th><th>狀態</th><th>操作</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -310,6 +310,22 @@ async function load() {
           break;
         }
       }
+    } else if (rec.type === 'delete') {
+      // 刪除匹配的記錄
+      const delIdx = allData.records.findIndex(r2 =>
+        r2.agent === rec.agent && r2.hotel === rec.hotel &&
+        r2.date === rec.date && r2.code === rec.code
+      );
+      if (delIdx >= 0) {
+        const del = allData.records[delIdx];
+        const agentKey = Object.keys(allData.agents).find(k => k === del.agent);
+        if (agentKey) {
+          allData.agents[agentKey][del.hotel].rooms -= del.nights;
+          allData.agents[agentKey][del.hotel].rolling -= del.total_req;
+          if (del.washed) allData.agents[agentKey][del.hotel].washed -= del.washed;
+        }
+        allData.records.splice(delIdx, 1);
+      }
     }
   }
 
@@ -382,6 +398,7 @@ async function load() {
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
+      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord(${idx})">🗑️</span></td>
     </tr>`;
   }
 
@@ -609,6 +626,25 @@ function confirmWash() {
   localStorage.setItem('pendingRecords', JSON.stringify(local));
 
   closeWashModal();
+  load();
+}
+
+function deleteRecord(idx) {
+  const rec = allData.records[idx];
+  if (!confirm(`確認刪除？\n${rec.agent} | ${rec.date} | ${rec.hotel}·${rec.area} | ${rec.code}`)) return;
+
+  // 儲存刪除操作到 localStorage
+  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+  local.push({
+    type: 'delete',
+    agent: rec.agent,
+    hotel: rec.hotel,
+    date: rec.date,
+    code: rec.code,
+    ts: new Date().toISOString()
+  });
+  localStorage.setItem('pendingRecords', JSON.stringify(local));
+
   load();
 }
 
