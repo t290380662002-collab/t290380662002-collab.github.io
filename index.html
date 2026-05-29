@@ -111,8 +111,8 @@
     </select>
     <select id="inHotel" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateAreas()">
       <option value="">酒店</option>
-      <option value="银河">銀河</option>
-      <option value="伦敦人">倫敦人</option>
+      <option value="銀河">銀河</option>
+      <option value="倫敦人">倫敦人</option>
       <option value="新濠天地">新濠天地</option>
     </select>
   </div>
@@ -182,6 +182,7 @@
 
 <script>
 let allData = null;
+const HOTELS = ['銀河','倫敦人','新濠天地'];
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 let customDateFrom = localStorage.getItem('customDateFrom') || '';
 let customDateTo = localStorage.getItem('customDateTo') || '';
@@ -257,11 +258,11 @@ function filterByPeriod(records) {
 
 // 房型對照表
 const HOTEL_MAP = {
-  "银河": {
-    "万豪": [["JW01","萬豪大床",80],["JW01T","萬豪雙床",80],["JW06","萬豪一房一廳",200]],
+  "銀河": {
+    "萬豪": [["JW01","萬豪大床",80],["JW01T","萬豪雙床",80],["JW06","萬豪一房一廳",200]],
     "麗思": [["RC01","麗思一房一廳",200]]
   },
-  "伦敦人": {
+  "倫敦人": {
     "名匯": [["RK","名匯普通房",60],["LS2","名匯一房一廳",120],["N2B","名匯兩房一廳",400]],
     "御園": [["CM1","御園一房一廳",150],["CK2","御園兩房一廳",400]],
     "倫敦人酒店": [["KC","倫敦人酒店小套",60],["KS","倫敦人酒店大套",120],["DBKD2","倫敦人酒店兩房一廳",400]]
@@ -517,13 +518,12 @@ async function load() {
   document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
 
   // 按時間篩選記錄
-  const hotels = ['银河','伦敦人','新濠天地'];
   const filteredRecords = filterByPeriod(allData.records);
 
   // 重新計算各 Agent 匯總（基於篩選後的記錄）
   for (const name of Object.keys(allData.agents)) {
     if (name === '房間總計') continue;
-    for (const h of hotels) {
+    for (const h of HOTELS) {
       allData.agents[name][h] = { rooms: 0, rolling: 0, washed: 0 };
     }
   }
@@ -577,7 +577,7 @@ async function load() {
   for (const [name, data] of Object.entries(agents)) {
     let totalRooms = 0, totalRoll = 0, totalWash = 0;
     let lines = [];
-    for (const h of hotels) {
+    for (const h of HOTELS) {
       if (data[h].rooms > 0 || data[h].rolling > 0 || data[h].washed > 0) {
         lines.push(`${h}: ${data[h].rooms}晚`);
         totalRooms += data[h].rooms;
@@ -631,8 +631,8 @@ async function load() {
     if (name === '房間總計') continue;
     let row = `<td style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="showPanel('${name}')">${name}</td>`;
     let totalRoll = 0, totalWash = 0;
-    for (let i = 0; i < hotels.length; i++) {
-      const h = hotels[i];
+    for (let i = 0; i < HOTELS.length; i++) {
+      const h = HOTELS[i];
       const dH = data[h];
       const dDiff = dH.washed - dH.rolling;
       const dClass = dDiff > 0 ? 'val-green' : dDiff < 0 ? 'val-red' : 'val-gray';
@@ -651,7 +651,7 @@ async function load() {
   // 房間總計行
   let totalRow = '<td style="font-weight:bold;background:#1F4E79;color:#fff;">房間總計</td>';
   let grandTotalRoll = 0, grandTotalWash = 0;
-  for (let i = 0; i < hotels.length; i++) {
+  for (let i = 0; i < HOTELS.length; i++) {
     const gDiff = grand.washed[i] - grand.rolling[i];
     const gClass = gDiff > 0 ? 'val-green' : gDiff < 0 ? 'val-red' : 'val-gray';
     totalRow += `<td style="font-weight:bold;">${grand.rooms[i] || '-'}</td>`;
@@ -747,7 +747,7 @@ function showPanel(agentName) {
   let gridHtml = '';
 
   // 各酒店小卡片
-  for (const h of hotels) {
+  for (const h of HOTELS) {
     const dH = data[h];
     const dDiff = dH.washed - dH.rolling;
     const borderClass = dDiff > 0 ? 'green-border' : dDiff < 0 ? 'red-border' : '';
@@ -1029,8 +1029,8 @@ load();
       <div style="margin-bottom:8px;">
         <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">酒店</label>
         <select id="washFreeHotel" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-          <option value="银河">銀河</option>
-          <option value="伦敦人">倫敦人</option>
+          <option value="銀河">銀河</option>
+          <option value="倫敦人">倫敦人</option>
           <option value="新濠天地">新濠天地</option>
         </select>
       </div>
