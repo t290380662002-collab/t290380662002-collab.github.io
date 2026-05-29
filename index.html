@@ -112,6 +112,9 @@
 
   <!-- 洗碼型表單 -->
   <div id="washForm" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;">
+    <select id="inWashTarget" style="flex:2;min-width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">選擇對應的拿房記錄</option>
+    </select>
     <input id="inWashDate" type="text" placeholder="日期 6/1" style="flex:1;min-width:70px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <select id="inHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
@@ -186,6 +189,7 @@ function toggleForm() {
   const type = document.getElementById('inType').value;
   document.getElementById('roomForm').style.display = type === 'room' ? 'flex' : 'none';
   document.getElementById('washForm').style.display = type === 'wash' ? 'flex' : 'none';
+  if (type === 'wash') updateWashTargets();
 }
 
 function updateAreas() {
@@ -198,6 +202,7 @@ function updateAreas() {
       areaSel.innerHTML += `<option value="${area}">${area}</option>`;
     }
   }
+  updateWashTargets();
 }
 
 function updateCodes() {
@@ -208,6 +213,37 @@ function updateCodes() {
   if (hotel && area && HOTEL_MAP[hotel] && HOTEL_MAP[hotel][area]) {
     for (const [code, name, req] of HOTEL_MAP[hotel][area]) {
       codeSel.innerHTML += `<option value="${code}" data-name="${name}" data-req="${req}">${code} ${name} (${req}萬)</option>`;
+    }
+  }
+}
+
+function updateWashTargets() {
+  const agent = document.getElementById('inAgent').value;
+  const hotel = document.getElementById('inHotel').value;
+  const targetSel = document.getElementById('inWashTarget');
+  targetSel.innerHTML = '<option value="">選擇對應的拿房記錄</option>';
+
+  if (!allData || !agent || !hotel) return;
+
+  const pending = allData.records.filter(r =>
+    r.agent === agent && r.hotel === hotel && r.status === 'pending'
+  );
+
+  for (let i = 0; i < pending.length; i++) {
+    const r = pending[i];
+    const globalIdx = allData.records.indexOf(r);
+    targetSel.innerHTML += `<option value="${globalIdx}">${r.date} | ${r.area}·${r.code} | ${r.name} | 轉碼${r.total_req}萬</option>`;
+  }
+
+  // 也列出已洗碼的記錄供選擇（可以覆蓋更新）
+  const done = allData.records.filter(r =>
+    r.agent === agent && r.hotel === hotel && r.status === 'done'
+  );
+  if (done.length > 0) {
+    targetSel.innerHTML += '<option value="" disabled>── 已洗碼記錄 ──</option>';
+    for (const r of done) {
+      const globalIdx = allData.records.indexOf(r);
+      targetSel.innerHTML += `<option value="${globalIdx}" style="color:#28a745;">✅ ${r.date} | ${r.area}·${r.code} | 已洗${r.washed}萬</option>`;
     }
   }
 }
@@ -241,10 +277,12 @@ function submitRecord() {
     const date = document.getElementById('inWashDate').value;
     const amt = parseInt(document.getElementById('inWashAmt').value) || 0;
     const hall = document.getElementById('inHall').value;
+    const targetIdx = document.getElementById('inWashTarget').value;
     if (!amt) { alert('請輸入洗碼量'); return; }
 
     local.push({
       type: 'wash', date, agent, hotel, amt, hall,
+      targetIdx: targetIdx ? parseInt(targetIdx) : -1,
       ts: new Date().toISOString()
     });
   }
@@ -296,18 +334,35 @@ async function load() {
         }
       }
     } else if (rec.type === 'wash') {
-      // 找該 agent 該酒店的待補記錄，更新洗碼
-      for (const r2 of allData.records) {
-        if (r2.agent === rec.agent && r2.hotel === rec.hotel && r2.status === 'pending' && !r2.washed) {
+      // 如果有指定 targetIdx，直接對應
+      if (rec.targetIdx >= 0 && rec.targetIdx < allData.records.length) {
+        const r2 = allData.records[rec.targetIdx];
+        if (r2.agent === rec.agent && r2.hotel === rec.hotel) {
+          // 如果已有洗碼，先扣回
+          const agentKey = Object.keys(allData.agents).find(k => k === r2.agent);
+          if (agentKey && r2.washed) {
+            allData.agents[agentKey][r2.hotel].washed -= r2.washed;
+          }
           r2.washed = rec.amt;
           r2.status = 'done';
           r2.hall = rec.hall || r2.hall;
-          // 更新匯總
-          const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
           if (agentKey) {
-            allData.agents[agentKey][rec.hotel].washed += rec.amt;
+            allData.agents[agentKey][r2.hotel].washed += rec.amt;
           }
-          break;
+        }
+      } else {
+        // 沒指定，自動找第一筆待補
+        for (const r2 of allData.records) {
+          if (r2.agent === rec.agent && r2.hotel === rec.hotel && r2.status === 'pending' && !r2.washed) {
+            r2.washed = rec.amt;
+            r2.status = 'done';
+            r2.hall = rec.hall || r2.hall;
+            const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+            if (agentKey) {
+              allData.agents[agentKey][r2.hotel].washed += rec.amt;
+            }
+            break;
+          }
         }
       }
     } else if (rec.type === 'delete') {
@@ -339,6 +394,8 @@ async function load() {
         agentSel.innerHTML += `<option value="${name}">${name}</option>`;
       }
     }
+    // Agent 變更時更新洗碼目標
+    agentSel.addEventListener('change', updateWashTargets);
   }
 
   // 填充廳下拉
