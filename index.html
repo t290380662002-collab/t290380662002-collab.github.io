@@ -353,6 +353,16 @@ async function load() {
           }
         }
       }
+    } else if (rec.type === 'taken') {
+      // 標記碼糧已取
+      const tIdx = allData.records.findIndex(r2 =>
+        r2.agent === rec.agent && r2.hotel === rec.hotel &&
+        r2.date === rec.date && r2.code === rec.code
+      );
+      if (tIdx >= 0) {
+        allData.records[tIdx].commission_taken = true;
+        allData.records[tIdx].taken_amount = rec.taken_amount;
+      }
     } else if (rec.type === 'wash_free') {
       // 不對應房間的獨立洗碼 — 直接加到匯總
       const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
@@ -402,7 +412,7 @@ async function load() {
   const agentSel = document.getElementById('inAgent');
   if (agentSel.options.length <= 1) {
     for (const name of Object.keys(allData.agents)) {
-      if (name !== '全部總計') {
+      if (name !== '房間總計') {
         agentSel.innerHTML += `<option value="${name}">${name}</option>`;
       }
     }
@@ -438,8 +448,8 @@ async function load() {
     if (diff > 0) diffClass = 'diff-positive';
     else if (diff < 0) diffClass = 'diff-negative';
 
-    // 全部總計卡不綁定點擊
-    if (name === '全部總計') {
+    // 房間總計卡不綁定點擊
+    if (name === '房間總計') {
       continue;
     }
 
@@ -475,7 +485,7 @@ async function load() {
   const dtbody = document.querySelector('#detailTable tbody');
   const grand = { rooms: [0,0,0], rolling: [0,0,0], washed: [0,0,0] };
   for (const [name, data] of Object.entries(agents)) {
-    if (name === '全部總計') continue;
+    if (name === '房間總計') continue;
     let row = `<td style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="showPanel('${name}')">${name}</td>`;
     let totalRoll = 0, totalWash = 0;
     for (let i = 0; i < hotels.length; i++) {
@@ -495,8 +505,8 @@ async function load() {
     dtbody.innerHTML += `<tr>${row}</tr>`;
   }
 
-  // 全部總計行
-  let totalRow = '<td style="font-weight:bold;background:#1F4E79;color:#fff;">全部總計</td>';
+  // 房間總計行
+  let totalRow = '<td style="font-weight:bold;background:#1F4E79;color:#fff;">房間總計</td>';
   let grandTotalRoll = 0, grandTotalWash = 0;
   for (let i = 0; i < hotels.length; i++) {
     const gDiff = grand.washed[i] - grand.rolling[i];
@@ -512,11 +522,11 @@ async function load() {
   totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + grandDiff : grandDiff}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
 
-  // 全部總計卡片
+  // 房間總計卡片
   const tDiffAll = grandTotalWash - grandTotalRoll;
   const tDiffAllClass = tDiffAll >= 0 ? 'diff-positive' : 'diff-negative';
   sumDiv.innerHTML += `<div class="card" style="background:#1F4E79;color:#fff;">
-    <div class="name">全部總計</div>
+    <div class="name">房間總計</div>
     <div class="hotel" style="color:#ff6b6b;">總晚數 ${grand.rooms.reduce((a,b)=>a+b,0)} 晚</div>
     <div class="nums"><span>總使用 ${grandTotalRoll}萬</span><span>總洗碼 ${grandTotalWash}萬</span></div>
     <div class="diff ${tDiffAllClass}" style="background:rgba(255,255,255,0.2);color:#fff;">${tDiffAll>0?'+'+tDiffAll:tDiffAll}萬</div>
@@ -607,8 +617,8 @@ function showPanel(agentName) {
       }
 
       const statusTag = !hasWash ? '<span class="cval-pending">⏳ 未洗碼</span>'
-        : rec.commission_taken ? '<span class="cval-done">✅ 已取</span>'
-        : '<span class="cval-pending">💰 未取</span>';
+        : rec.commission_taken ? `<span class="cval-done">✅ 已取${rec.taken_amount ? ' '+rec.taken_amount.toLocaleString() : ''}</span>`
+        : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">💰 未取（點我）</span>`;
 
       commHtml += `
         <div class="comm-item" style="flex-direction:column;align-items:flex-start;gap:4px;">
@@ -677,7 +687,7 @@ function openWashModal(idx) {
   agentSel.innerHTML = '';
   if (allData) {
     for (const name of Object.keys(allData.agents)) {
-      if (name !== '全部總計') {
+      if (name !== '房間總計') {
         agentSel.innerHTML += `<option value="${name}" ${name===rec.agent?'selected':''}>${name}</option>`;
       }
     }
@@ -750,6 +760,51 @@ function deleteRecord(idx) {
   setTimeout(() => { location.reload(); }, 800);
 }
 
+// 已取碼糧對話框
+let takenRecordIdx = -1;
+let takenCommissionVal = 0;
+
+function openTakenModal(idx, commissionVal) {
+  takenRecordIdx = idx;
+  takenCommissionVal = commissionVal;
+  const rec = allData.records[idx];
+  const formatted = commissionVal.toLocaleString('en-US', {maximumFractionDigits:0});
+
+  document.getElementById('takenModalInfo').innerHTML =
+    `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>` +
+    `應得碼糧：<b style="color:#1F4E79;">${formatted}</b>`;
+  document.getElementById('takenModalAmt').value = '';
+  document.getElementById('takenModalAmt').placeholder = `全部已取 = ${formatted}`;
+  document.getElementById('takenModal').style.display = 'flex';
+}
+
+function closeTakenModal() {
+  document.getElementById('takenModal').style.display = 'none';
+  takenRecordIdx = -1;
+}
+
+function confirmTaken() {
+  if (takenRecordIdx < 0) return;
+  const rec = allData.records[takenRecordIdx];
+  const inputAmt = document.getElementById('takenModalAmt').value;
+  const takenAmount = inputAmt ? parseInt(inputAmt) : takenCommissionVal;
+
+  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+  local.push({
+    type: 'taken',
+    agent: rec.agent,
+    hotel: rec.hotel,
+    date: rec.date,
+    code: rec.code,
+    taken_amount: takenAmount,
+    ts: new Date().toISOString()
+  });
+  localStorage.setItem('pendingRecords', JSON.stringify(local));
+
+  closeTakenModal();
+  setTimeout(() => { location.reload(); }, 800);
+}
+
 load();
 </script>
 <!-- 洗碼輸入對話框 -->
@@ -801,6 +856,22 @@ load();
     <div style="display:flex;gap:8px;">
       <button onclick="closeWashModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
       <button onclick="confirmWash()" style="flex:2;padding:10px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- 已取碼糧對話框 -->
+<div id="takenModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="font-size:16px;font-weight:bold;color:#155724;margin-bottom:12px;">✅ 碼糧已取</div>
+    <div id="takenModalInfo" style="font-size:13px;color:#666;margin-bottom:12px;padding:8px;background:#f8f9fa;border-radius:6px;"></div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">已取金額（留空 = 全部已取）</label>
+      <input id="takenModalAmt" type="number" placeholder="留空代表全部已取" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeTakenModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
+      <button onclick="confirmTaken()" style="flex:2;padding:10px;background:#155724;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">確認已取</button>
     </div>
   </div>
 </div>
