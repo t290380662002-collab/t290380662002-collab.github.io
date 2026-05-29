@@ -77,6 +77,20 @@
   <div class="update" id="updateTime"></div>
 </div>
 
+<!-- 時間篩選 -->
+<div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap;">
+  <button class="period-btn active" onclick="setPeriod('month')" id="btnMonth">本月</button>
+  <button class="period-btn" onclick="setPeriod('lastmonth')" id="btnLastMonth">上月</button>
+  <button class="period-btn" onclick="setPeriod('year')" id="btnYear">本年</button>
+  <button class="period-btn" onclick="setPeriod('all')" id="btnAll">全部</button>
+</div>
+<style>
+  .period-btn { padding:6px 16px;border:1px solid #ddd;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;background:#fff;color:#666;transition:all 0.15s; }
+  .period-btn.active { background:#1F4E79;color:#fff;border-color:#1F4E79; }
+  .period-btn:hover { background:#e8ecf1; }
+  .period-btn.active:hover { background:#16375a; }
+</style>
+
 <div class="summary" id="summary"></div>
 
 <!-- 輸入表單 -->
@@ -163,6 +177,55 @@
 
 <script>
 let allData = null;
+let currentPeriod = 'month'; // 'month', 'lastmonth', 'year', 'all'
+
+function setPeriod(p) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  if (p === 'month') document.getElementById('btnMonth').classList.add('active');
+  else if (p === 'lastmonth') document.getElementById('btnLastMonth').classList.add('active');
+  else if (p === 'year') document.getElementById('btnYear').classList.add('active');
+  else document.getElementById('btnAll').classList.add('active');
+  load();
+}
+
+function filterByPeriod(records) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth(); // 0-based
+
+  return records.filter(r => {
+    if (!r.date) return true; // 無日期的保留
+    const parts = r.date.split('/');
+    if (parts.length < 2) return true;
+    const ry = parseInt(parts[0]) || y;
+    const rm = parseInt(parts[0]) <= 12 ? (parts.length === 3 ? parseInt(parts[0]) : y) : parseInt(parts[0]);
+    const recM = parseInt(parts[0]); // 月份
+    const recD = parseInt(parts[1]);
+
+    // 統一處理 M/D 或 YYYY/M/D 格式
+    let recYear, recMonth;
+    if (parts.length === 2) {
+      // M/D 格式，假設當年
+      recYear = y;
+      recMonth = parseInt(parts[0]);
+    } else if (parts.length === 3) {
+      recYear = parseInt(parts[0]);
+      recMonth = parseInt(parts[1]);
+    }
+
+    if (currentPeriod === 'month') {
+      return recYear === y && recMonth === (m + 1);
+    } else if (currentPeriod === 'lastmonth') {
+      const lm = m === 0 ? 12 : m;
+      const ly = m === 0 ? y - 1 : y;
+      return recYear === ly && recMonth === lm;
+    } else if (currentPeriod === 'year') {
+      return recYear === y;
+    }
+    return true; // 'all'
+  });
+}
 
 // 房型對照表
 const HOTEL_MAP = {
@@ -418,6 +481,32 @@ async function load() {
 
   document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
 
+  // 按時間篩選記錄
+  const filteredRecords = filterByPeriod(allData.records);
+
+  // 重新計算各 Agent 匯總（基於篩選後的記錄）
+  for (const name of Object.keys(allData.agents)) {
+    if (name === '房間總計') continue;
+    for (const h of hotels) {
+      allData.agents[name][h] = { rooms: 0, rolling: 0, washed: 0 };
+    }
+  }
+  for (const rec of filteredRecords) {
+    const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+    if (agentKey && allData.agents[agentKey][rec.hotel]) {
+      allData.agents[agentKey][rec.hotel].rooms += rec.nights || 0;
+      allData.agents[agentKey][rec.hotel].rolling += rec.total_req || 0;
+      if (rec.washed) allData.agents[agentKey][rec.hotel].washed += rec.washed;
+    }
+  }
+
+  // 顯示當前篩選期間
+  const periodLabel = currentPeriod === 'month' ? '本月' :
+    currentPeriod === 'lastmonth' ? '上月' :
+    currentPeriod === 'year' ? '本年' : '全部';
+  document.getElementById('updateTime').textContent =
+    '更新時間: ' + allData.last_update + ' | 篩選: ' + periodLabel;
+
   // 填充 Agent 下拉
   const agentSel = document.getElementById('inAgent');
   if (agentSel.options.length <= 1) {
@@ -471,23 +560,24 @@ async function load() {
     sumDiv.innerHTML += html;
   }
 
-  // Room records
-  allData.records.sort((a, b) => {
+  // Room records (篩選後)
+  filteredRecords.sort((a, b) => {
     const [am, ad] = a.date.split('/').map(Number);
     const [bm, bd] = b.date.split('/').map(Number);
     return am !== bm ? am - bm : ad - bd;
   });
   const tbody = document.querySelector('#roomTable tbody');
-  for (let idx = 0; idx < allData.records.length; idx++) {
-    const rec = allData.records[idx];
+  for (let fi = 0; fi < filteredRecords.length; fi++) {
+    const rec = filteredRecords[fi];
+    const globalIdx = allData.records.indexOf(rec);
     const statusHtml = rec.status === 'done'
       ? '<span class="status-done">✅</span>'
-      : `<span class="status-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal(${idx})">⏳ 點我填洗碼</span>`;
+      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal(${globalIdx})">⏳ 點我填洗碼</span>`;
     tbody.innerHTML += `<tr>
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
-      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord(${idx})">🗑️</span></td>
+      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord(${globalIdx})">🗑️</span></td>
     </tr>`;
   }
 
