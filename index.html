@@ -373,12 +373,15 @@ async function load() {
     return am !== bm ? am - bm : ad - bd;
   });
   const tbody = document.querySelector('#roomTable tbody');
-  for (const rec of allData.records) {
-    const statusHtml = rec.status === 'done' ? '<span class="status-done">✅</span>' : '<span class="status-pending">⏳ 待補</span>';
+  for (let idx = 0; idx < allData.records.length; idx++) {
+    const rec = allData.records[idx];
+    const statusHtml = rec.status === 'done'
+      ? '<span class="status-done">✅</span>'
+      : `<span class="status-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal(${idx})">⏳ 點我填洗碼</span>`;
     tbody.innerHTML += `<tr>
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
-      <td>${rec.total_req}萬</td><td>${rec.washed || '-'}萬</td><td>${statusHtml}</td>
+      <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
     </tr>`;
   }
 
@@ -553,7 +556,85 @@ function showPanel(agentName) {
 
   panel.classList.add('show');
 }
+
+// 洗碼對話框
+let currentWashIdx = -1;
+
+function openWashModal(idx) {
+  currentWashIdx = idx;
+  const rec = allData.records[idx];
+  const modal = document.getElementById('washModal');
+
+  // 顯示記錄資訊
+  document.getElementById('washModalInfo').innerHTML =
+    `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>` +
+    `${rec.name} · 轉碼需求 ${rec.total_req}萬 · ${rec.nights}晚`;
+
+  // 填充廳選項
+  const hallSel = document.getElementById('washModalHall');
+  hallSel.innerHTML = '<option value="">不選</option>';
+  if (allData.commission_rates) {
+    for (const r of allData.commission_rates) {
+      hallSel.innerHTML += `<option value="${r.name}">${r.name} (${r.rate}%)</option>`;
+    }
+  }
+
+  document.getElementById('washModalAmt').value = '';
+  modal.style.display = 'flex';
+}
+
+function closeWashModal() {
+  document.getElementById('washModal').style.display = 'none';
+  currentWashIdx = -1;
+}
+
+function confirmWash() {
+  const amt = parseInt(document.getElementById('washModalAmt').value);
+  if (!amt) { alert('請輸入洗碼量'); return; }
+  if (currentWashIdx < 0) return;
+
+  const hall = document.getElementById('washModalHall').value;
+
+  // 儲存到 localStorage
+  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+  local.push({
+    type: 'wash',
+    agent: allData.records[currentWashIdx].agent,
+    hotel: allData.records[currentWashIdx].hotel,
+    amt: amt,
+    hall: hall,
+    targetIdx: currentWashIdx,
+    ts: new Date().toISOString()
+  });
+  localStorage.setItem('pendingRecords', JSON.stringify(local));
+
+  closeWashModal();
+  load();
+}
+
 load();
 </script>
+<!-- 洗碼輸入對話框 -->
+<div id="washModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="font-size:16px;font-weight:bold;color:#1F4E79;margin-bottom:12px;">💰 填入洗碼</div>
+    <div id="washModalInfo" style="font-size:13px;color:#666;margin-bottom:12px;padding:8px;background:#f8f9fa;border-radius:6px;"></div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">洗碼量 (萬)</label>
+      <input id="washModalAmt" type="number" placeholder="例如 808" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">廳 (選填)</label>
+      <select id="washModalHall" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+        <option value="">不選</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeWashModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
+      <button onclick="confirmWash()" style="flex:2;padding:10px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">確認</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
