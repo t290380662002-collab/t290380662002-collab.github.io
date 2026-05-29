@@ -1069,7 +1069,7 @@ function confirmTaken() {
   setTimeout(() => { location.reload(); }, 800);
 }
 
-// 全取該 Agent 所有未取碼糧
+// 全取該 Agent 所有未取碼糧（含部分已取的剩餘）
 function takeAllComm(agentName) {
   const rates = allData.commission_rates || [];
   let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
@@ -1078,21 +1078,39 @@ function takeAllComm(agentName) {
   for (const rec of allData.records) {
     if (rec.agent !== agentName) continue;
     const hasWash = rec.washed && rec.washed > 0;
-    if (!hasWash || rec.commission_taken) continue;
-    // 只處理有貴賓廳的
+    if (!hasWash) continue;
     const hallRate = rates.find(r => r.name === rec.hall);
     if (!hallRate) continue;
 
-    local.push({
-      type: 'taken',
-      agent: rec.agent,
-      hotel: rec.hotel,
-      date: rec.date,
-      code: rec.code,
-      taken_amount: null, // null = 全部已取
-      ts: new Date().toISOString()
-    });
-    count++;
+    // 計算這筆的總碼糧
+    const totalComm = rec.washed * 10000 * (hallRate.rate / 100);
+
+    if (!rec.commission_taken) {
+      // 完全未取 → 標記全部已取
+      local.push({
+        type: 'taken',
+        agent: rec.agent,
+        hotel: rec.hotel,
+        date: rec.date,
+        code: rec.code,
+        taken_amount: null, // null = 全部已取
+        ts: new Date().toISOString()
+      });
+      count++;
+    } else if (rec.taken_amount && rec.taken_amount < totalComm) {
+      // 部分已取 → 補取剩餘（設為總碼糧值）
+      local.push({
+        type: 'taken',
+        agent: rec.agent,
+        hotel: rec.hotel,
+        date: rec.date,
+        code: rec.code,
+        taken_amount: totalComm, // 設為總額 = 全部已取
+        ts: new Date().toISOString()
+      });
+      count++;
+    }
+    // 已經全部取完的跳過
   }
 
   if (count > 0) {
