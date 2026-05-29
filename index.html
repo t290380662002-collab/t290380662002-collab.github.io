@@ -482,6 +482,7 @@ async function load() {
   document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
 
   // 按時間篩選記錄
+  const hotels = ['银河','伦敦人','新濠天地'];
   const filteredRecords = filterByPeriod(allData.records);
 
   // 重新計算各 Agent 匯總（基於篩選後的記錄）
@@ -529,7 +530,6 @@ async function load() {
 
   const agents = allData.agents;
   const sumDiv = document.getElementById('summary');
-  const hotels = ['银河','伦敦人','新濠天地'];
 
   for (const [name, data] of Object.entries(agents)) {
     let totalRooms = 0, totalRoll = 0, totalWash = 0;
@@ -645,7 +645,6 @@ function showPanel(agentName) {
   document.getElementById('panelTitle').textContent = `👤 ${agentName}`;
 
   // 匯總數字
-  const hotels = ['银河','伦敦人','新濠天地'];
   let totalRoll=0,totalWash=0,totalNights=0;
   let gridHtml = '';
 
