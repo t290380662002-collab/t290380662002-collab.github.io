@@ -79,6 +79,52 @@
 
 <div class="summary" id="summary"></div>
 
+<!-- 輸入表單 -->
+<div class="table-section" id="inputSection">
+  <h3>📝 新增記錄</h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+    <select id="inAgent" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">Agent</option>
+    </select>
+    <select id="inType" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="toggleForm()">
+      <option value="room">拿房</option>
+      <option value="wash">洗碼</option>
+    </select>
+    <select id="inHotel" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateAreas()">
+      <option value="">酒店</option>
+      <option value="银河">銀河</option>
+      <option value="伦敦人">倫敦人</option>
+      <option value="新濠天地">新濠天地</option>
+    </select>
+  </div>
+
+  <!-- 拿房型表單 -->
+  <div id="roomForm" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+    <select id="inArea" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateCodes()">
+      <option value="">區域</option>
+    </select>
+    <select id="inCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">房型</option>
+    </select>
+    <input id="inDate" type="text" placeholder="入住 6/1" style="flex:1;min-width:70px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+  </div>
+
+  <!-- 洗碼型表單 -->
+  <div id="washForm" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;">
+    <input id="inWashDate" type="text" placeholder="日期 6/1" style="flex:1;min-width:70px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <select id="inHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">廳(選填)</option>
+    </select>
+  </div>
+
+  <div style="margin-top:8px;text-align:right;">
+    <button onclick="submitRecord()" style="padding:8px 24px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">送出</button>
+  </div>
+  <div id="submitMsg" style="margin-top:6px;font-size:12px;text-align:center;color:#155724;display:none;"></div>
+</div>
+
 <!-- 點擊展開的 Agent 詳情面板 -->
 <div class="detail-panel" id="agentPanel">
   <div class="panel-header">
@@ -115,6 +161,116 @@
 <script>
 let allData = null;
 
+// 房型對照表
+const HOTEL_MAP = {
+  "银河": {
+    "万豪": [["JW01","萬豪大床",80],["JW01T","萬豪雙床",80],["JW06","萬豪一房一廳",200]],
+    "麗思": [["RC01","麗思一房一廳",200]]
+  },
+  "伦敦人": {
+    "名匯": [["RK","名匯普通房",60],["LS2","名匯一房一廳",120],["N2B","名匯兩房一廳",400]],
+    "御園": [["CM1","御園一房一廳",150],["CK2","御園兩房一廳",400]],
+    "倫敦人酒店": [["KC","倫敦人酒店小套",60],["KS","倫敦人酒店大套",120],["DBKD2","倫敦人酒店兩房一廳",400]]
+  },
+  "新濠天地": {
+    "摩珀斯": [["PK","摩珀斯豪華客房(大床)",80],["PT","摩珀斯豪華客房(雙床)",80],["CPK","摩珀斯行政豪華(大床)",100],["CPT","摩珀斯行政豪華(雙床)",100],["PS","摩珀斯豪華套房",120],["ES","摩珀斯尊尚套房",200],["S1","摩珀斯尊致套房",1000]],
+    "頤居": [["PK_N","頤居尊尚客房(大床)",80],["PQ","頤居尊尚雙床",80],["DS","頤居豪華套房",120],["PS_N","頤居尊尚套房",200],["V1","頤居套房",1000]],
+    "君悅": [["DLXK","君悅豪華客房(大床)",30],["DLX1","君悅豪華客房(雙床)",30],["GRSK","君悅套房(大床)",50]],
+    "明星匯": [["CRK","明星匯經典(大床)",30],["CRT","明星匯經典雙床",30],["CDK","明星匯豪華(大床)",30]],
+    "巨星匯": [["SDK","巨星匯尊貴(大床)",60],["SDT","巨星匯尊貴(雙床)",60],["SPS","巨星匯行政套房",200]],
+    "映星匯": [["EDK","映星匯套房(大床)",60],["EDT","映星匯套房(雙床)",60],["EG1","映星匯悠然套房",100],["ES1","映星匯華麗套房",200]]
+  }
+};
+
+function toggleForm() {
+  const type = document.getElementById('inType').value;
+  document.getElementById('roomForm').style.display = type === 'room' ? 'flex' : 'none';
+  document.getElementById('washForm').style.display = type === 'wash' ? 'flex' : 'none';
+}
+
+function updateAreas() {
+  const hotel = document.getElementById('inHotel').value;
+  const areaSel = document.getElementById('inArea');
+  areaSel.innerHTML = '<option value="">區域</option>';
+  document.getElementById('inCode').innerHTML = '<option value="">房型</option>';
+  if (hotel && HOTEL_MAP[hotel]) {
+    for (const area of Object.keys(HOTEL_MAP[hotel])) {
+      areaSel.innerHTML += `<option value="${area}">${area}</option>`;
+    }
+  }
+}
+
+function updateCodes() {
+  const hotel = document.getElementById('inHotel').value;
+  const area = document.getElementById('inArea').value;
+  const codeSel = document.getElementById('inCode');
+  codeSel.innerHTML = '<option value="">房型</option>';
+  if (hotel && area && HOTEL_MAP[hotel] && HOTEL_MAP[hotel][area]) {
+    for (const [code, name, req] of HOTEL_MAP[hotel][area]) {
+      codeSel.innerHTML += `<option value="${code}" data-name="${name}" data-req="${req}">${code} ${name} (${req}萬)</option>`;
+    }
+  }
+}
+
+function submitRecord() {
+  const agent = document.getElementById('inAgent').value;
+  const type = document.getElementById('inType').value;
+  const hotel = document.getElementById('inHotel').value;
+  if (!agent || !hotel) { alert('請選擇 Agent 和 酒店'); return; }
+
+  // 儲存到 localStorage
+  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+
+  if (type === 'room') {
+    const area = document.getElementById('inArea').value;
+    const codeEl = document.getElementById('inCode');
+    const code = codeEl.value;
+    const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
+    const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
+    const date = document.getElementById('inDate').value;
+    const nights = parseInt(document.getElementById('inNights').value) || 1;
+    if (!area || !code) { alert('請選擇區域和房型'); return; }
+
+    local.push({
+      type: 'room', date, agent, hotel, area, code, name,
+      req, nights, total_req: req * nights,
+      washed: 0, hall: '', commission_taken: false, status: 'pending',
+      ts: new Date().toISOString()
+    });
+  } else {
+    const date = document.getElementById('inWashDate').value;
+    const amt = parseInt(document.getElementById('inWashAmt').value) || 0;
+    const hall = document.getElementById('inHall').value;
+    if (!amt) { alert('請輸入洗碼量'); return; }
+
+    local.push({
+      type: 'wash', date, agent, hotel, amt, hall,
+      ts: new Date().toISOString()
+    });
+  }
+
+  localStorage.setItem('pendingRecords', JSON.stringify(local));
+
+  // 顯示成功訊息
+  const msg = document.getElementById('submitMsg');
+  msg.textContent = '✅ 已儲存！資料將同步更新';
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+  // 清空表單
+  document.getElementById('inDate').value = '';
+  document.getElementById('inNights').value = '';
+  document.getElementById('inWashDate').value = '';
+  document.getElementById('inWashAmt').value = '';
+
+  // 重新載入頁面資料（合併 localStorage）
+  loadWithLocal();
+}
+
+function loadWithLocal() {
+  load();
+}
+
 function hidePanel() {
   document.getElementById('agentPanel').classList.remove('show');
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -123,7 +279,59 @@ function hidePanel() {
 async function load() {
   const r = await fetch('data.json');
   allData = await r.json();
+
+  // 合併 localStorage 的待處理記錄
+  const local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
+  for (const rec of local) {
+    if (rec.type === 'room') {
+      // 檢查是否已存在
+      const exists = allData.records.find(r2 => r2.ts === rec.ts);
+      if (!exists) {
+        allData.records.push(rec);
+        // 更新 agent 匯總
+        const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+        if (agentKey) {
+          allData.agents[agentKey][rec.hotel].rooms += rec.nights;
+          allData.agents[agentKey][rec.hotel].rolling += rec.total_req;
+        }
+      }
+    } else if (rec.type === 'wash') {
+      // 找該 agent 該酒店的待補記錄，更新洗碼
+      for (const r2 of allData.records) {
+        if (r2.agent === rec.agent && r2.hotel === rec.hotel && r2.status === 'pending' && !r2.washed) {
+          r2.washed = rec.amt;
+          r2.status = 'done';
+          r2.hall = rec.hall || r2.hall;
+          // 更新匯總
+          const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+          if (agentKey) {
+            allData.agents[agentKey][rec.hotel].washed += rec.amt;
+          }
+          break;
+        }
+      }
+    }
+  }
+
   document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
+
+  // 填充 Agent 下拉
+  const agentSel = document.getElementById('inAgent');
+  if (agentSel.options.length <= 1) {
+    for (const name of Object.keys(allData.agents)) {
+      if (name !== '全部總計') {
+        agentSel.innerHTML += `<option value="${name}">${name}</option>`;
+      }
+    }
+  }
+
+  // 填充廳下拉
+  const hallSel = document.getElementById('inHall');
+  if (hallSel.options.length <= 1 && allData.commission_rates) {
+    for (const r of allData.commission_rates) {
+      hallSel.innerHTML += `<option value="${r.name}">${r.name} (${r.rate}%)</option>`;
+    }
+  }
 
   const agents = allData.agents;
   const sumDiv = document.getElementById('summary');
