@@ -106,7 +106,7 @@
     <select id="inCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">房型</option>
     </select>
-    <input id="inDate" type="text" placeholder="入住 6/1" style="flex:1;min-width:70px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <input id="inNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
   </div>
 
@@ -115,7 +115,7 @@
     <select id="inWashTarget" style="flex:2;min-width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">選擇對應的拿房記錄</option>
     </select>
-    <input id="inWashDate" type="text" placeholder="日期 6/1" style="flex:1;min-width:70px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inWashDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <select id="inHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">廳(選填)</option>
@@ -248,6 +248,16 @@ function updateWashTargets() {
   }
 }
 
+function formatDate(val) {
+  if (!val) return '';
+  // 如果是 YYYY-MM-DD 格式，轉成 M/D
+  const parts = val.split('-');
+  if (parts.length === 3) {
+    return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+  }
+  return val;
+}
+
 function submitRecord() {
   const agent = document.getElementById('inAgent').value;
   const type = document.getElementById('inType').value;
@@ -263,9 +273,9 @@ function submitRecord() {
     const code = codeEl.value;
     const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
     const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
-    const date = document.getElementById('inDate').value;
+    const date = formatDate(document.getElementById('inDate').value);
     const nights = parseInt(document.getElementById('inNights').value) || 1;
-    if (!area || !code) { alert('請選擇區域和房型'); return; }
+    if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
     local.push({
       type: 'room', date, agent, hotel, area, code, name,
@@ -274,7 +284,7 @@ function submitRecord() {
       ts: new Date().toISOString()
     });
   } else {
-    const date = document.getElementById('inWashDate').value;
+    const date = formatDate(document.getElementById('inWashDate').value);
     const amt = parseInt(document.getElementById('inWashAmt').value) || 0;
     const hall = document.getElementById('inHall').value;
     const targetIdx = document.getElementById('inWashTarget').value;
@@ -729,7 +739,7 @@ function confirmWash() {
   } else {
     const agent = document.getElementById('washFreeAgent').value;
     const hotel = document.getElementById('washFreeHotel').value;
-    const date = document.getElementById('washFreeDate').value || '';
+    const date = formatDate(document.getElementById('washFreeDate').value) || '';
     local.push({
       type: 'wash_free', agent, hotel, date, amt, hall,
       ts: new Date().toISOString()
@@ -839,7 +849,7 @@ load();
       </div>
       <div style="margin-bottom:8px;">
         <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">日期</label>
-        <input id="washFreeDate" type="text" placeholder="例如 6/1" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+        <input id="washFreeDate" type="date" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       </div>
     </div>
 
