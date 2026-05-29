@@ -289,20 +289,8 @@ function submitRecord() {
 
   localStorage.setItem('pendingRecords', JSON.stringify(local));
 
-  // 顯示成功訊息
-  const msg = document.getElementById('submitMsg');
-  msg.textContent = '✅ 已儲存！資料將同步更新';
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 3000);
-
-  // 清空表單
-  document.getElementById('inDate').value = '';
-  document.getElementById('inNights').value = '';
-  document.getElementById('inWashDate').value = '';
-  document.getElementById('inWashAmt').value = '';
-
-  // 重新載入頁面資料（合併 localStorage）
-  loadWithLocal();
+  // 顯示成功訊息並自動刷新
+  setTimeout(() => { location.reload(); }, 800);
 }
 
 function loadWithLocal() {
@@ -702,7 +690,7 @@ function deleteRecord(idx) {
   });
   localStorage.setItem('pendingRecords', JSON.stringify(local));
 
-  load();
+  setTimeout(() => { location.reload(); }, 800);
 }
 
 load();
