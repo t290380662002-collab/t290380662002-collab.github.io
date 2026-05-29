@@ -177,16 +177,12 @@
 
 <script>
 let allData = null;
-let currentPeriod = 'month'; // 'month', 'lastmonth', 'year', 'all'
+let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 
 function setPeriod(p) {
   currentPeriod = p;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  if (p === 'month') document.getElementById('btnMonth').classList.add('active');
-  else if (p === 'lastmonth') document.getElementById('btnLastMonth').classList.add('active');
-  else if (p === 'year') document.getElementById('btnYear').classList.add('active');
-  else document.getElementById('btnAll').classList.add('active');
-  load();
+  localStorage.setItem('currentPeriod', p);
+  location.reload();
 }
 
 function filterByPeriod(records) {
@@ -478,6 +474,13 @@ async function load() {
       }
     }
   }
+
+  // 設定時間篩選按鈕狀態
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  if (currentPeriod === 'month') document.getElementById('btnMonth').classList.add('active');
+  else if (currentPeriod === 'lastmonth') document.getElementById('btnLastMonth').classList.add('active');
+  else if (currentPeriod === 'year') document.getElementById('btnYear').classList.add('active');
+  else document.getElementById('btnAll').classList.add('active');
 
   document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
 
