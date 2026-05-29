@@ -180,6 +180,13 @@
   </table>
 </div>
 
+<!-- 公積金靜態區塊 -->
+<div class="table-section" id="fundSection">
+  <h3>🏛️ 公積金（新濠天地 洗碼 × 0.01%）</h3>
+  <div id="fundContent" class="comm-grid" style="margin-top:8px;"></div>
+  <div id="fundTotal"></div>
+</div>
+
 <script>
 let allData = null;
 const HOTELS = ['銀河','倫敦人','新濠天地'];
@@ -676,31 +683,31 @@ async function load() {
   </div>`;
 
   // ===== 公積金區塊 =====
-  // 新濠天地 + 勵盈1 的洗碼 × 0.01% = 公積金
+  // 新濠天地的所有洗碼 × 0.01% = 公積金
   const fundRate = 0.01; // 0.01%
   let fundHtml = '';
   let fundGrandTotal = 0;
 
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
-    // 找該 Agent 在新濠天地 + 勵盈1 的洗碼記錄
-    let liyiWash = 0;
+    // 該 Agent 在新濠天地的所有洗碼
+    let codWash = 0;
     for (const rec of filteredRecords) {
-      if (rec.agent === name && rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
-        liyiWash += rec.washed;
+      if (rec.agent === name && rec.hotel === '新濠天地' && rec.washed) {
+        codWash += rec.washed;
       }
     }
-    if (liyiWash > 0) {
-      const fundVal = liyiWash * 10000 * (fundRate / 100); // 萬→實際 × 率
+    if (codWash > 0) {
+      const fundVal = codWash * 10000 * (fundRate / 100);
       const formatted = fundVal.toLocaleString('en-US', {maximumFractionDigits:0});
       fundHtml += `
         <div class="comm-item">
           <div>
             <span class="clabel">${name}</span>
-            <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">勵盈1</span>
+            <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">新濠</span>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:11px;color:#888;">${liyiWash}萬 × ${fundRate}%</div>
+            <div style="font-size:11px;color:#888;">${codWash}萬 × ${fundRate}%</div>
             <div style="font-size:14px;font-weight:bold;color:#155724;">+${formatted}</div>
           </div>
         </div>`;
@@ -710,25 +717,14 @@ async function load() {
 
   const fundFormatted = fundGrandTotal.toLocaleString('en-US', {maximumFractionDigits:0});
 
-  // 插入公積金區塊到頁面
-  let fundSection = document.getElementById('fundSection');
-  if (!fundSection) {
-    fundSection = document.createElement('div');
-    fundSection.id = 'fundSection';
-    fundSection.className = 'table-section';
-    document.querySelector('.table-section:last-of-type').after(fundSection);
-  }
-  fundSection.innerHTML = `
-    <h3>🏛️ 公積金（新濠天地 · 勵盈1 洗碼 × ${fundRate}%）</h3>
-    <div class="comm-grid" style="margin-top:8px;">
-      ${fundHtml || '<div style="padding:12px;text-align:center;color:#999;">尚無勵盈1洗碼記錄</div>'}
-    </div>
-    ${fundGrandTotal > 0 ? `
+  document.getElementById('fundContent').innerHTML =
+    fundHtml || '<div style="padding:12px;text-align:center;color:#999;">尚無新濠天地洗碼記錄</div>';
+
+  document.getElementById('fundTotal').innerHTML = fundGrandTotal > 0 ? `
     <div style="margin-top:10px;padding:10px;background:#d4edda;border-radius:8px;border:1px solid #c3e6cb;text-align:center;">
       <div style="font-size:13px;font-weight:bold;color:#155724;">🏛️ 公積金合計</div>
       <div style="font-size:22px;font-weight:bold;color:#155724;">${fundFormatted}</div>
-    </div>` : ''}
-  `;
+    </div>` : '';
 }
 
 function showPanel(agentName) {
