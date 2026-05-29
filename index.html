@@ -78,11 +78,16 @@
 </div>
 
 <!-- 時間篩選 -->
-<div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap;">
+<div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap;align-items:center;">
   <button class="period-btn active" onclick="setPeriod('month')" id="btnMonth">本月</button>
   <button class="period-btn" onclick="setPeriod('lastmonth')" id="btnLastMonth">上月</button>
   <button class="period-btn" onclick="setPeriod('year')" id="btnYear">本年</button>
   <button class="period-btn" onclick="setPeriod('all')" id="btnAll">全部</button>
+  <span style="margin:0 4px;color:#ccc;">|</span>
+  <span style="font-size:12px;color:#888;">自訂</span>
+  <input id="dateFrom" type="date" onchange="setPeriodCustom()" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+  <span style="font-size:12px;color:#888;">~</span>
+  <input id="dateTo" type="date" onchange="setPeriodCustom()" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
 </div>
 <style>
   .period-btn { padding:6px 16px;border:1px solid #ddd;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;background:#fff;color:#666;transition:all 0.15s; }
@@ -178,10 +183,29 @@
 <script>
 let allData = null;
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
+let customDateFrom = localStorage.getItem('customDateFrom') || '';
+let customDateTo = localStorage.getItem('customDateTo') || '';
 
 function setPeriod(p) {
   currentPeriod = p;
+  customDateFrom = '';
+  customDateTo = '';
   localStorage.setItem('currentPeriod', p);
+  localStorage.removeItem('customDateFrom');
+  localStorage.removeItem('customDateTo');
+  location.reload();
+}
+
+function setPeriodCustom() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  if (!from && !to) return;
+  currentPeriod = 'custom';
+  customDateFrom = from;
+  customDateTo = to;
+  localStorage.setItem('currentPeriod', 'custom');
+  localStorage.setItem('customDateFrom', from);
+  localStorage.setItem('customDateTo', to);
   location.reload();
 }
 
@@ -191,23 +215,19 @@ function filterByPeriod(records) {
   const m = now.getMonth(); // 0-based
 
   return records.filter(r => {
-    if (!r.date) return true; // 無日期的保留
+    if (!r.date) return true;
     const parts = r.date.split('/');
     if (parts.length < 2) return true;
-    const ry = parseInt(parts[0]) || y;
-    const rm = parseInt(parts[0]) <= 12 ? (parts.length === 3 ? parseInt(parts[0]) : y) : parseInt(parts[0]);
-    const recM = parseInt(parts[0]); // 月份
-    const recD = parseInt(parts[1]);
 
-    // 統一處理 M/D 或 YYYY/M/D 格式
-    let recYear, recMonth;
+    let recYear, recMonth, recDay;
     if (parts.length === 2) {
-      // M/D 格式，假設當年
       recYear = y;
       recMonth = parseInt(parts[0]);
+      recDay = parseInt(parts[1]);
     } else if (parts.length === 3) {
       recYear = parseInt(parts[0]);
       recMonth = parseInt(parts[1]);
+      recDay = parseInt(parts[2]);
     }
 
     if (currentPeriod === 'month') {
@@ -218,6 +238,18 @@ function filterByPeriod(records) {
       return recYear === ly && recMonth === lm;
     } else if (currentPeriod === 'year') {
       return recYear === y;
+    } else if (currentPeriod === 'custom') {
+      // 自訂日期篩選
+      const recDate = new Date(recYear, recMonth - 1, recDay);
+      if (customDateFrom) {
+        const fd = new Date(customDateFrom);
+        if (recDate < fd) return false;
+      }
+      if (customDateTo) {
+        const td = new Date(customDateTo);
+        if (recDate > td) return false;
+      }
+      return true;
     }
     return true; // 'all'
   });
@@ -505,11 +537,19 @@ async function load() {
   }
 
   // 顯示當前篩選期間
-  const periodLabel = currentPeriod === 'month' ? '本月' :
+  let periodLabel = currentPeriod === 'month' ? '本月' :
     currentPeriod === 'lastmonth' ? '上月' :
-    currentPeriod === 'year' ? '本年' : '全部';
+    currentPeriod === 'year' ? '本年' :
+    currentPeriod === 'custom' ? '自訂' : '全部';
+  if (currentPeriod === 'custom' && customDateFrom && customDateTo) {
+    periodLabel += ' ' + formatDate(customDateFrom) + ' ~ ' + formatDate(customDateTo);
+  }
   document.getElementById('updateTime').textContent =
     '更新時間: ' + allData.last_update + ' | 篩選: ' + periodLabel;
+
+  // 恢復自訂日期
+  if (customDateFrom) document.getElementById('dateFrom').value = customDateFrom;
+  if (customDateTo) document.getElementById('dateTo').value = customDateTo;
 
   // 填充 Agent 下拉
   const agentSel = document.getElementById('inAgent');
