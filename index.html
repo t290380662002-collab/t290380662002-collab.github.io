@@ -137,7 +137,7 @@
     <input id="inWashDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <select id="inHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-      <option value="">廳(選填)</option>
+      <option value="">貴賓廳</option>
     </select>
   </div>
 
@@ -182,7 +182,7 @@
 
 <!-- 公積金靜態區塊 -->
 <div class="table-section" id="fundSection">
-  <h3>🏛️ 公積金（新濠天地 洗碼 × 0.01%）</h3>
+  <h3>🏛️ 公積金（新濠天地 · 勵盈1 洗碼 × 0.01%）</h3>
   <div id="fundContent" class="comm-grid" style="margin-top:8px;"></div>
   <div id="fundTotal"></div>
 </div>
@@ -574,7 +574,7 @@ async function load() {
   const hallSel = document.getElementById('inHall');
   if (hallSel.options.length <= 1 && allData.commission_rates) {
     for (const r of allData.commission_rates) {
-      hallSel.innerHTML += `<option value="${r.name}">${r.name} (${r.rate}%)</option>`;
+      hallSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
     }
   }
 
@@ -683,31 +683,31 @@ async function load() {
   </div>`;
 
   // ===== 公積金區塊 =====
-  // 新濠天地的所有洗碼 × 0.01% = 公積金
+  // 新濠天地 · 勵盈1 的洗碼 × 0.01% = 公積金
   const fundRate = 0.01; // 0.01%
   let fundHtml = '';
   let fundGrandTotal = 0;
 
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
-    // 該 Agent 在新濠天地的所有洗碼
-    let codWash = 0;
+    // 該 Agent 在新濠天地 + 勵盈1 的洗碼
+    let liyiWash = 0;
     for (const rec of filteredRecords) {
-      if (rec.agent === name && rec.hotel === '新濠天地' && rec.washed) {
-        codWash += rec.washed;
+      if (rec.agent === name && rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
+        liyiWash += rec.washed;
       }
     }
-    if (codWash > 0) {
-      const fundVal = codWash * 10000 * (fundRate / 100);
+    if (liyiWash > 0) {
+      const fundVal = liyiWash * 10000 * (fundRate / 100);
       const formatted = fundVal.toLocaleString('en-US', {maximumFractionDigits:0});
       fundHtml += `
         <div class="comm-item">
           <div>
             <span class="clabel">${name}</span>
-            <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">新濠</span>
+            <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">勵盈1</span>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:11px;color:#888;">${codWash}萬 × ${fundRate}%</div>
+            <div style="font-size:11px;color:#888;">${liyiWash}萬 × ${fundRate}%</div>
             <div style="font-size:14px;font-weight:bold;color:#155724;">+${formatted}</div>
           </div>
         </div>`;
@@ -891,7 +891,7 @@ function openWashModal(idx) {
   hallSel.innerHTML = '<option value="">不選</option>';
   if (allData.commission_rates) {
     for (const r of allData.commission_rates) {
-      hallSel.innerHTML += `<option value="${r.name}">${r.name} (${r.rate}%)</option>`;
+      hallSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
     }
   }
 
@@ -1041,7 +1041,7 @@ load();
       <input id="washModalAmt" type="number" placeholder="例如 808" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
     </div>
     <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">廳 (選填)</label>
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">貴賓廳</label>
       <select id="washModalHall" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
         <option value="">不選</option>
       </select>
