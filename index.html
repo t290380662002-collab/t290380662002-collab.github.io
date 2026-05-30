@@ -75,7 +75,7 @@
 <div class="header">
   <h1>📊 Agent 洗碼統計</h1>
   <div class="update" id="updateTime"></div>
-  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#28a745;">🟢 即時同步中</span> · 每15秒自動檢查更新</div>
+  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新</div>
 </div>
 
 <!-- 時間篩選 -->
@@ -492,7 +492,7 @@ setInterval(async () => {
       location.reload();
     }
   } catch(e) {}
-}, 15000);
+}, 3000);
 
 function loadWithLocal() {
   load();
