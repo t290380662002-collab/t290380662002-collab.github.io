@@ -75,6 +75,7 @@
 <div class="header">
   <h1>📊 Agent 洗碼統計</h1>
   <div class="update" id="updateTime"></div>
+  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#28a745;">🟢 即時同步中</span> · 每15秒自動檢查更新</div>
 </div>
 
 <!-- 時間篩選 -->
@@ -188,9 +189,24 @@
 </div>
 
 <script>
+// ===== GitHub API 後端配置 =====
+const GH_REPO = 't290380662002-collab/t290380662002-collab.github.io';
+const GH_API = 'https://api.github.com/repos/' + GH_REPO + '/contents/data.json';
+// Token 存放在 localStorage，首次需輸入
+function getGHToken() {
+  let t = localStorage.getItem('gh_token');
+  if (!t) {
+    t = prompt('請輸入 GitHub Token（只需輸入一次）：');
+    if (t) localStorage.setItem('gh_token', t);
+  }
+  return t;
+}
+let dataSha = ''; // 當前 data.json 的 SHA，更新時需要
+
 let allData = null;
 let filteredRecords = [];
 let currentAgent = null;
+let isSaving = false; // 防止並發寫入
 const HOTELS = ['銀河','倫敦人','新濠天地'];
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 let customDateFrom = localStorage.getItem('customDateFrom') || '';
@@ -332,8 +348,7 @@ function updateWashTargets() {
 
   for (let i = 0; i < pending.length; i++) {
     const r = pending[i];
-    const globalIdx = allData.records.indexOf(r);
-    targetSel.innerHTML += `<option value="${globalIdx}">${r.date} | ${r.area}·${r.code} | ${r.name} | 轉碼${r.total_req}萬</option>`;
+    targetSel.innerHTML += `<option value="${r.id}">${r.date} | ${r.area}·${r.code} | ${r.name} | 轉碼${r.total_req}萬</option>`;
   }
 
   // 也列出已洗碼的記錄供選擇（可以覆蓋更新）
@@ -343,8 +358,7 @@ function updateWashTargets() {
   if (done.length > 0) {
     targetSel.innerHTML += '<option value="" disabled>── 已洗碼記錄 ──</option>';
     for (const r of done) {
-      const globalIdx = allData.records.indexOf(r);
-      targetSel.innerHTML += `<option value="${globalIdx}" style="color:#28a745;">✅ ${r.date} | ${r.area}·${r.code} | 已洗${r.washed}萬</option>`;
+      targetSel.innerHTML += `<option value="${r.id}" style="color:#28a745;">✅ ${r.date} | ${r.area}·${r.code} | 已洗${r.washed}萬</option>`;
     }
   }
 }
@@ -365,9 +379,6 @@ function submitRecord() {
   const hotel = document.getElementById('inHotel').value;
   if (!agent || !hotel) { alert('請選擇 Agent 和 酒店'); return; }
 
-  // 儲存到 localStorage
-  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-
   if (type === 'room') {
     const area = document.getElementById('inArea').value;
     const codeEl = document.getElementById('inCode');
@@ -378,11 +389,11 @@ function submitRecord() {
     const nights = parseInt(document.getElementById('inNights').value) || 1;
     if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
-    local.push({
-      type: 'room', date, agent, hotel, area, code, name,
+    allData.records.push({
+      id: 'r' + Date.now(),
+      date, agent, hotel, area, code, name,
       req, nights, total_req: req * nights,
-      washed: 0, hall: '', commission_taken: false, status: 'pending',
-      ts: new Date().toISOString()
+      washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
     });
   } else {
     const date = formatDate(document.getElementById('inWashDate').value);
@@ -391,18 +402,97 @@ function submitRecord() {
     const targetIdx = document.getElementById('inWashTarget').value;
     if (!amt) { alert('請輸入洗碼量'); return; }
 
-    local.push({
-      type: 'wash', date, agent, hotel, amt, hall,
-      targetIdx: targetIdx ? parseInt(targetIdx) : -1,
-      ts: new Date().toISOString()
-    });
+    if (targetIdx) {
+      // 對應到指定拿房記錄
+      const rec = allData.records.find(r => r.id === targetIdx);
+      if (rec) {
+        rec.washed = amt;
+        rec.status = 'done';
+        rec.hall = hall || rec.hall;
+      }
+    } else {
+      // 不對應房間的獨立洗碼
+      allData.records.push({
+        id: 'w' + Date.now(),
+        date: date || '', agent, hotel,
+        area: '(獨立洗碼)', code: '-', name: '獨立洗碼',
+        req: 0, nights: 0, total_req: 0,
+        washed: amt, hall: hall || '', commission_taken: false, taken_amount: null,
+        status: 'done', isWashFree: true
+      });
+    }
   }
 
-  localStorage.setItem('pendingRecords', JSON.stringify(local));
-
-  // 顯示成功訊息並自動刷新
-  setTimeout(() => { location.reload(); }, 800);
+  saveAndReload();
 }
+
+// ===== GitHub API 讀寫函數 =====
+
+// 儲存數據到 GitHub，實現多人同步
+async function saveToGitHub() {
+  if (isSaving) return;
+  isSaving = true;
+
+  // 更新時間戳
+  const now = new Date();
+  allData.last_update = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0') + ' ' +
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0');
+
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(allData, null, 2))));
+    const body = {
+      message: '🔄 數據更新 ' + allData.last_update,
+      content: content,
+      sha: dataSha
+    };
+
+    const res = await fetch(GH_API, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + getGHToken(),
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      dataSha = result.content.sha; // 更新 SHA
+      console.log('✅ 數據已同步到 GitHub');
+    } else {
+      const err = await res.json();
+      console.error('❌ 同步失敗:', err);
+      alert('同步失敗，可能其他人正在更新，請稍後再試');
+    }
+  } catch(e) {
+    console.error('❌ 網絡錯誤:', e);
+    alert('網絡錯誤，請稍後再試');
+  }
+  isSaving = false;
+}
+
+// 儲存並重新載入頁面
+async function saveAndReload() {
+  await saveToGitHub();
+  setTimeout(() => { location.reload(); }, 1000);
+}
+
+// ===== 輪詢：每 15 秒檢查是否有其他人更新了數據 =====
+let lastSyncTime = '';
+setInterval(async () => {
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    const d = await r.json();
+    if (d.last_update && d.last_update !== allData.last_update) {
+      console.log('🔄 偵測到數據更新，重新載入');
+      location.reload();
+    }
+  } catch(e) {}
+}, 15000);
 
 function loadWithLocal() {
   load();
@@ -427,15 +517,14 @@ function renderRoomTable(agentName) {
     return am !== bm ? am - bm : ad - bd;
   });
   for (const rec of recs) {
-    const globalIdx = allData.records.indexOf(rec);
     const statusHtml = rec.status === 'done'
       ? '<span class="status-done">✅</span>'
-      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal(${globalIdx})">⏳ 點我填洗碼</span>`;
+      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal('${rec.id}')">⏳ 點我填洗碼</span>`;
     tbody.innerHTML += `<tr>
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
-      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord(${globalIdx})">🗑️</span></td>
+      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span></td>
     </tr>`;
   }
 }
@@ -489,107 +578,23 @@ function renderDetailTable(agentName) {
 }
 
 async function load() {
-  const r = await fetch('data.json');
-  allData = await r.json();
+  try {
+    // 從 GitHub API 讀取 data.json（帶 SHA 用於後續更新）
+    const r = await fetch('data.json?t=' + Date.now());
+    allData = await r.json();
 
-  // 合併 localStorage 的待處理記錄
-  const local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-  for (const rec of local) {
-    if (rec.type === 'room') {
-      // 檢查是否已存在
-      const exists = allData.records.find(r2 => r2.ts === rec.ts);
-      if (!exists) {
-        allData.records.push(rec);
-        // 更新 agent 匯總
-        const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
-        if (agentKey) {
-          allData.agents[agentKey][rec.hotel].rooms += rec.nights;
-          allData.agents[agentKey][rec.hotel].rolling += rec.total_req;
-        }
-      }
-    } else if (rec.type === 'wash') {
-      // 如果有指定 targetIdx，直接對應
-      if (rec.targetIdx >= 0 && rec.targetIdx < allData.records.length) {
-        const r2 = allData.records[rec.targetIdx];
-        if (r2.agent === rec.agent && r2.hotel === rec.hotel) {
-          // 如果已有洗碼，先扣回
-          const agentKey = Object.keys(allData.agents).find(k => k === r2.agent);
-          if (agentKey && r2.washed) {
-            allData.agents[agentKey][r2.hotel].washed -= r2.washed;
-          }
-          r2.washed = rec.amt;
-          r2.status = 'done';
-          r2.hall = rec.hall || r2.hall;
-          if (agentKey) {
-            allData.agents[agentKey][r2.hotel].washed += rec.amt;
-          }
-        }
-      } else {
-        // 沒指定，自動找第一筆待補
-        for (const r2 of allData.records) {
-          if (r2.agent === rec.agent && r2.hotel === rec.hotel && r2.status === 'pending' && !r2.washed) {
-            r2.washed = rec.amt;
-            r2.status = 'done';
-            r2.hall = rec.hall || r2.hall;
-            const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
-            if (agentKey) {
-              allData.agents[agentKey][r2.hotel].washed += rec.amt;
-            }
-            break;
-          }
-        }
-      }
-    } else if (rec.type === 'taken') {
-      // 標記碼糧已取
-      const tIdx = allData.records.findIndex(r2 =>
-        r2.agent === rec.agent && r2.hotel === rec.hotel &&
-        r2.date === rec.date && r2.code === rec.code
-      );
-      if (tIdx >= 0) {
-        allData.records[tIdx].commission_taken = true;
-        allData.records[tIdx].taken_amount = rec.taken_amount;
-      }
-    } else if (rec.type === 'wash_free') {
-      // 不對應房間的獨立洗碼 — 直接加到匯總
-      const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
-      if (agentKey) {
-        allData.agents[agentKey][rec.hotel].washed += rec.amt;
-      }
-      // 也在拿房記錄表顯示一條獨立洗碼
-      allData.records.push({
-        date: rec.date || '',
-        agent: rec.agent,
-        hotel: rec.hotel,
-        area: '(獨立洗碼)',
-        code: '-',
-        name: '獨立洗碼',
-        req: 0,
-        nights: 0,
-        total_req: 0,
-        washed: rec.amt,
-        hall: rec.hall || '',
-        commission_taken: false,
-        status: 'done',
-        ts: rec.ts,
-        isWashFree: true
-      });
-    } else if (rec.type === 'delete') {
-      // 刪除匹配的記錄
-      const delIdx = allData.records.findIndex(r2 =>
-        r2.agent === rec.agent && r2.hotel === rec.hotel &&
-        r2.date === rec.date && r2.code === rec.code
-      );
-      if (delIdx >= 0) {
-        const del = allData.records[delIdx];
-        const agentKey = Object.keys(allData.agents).find(k => k === del.agent);
-        if (agentKey) {
-          allData.agents[agentKey][del.hotel].rooms -= del.nights;
-          allData.agents[agentKey][del.hotel].rolling -= del.total_req;
-          if (del.washed) allData.agents[agentKey][del.hotel].washed -= del.washed;
-        }
-        allData.records.splice(delIdx, 1);
-      }
+    // 同時從 API 取得 SHA（用於寫入時的版本控制）
+    fetch(GH_API, {
+      headers: { 'Authorization': 'token ' + getGHToken(), 'Accept': 'application/vnd.github.v3+json' }
+    }).then(r => r.json()).then(d => { dataSha = d.sha; }).catch(() => {});
+
+    // 為舊記錄補上 id
+    for (const rec of allData.records) {
+      if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
     }
+  } catch(e) {
+    console.error('讀取失敗:', e);
+    allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
   }
 
   // 設定時間篩選按鈕狀態
@@ -857,10 +862,10 @@ function showPanel(agentName) {
       const statusTag = !hasWash ? '<span class="status-done" style="background:#fff3cd;color:#856404;border-color:#ffc107;padding:2px 6px;border-radius:10px;font-size:11px;">⏳ 未洗碼</span>'
         : !hallRate ? '<span class="status-done" style="background:#e9ecef;color:#666;padding:2px 6px;border-radius:10px;font-size:11px;">—</span>'
         : !rec.commission_taken
-          ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">💰 點我</span>`
+          ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">💰 點我</span>`
           : remain > 0
-            ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}（餘${remain.toLocaleString()}）</span>`
-            : `<span class="status-done" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(${allData.records.indexOf(rec)},${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}</span>`;
+            ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}（餘${remain.toLocaleString()}）</span>`
+            : `<span class="status-done" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}</span>`;
 
       commHtml += `<tr style="border-bottom:1px solid #eee;">
         <td style="padding:7px 6px;white-space:nowrap;text-align:center;">${rec.date}</td>
@@ -927,7 +932,8 @@ function setWashMode(mode) {
   document.getElementById('washFreeSection').style.display = mode === 'free' ? 'block' : 'none';
 }
 
-function openWashModal(idx) {
+function openWashModal(id) {
+  const idx = allData.records.findIndex(r => r.id === id);
   currentWashIdx = idx;
   const rec = allData.records[idx];
   const modal = document.getElementById('washModal');
@@ -975,57 +981,49 @@ function confirmWash() {
   if (!amt) { alert('請輸入洗碼量'); return; }
   const hall = document.getElementById('washModalHall').value;
 
-  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-
   if (washMode === 'linked' && currentWashIdx >= 0) {
     const rec = allData.records[currentWashIdx];
-    local.push({
-      type: 'wash', agent: rec.agent, hotel: rec.hotel,
-      amt, hall, targetIdx: currentWashIdx,
-      ts: new Date().toISOString()
-    });
+    if (rec) {
+      rec.washed = amt;
+      rec.status = 'done';
+      rec.hall = hall || rec.hall;
+    }
   } else {
     const agent = document.getElementById('washFreeAgent').value;
     const hotel = document.getElementById('washFreeHotel').value;
     const date = formatDate(document.getElementById('washFreeDate').value) || '';
-    local.push({
-      type: 'wash_free', agent, hotel, date, amt, hall,
-      ts: new Date().toISOString()
+    allData.records.push({
+      id: 'w' + Date.now(),
+      date, agent, hotel,
+      area: '(獨立洗碼)', code: '-', name: '獨立洗碼',
+      req: 0, nights: 0, total_req: 0,
+      washed: amt, hall: hall || '', commission_taken: false, taken_amount: null,
+      status: 'done', isWashFree: true
     });
   }
 
-  localStorage.setItem('pendingRecords', JSON.stringify(local));
   closeWashModal();
-  setTimeout(() => { location.reload(); }, 800);
+  saveAndReload();
 }
 
-function deleteRecord(idx) {
+function deleteRecord(id) {
+  const idx = allData.records.findIndex(r => r.id === id);
+  if (idx < 0) return;
   const rec = allData.records[idx];
   if (!confirm(`確認刪除？\n${rec.agent} | ${rec.date} | ${rec.hotel}·${rec.area} | ${rec.code}`)) return;
 
-  // 儲存刪除操作到 localStorage
-  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-  local.push({
-    type: 'delete',
-    agent: rec.agent,
-    hotel: rec.hotel,
-    date: rec.date,
-    code: rec.code,
-    ts: new Date().toISOString()
-  });
-  localStorage.setItem('pendingRecords', JSON.stringify(local));
-
-  setTimeout(() => { location.reload(); }, 800);
+  allData.records.splice(idx, 1);
+  saveAndReload();
 }
 
 // 已取碼糧對話框
 let takenRecordIdx = -1;
 let takenCommissionVal = 0;
 
-function openTakenModal(idx, commissionVal) {
-  takenRecordIdx = idx;
+function openTakenModal(id, commissionVal) {
+  takenRecordIdx = allData.records.findIndex(r => r.id === id);
   takenCommissionVal = commissionVal;
-  const rec = allData.records[idx];
+  const rec = allData.records[takenRecordIdx];
   const formatted = commissionVal.toLocaleString('en-US', {maximumFractionDigits:0});
 
   let infoHtml = `<b>${rec.agent}</b> · ${rec.hotel}·${rec.area} · ${rec.code}<br>應得碼糧：<b style="color:#1F4E79;">${formatted}</b>`;
@@ -1053,26 +1051,17 @@ function confirmTaken() {
   const inputAmt = document.getElementById('takenModalAmt').value;
   const takenAmount = inputAmt ? parseInt(inputAmt) : takenCommissionVal;
 
-  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
-  local.push({
-    type: 'taken',
-    agent: rec.agent,
-    hotel: rec.hotel,
-    date: rec.date,
-    code: rec.code,
-    taken_amount: takenAmount,
-    ts: new Date().toISOString()
-  });
-  localStorage.setItem('pendingRecords', JSON.stringify(local));
+  // 直接修改記錄
+  rec.commission_taken = true;
+  rec.taken_amount = takenAmount;
 
   closeTakenModal();
-  setTimeout(() => { location.reload(); }, 800);
+  saveAndReload();
 }
 
 // 全取該 Agent 所有未取碼糧（含部分已取的剩餘）
 function takeAllComm(agentName) {
   const rates = allData.commission_rates || [];
-  let local = JSON.parse(localStorage.getItem('pendingRecords') || '[]');
   let count = 0;
 
   for (const rec of allData.records) {
@@ -1082,41 +1071,21 @@ function takeAllComm(agentName) {
     const hallRate = rates.find(r => r.name === rec.hall);
     if (!hallRate) continue;
 
-    // 計算這筆的總碼糧
     const totalComm = rec.washed * 10000 * (hallRate.rate / 100);
 
     if (!rec.commission_taken) {
-      // 完全未取 → 標記全部已取
-      local.push({
-        type: 'taken',
-        agent: rec.agent,
-        hotel: rec.hotel,
-        date: rec.date,
-        code: rec.code,
-        taken_amount: null, // null = 全部已取
-        ts: new Date().toISOString()
-      });
+      rec.commission_taken = true;
+      rec.taken_amount = null;
       count++;
     } else if (rec.taken_amount && rec.taken_amount < totalComm) {
-      // 部分已取 → 補取剩餘（設為總碼糧值）
-      local.push({
-        type: 'taken',
-        agent: rec.agent,
-        hotel: rec.hotel,
-        date: rec.date,
-        code: rec.code,
-        taken_amount: totalComm, // 設為總額 = 全部已取
-        ts: new Date().toISOString()
-      });
+      rec.taken_amount = totalComm;
       count++;
     }
-    // 已經全部取完的跳過
   }
 
   if (count > 0) {
-    localStorage.setItem('pendingRecords', JSON.stringify(local));
+    saveAndReload();
   }
-  location.reload();
 }
 
 load();
