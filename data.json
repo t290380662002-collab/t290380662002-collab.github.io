@@ -1,6 +1,6 @@
 {
   "title": "Agent 洗碼統計 2026年6月",
-  "last_update": "2026-05-31 07:43",
+  "last_update": "2026-05-31 07:44",
   "agents": {
     "安": {
       "銀河": {
@@ -120,7 +120,7 @@
       "status": "pending",
       "hall": "",
       "commission_taken": false,
-      "id": "r17801846170808wsm"
+      "id": "r1780184641407szim"
     },
     {
       "date": "6/6",
@@ -136,7 +136,7 @@
       "status": "pending",
       "hall": "",
       "commission_taken": false,
-      "id": "r1780184617080h5sm"
+      "id": "r1780184641407smah"
     },
     {
       "date": "6/14",
@@ -152,7 +152,7 @@
       "status": "pending",
       "hall": "",
       "commission_taken": false,
-      "id": "r17801846170805fw3"
+      "id": "r1780184641407b501"
     },
     {
       "date": "6/28",
@@ -168,7 +168,7 @@
       "status": "pending",
       "hall": "",
       "commission_taken": false,
-      "id": "r17801846170802zab"
+      "id": "r1780184641407zhwo"
     }
   ],
   "commission_rates": [
