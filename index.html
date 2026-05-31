@@ -475,21 +475,54 @@ async function saveToGitHub() {
   isSaving = false;
 }
 
-// 儲存並重新載入頁面
+// 儲存並即時更新 UI（不刷新頁面）
 async function saveAndReload() {
   await saveToGitHub();
-  setTimeout(() => { location.reload(); }, 1000);
+  // 重新計算匯總和渲染
+  recalcAndRender();
 }
 
-// ===== 輪詢：每 15 秒檢查是否有其他人更新了數據 =====
+// 重新計算數據並渲染 UI
+function recalcAndRender() {
+  filteredRecords = filterByPeriod(allData.records);
+
+  // 重新計算各 Agent 匯總
+  for (const name of Object.keys(allData.agents)) {
+    if (name === '房間總計') continue;
+    for (const h of HOTELS) {
+      allData.agents[name][h] = { rooms: 0, rolling: 0, washed: 0 };
+    }
+  }
+  for (const rec of filteredRecords) {
+    const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
+    if (agentKey && allData.agents[agentKey][rec.hotel]) {
+      allData.agents[agentKey][rec.hotel].rooms += rec.nights || 0;
+      allData.agents[agentKey][rec.hotel].rolling += rec.total_req || 0;
+      if (rec.washed) allData.agents[agentKey][rec.hotel].washed += rec.washed;
+    }
+  }
+
+  renderUI();
+  // 關閉面板
+  document.getElementById('agentPanel').classList.remove('show');
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  currentAgent = null;
+}
+
+// ===== 輪詢：每 3 秒檢查是否有其他人更新了數據 =====
 let lastSyncTime = '';
 setInterval(async () => {
   try {
     const r = await fetch('data.json?t=' + Date.now());
     const d = await r.json();
     if (d.last_update && d.last_update !== allData.last_update) {
-      console.log('🔄 偵測到數據更新，重新載入');
-      location.reload();
+      console.log('🔄 偵測到數據更新，即時刷新');
+      allData = d;
+      // 為舊記錄補上 id
+      for (const rec of allData.records) {
+        if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
+      }
+      recalcAndRender();
     }
   } catch(e) {}
 }, 3000);
@@ -597,33 +630,17 @@ async function load() {
     allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
   }
 
+  recalcAndRender();
+}
+
+// 渲染 UI（從 allData 計算匯總並更新所有區塊）
+function renderUI() {
   // 設定時間篩選按鈕狀態
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
   if (currentPeriod === 'month') document.getElementById('btnMonth').classList.add('active');
   else if (currentPeriod === 'lastmonth') document.getElementById('btnLastMonth').classList.add('active');
   else if (currentPeriod === 'year') document.getElementById('btnYear').classList.add('active');
   else document.getElementById('btnAll').classList.add('active');
-
-  document.getElementById('updateTime').textContent = '更新時間: ' + allData.last_update;
-
-  // 按時間篩選記錄
-  filteredRecords = filterByPeriod(allData.records);
-
-  // 重新計算各 Agent 匯總（基於篩選後的記錄）
-  for (const name of Object.keys(allData.agents)) {
-    if (name === '房間總計') continue;
-    for (const h of HOTELS) {
-      allData.agents[name][h] = { rooms: 0, rolling: 0, washed: 0 };
-    }
-  }
-  for (const rec of filteredRecords) {
-    const agentKey = Object.keys(allData.agents).find(k => k === rec.agent);
-    if (agentKey && allData.agents[agentKey][rec.hotel]) {
-      allData.agents[agentKey][rec.hotel].rooms += rec.nights || 0;
-      allData.agents[agentKey][rec.hotel].rolling += rec.total_req || 0;
-      if (rec.washed) allData.agents[agentKey][rec.hotel].washed += rec.washed;
-    }
-  }
 
   // 顯示當前篩選期間
   let periodLabel = currentPeriod === 'month' ? '本月' :
@@ -640,7 +657,7 @@ async function load() {
   if (customDateFrom) document.getElementById('dateFrom').value = customDateFrom;
   if (customDateTo) document.getElementById('dateTo').value = customDateTo;
 
-  // 填充 Agent 下拉
+  // 填充 Agent 下拉（只在首次）
   const agentSel = document.getElementById('inAgent');
   if (agentSel.options.length <= 1) {
     for (const name of Object.keys(allData.agents)) {
@@ -648,7 +665,6 @@ async function load() {
         agentSel.innerHTML += `<option value="${name}">${name}</option>`;
       }
     }
-    // Agent 變更時更新洗碼目標
     agentSel.addEventListener('change', updateWashTargets);
   }
 
@@ -680,10 +696,7 @@ async function load() {
     if (diff > 0) diffClass = 'diff-positive';
     else if (diff < 0) diffClass = 'diff-negative';
 
-    // 房間總計卡不綁定點擊
-    if (name === '房間總計') {
-      continue;
-    }
+    if (name === '房間總計') continue;
 
     let html = `<div class="card" onclick="showPanel('${name}')"><div class="name">${name}</div>`;
     html += `<div class="hotel">${lines.length ? lines.join('<br>') : '尚無記錄'}</div>`;
@@ -693,11 +706,10 @@ async function load() {
     sumDiv.innerHTML += html;
   }
 
-  // 渲染拿房記錄和詳細彙總表格
   renderRoomTable();
   renderDetailTable();
 
-  // 房間總計卡片（從 agents 計算）
+  // 房間總計卡片
   const grand = { rooms: [0,0,0], rolling: [0,0,0], washed: [0,0,0] };
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
@@ -714,7 +726,6 @@ async function load() {
     grandTotalWash += grand.washed[i];
   }
 
-  // 房間總計卡片
   const tDiffAll = grandTotalWash - grandTotalRoll;
   const tDiffAllClass = tDiffAll >= 0 ? 'diff-positive' : 'diff-negative';
   sumDiv.innerHTML += `<div class="card" style="background:#1F4E79;color:#fff;">
@@ -725,14 +736,12 @@ async function load() {
   </div>`;
 
   // ===== 公積金區塊 =====
-  // 新濠天地 · 勵盈1 的洗碼 × 0.01% = 公積金
-  const fundRate = 0.01; // 0.01%
+  const fundRate = 0.01;
   let fundHtml = '';
   let fundGrandTotal = 0;
 
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
-    // 該 Agent 在新濠天地 + 勵盈1 的洗碼
     let liyiWash = 0;
     for (const rec of filteredRecords) {
       if (rec.agent === name && rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
@@ -758,10 +767,8 @@ async function load() {
   }
 
   const fundFormatted = fundGrandTotal.toLocaleString('en-US', {maximumFractionDigits:0});
-
   document.getElementById('fundContent').innerHTML =
     fundHtml || '<div style="padding:12px;text-align:center;color:#999;">尚無新濠天地洗碼記錄</div>';
-
   document.getElementById('fundTotal').innerHTML = fundGrandTotal > 0 ? `
     <div style="margin-top:10px;padding:10px;background:#d4edda;border-radius:8px;border:1px solid #c3e6cb;text-align:center;">
       <div style="font-size:13px;font-weight:bold;color:#155724;">🏛️ 公積金合計</div>
