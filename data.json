@@ -1,6 +1,6 @@
 {
   "title": "Agent 洗碼統計 2026年6月",
-  "last_update": "2026-06-01 22:27",
+  "last_update": "2026-06-01 22:39",
   "agents": {
     "安": {
       "銀河": {
@@ -89,8 +89,8 @@
     },
     "韓國": {
       "銀河": {
-        "rooms": 0,
-        "rolling": 0,
+        "rooms": 2,
+        "rolling": 160,
         "washed": 0
       },
       "倫敦人": {
@@ -215,6 +215,23 @@
       "req": 80,
       "nights": 3,
       "total_req": 240,
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
+    },
+    {
+      "id": "r1780324778089",
+      "date": "6/1",
+      "agent": "韓國",
+      "hotel": "銀河",
+      "area": "萬豪",
+      "code": "JW01",
+      "name": "萬豪大床",
+      "req": 80,
+      "nights": 2,
+      "total_req": 160,
       "washed": 0,
       "hall": "",
       "commission_taken": false,
