@@ -508,18 +508,18 @@ async function saveToGitHub() {
   }
 }
 
-// 儲存並即時更新 UI（先更新 UI，再背景儲存）
-async function saveAndReload() {
-  // 立即更新 UI（不等待 GitHub 儲存）
+// 儲存並即時更新 UI（先更新 UI，再背景儲存，不阻塞）
+function saveAndReload() {
+  // 立即更新 UI
   recalcAndRender();
-  // 顯示儲存狀態
+  // 背景儲存到 GitHub（完全不等待）
   const syncEl = document.getElementById('syncStatus');
   syncEl.innerHTML = '<span style="color:#fd7e14;">⏳ 同步中...</span>';
-  // 背景儲存到 GitHub
-  const ok = await saveToGitHub();
-  syncEl.innerHTML = ok
-    ? '<span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新'
-    : '<span style="color:#dc3545;">❌ 同步失敗</span> · 資料僅存在本頁，請重新整理';
+  saveToGitHub().then(ok => {
+    syncEl.innerHTML = ok
+      ? '<span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新'
+      : '<span style="color:#dc3545;">❌ 同步失敗</span> · 資料僅存在本頁，請重新整理';
+  });
 }
 
 // 重新計算數據並渲染 UI
@@ -552,13 +552,13 @@ function recalcAndRender() {
 // ===== 輪詢：每 3 秒檢查是否有其他人更新了數據 =====
 let lastSyncTime = '';
 setInterval(async () => {
+  if (isSaving) return; // 正在儲存時跳過輪詢
   try {
     const r = await fetch('data.json?t=' + Date.now());
     const d = await r.json();
     if (d.last_update && d.last_update !== allData.last_update) {
       console.log('🔄 偵測到數據更新，即時刷新');
       allData = d;
-      // 為舊記錄補上 id
       for (const rec of allData.records) {
         if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
       }
