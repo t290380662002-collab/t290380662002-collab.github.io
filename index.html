@@ -430,7 +430,7 @@ function submitRecord() {
 
 // 儲存數據到 GitHub，實現多人同步
 async function saveToGitHub() {
-  if (isSaving) return;
+  if (isSaving) return false;
   isSaving = true;
 
   // 更新時間戳
@@ -440,6 +440,13 @@ async function saveToGitHub() {
     String(now.getDate()).padStart(2,'0') + ' ' +
     String(now.getHours()).padStart(2,'0') + ':' +
     String(now.getMinutes()).padStart(2,'0');
+
+  const token = getGHToken();
+  if (!token) {
+    console.warn('⚠️ 未設定 GitHub Token，無法同步');
+    isSaving = false;
+    return false;
+  }
 
   try {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(allData, null, 2))));
@@ -452,7 +459,7 @@ async function saveToGitHub() {
     const res = await fetch(GH_API, {
       method: 'PUT',
       headers: {
-        'Authorization': 'token ' + getGHToken(),
+        'Authorization': 'token ' + token,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },
@@ -461,26 +468,58 @@ async function saveToGitHub() {
 
     if (res.ok) {
       const result = await res.json();
-      dataSha = result.content.sha; // 更新 SHA
+      dataSha = result.content.sha;
       console.log('✅ 數據已同步到 GitHub');
+      isSaving = false;
+      return true;
     } else {
       const err = await res.json();
       console.error('❌ 同步失敗:', err);
-      alert('同步失敗，可能其他人正在更新，請稍後再試');
+      if (err.message && err.message.includes('SHA')) {
+        // SHA 衝突，重新取得 SHA 再試一次
+        const shaRes = await fetch(GH_API, {
+          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (shaRes.ok) {
+          const shaData = await shaRes.json();
+          dataSha = shaData.sha;
+          // 重新讀取最新數據並合併
+          const freshData = JSON.parse(atob(shaData.content));
+          // 把本機新加的記錄合併進去
+          const myNewIds = allData.records.filter(r => r.id && r.id.startsWith('r1') || r.id.startsWith('w1')).map(r => r.id);
+          for (const r of allData.records) {
+            if (!freshData.records.find(fr => fr.id === r.id)) {
+              freshData.records.push(r);
+            }
+          }
+          allData = freshData;
+          isSaving = false;
+          // 重試一次
+          return saveToGitHub();
+        }
+      }
+      isSaving = false;
+      return false;
     }
   } catch(e) {
     console.error('❌ 網絡錯誤:', e);
-    alert('網絡錯誤，請稍後再試');
+    isSaving = false;
+    return false;
   }
-  isSaving = false;
 }
 
 // 儲存並即時更新 UI（先更新 UI，再背景儲存）
 async function saveAndReload() {
   // 立即更新 UI（不等待 GitHub 儲存）
   recalcAndRender();
+  // 顯示儲存狀態
+  const syncEl = document.getElementById('syncStatus');
+  syncEl.innerHTML = '<span style="color:#fd7e14;">⏳ 同步中...</span>';
   // 背景儲存到 GitHub
-  saveToGitHub();
+  const ok = await saveToGitHub();
+  syncEl.innerHTML = ok
+    ? '<span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新'
+    : '<span style="color:#dc3545;">❌ 同步失敗</span> · 資料僅存在本頁，請重新整理';
 }
 
 // 重新計算數據並渲染 UI
