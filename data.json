@@ -1,6 +1,6 @@
 {
   "title": "Agent 洗碼統計 2026年6月",
-  "last_update": "2026-06-01 22:40",
+  "last_update": "2026-06-01 23:11",
   "agents": {
     "安": {
       "銀河": {
@@ -21,8 +21,8 @@
     },
     "Fifi": {
       "銀河": {
-        "rooms": 3,
-        "rolling": 240,
+        "rooms": 0,
+        "rolling": 0,
         "washed": 0
       },
       "倫敦人": {
@@ -181,23 +181,6 @@
       "req": 80,
       "nights": 2,
       "total_req": 160,
-      "washed": 0,
-      "hall": "",
-      "commission_taken": false,
-      "taken_amount": null,
-      "status": "pending"
-    },
-    {
-      "id": "r1780324023706",
-      "date": "6/1",
-      "agent": "Fifi",
-      "hotel": "銀河",
-      "area": "萬豪",
-      "code": "JW01",
-      "name": "萬豪大床",
-      "req": 80,
-      "nights": 3,
-      "total_req": 240,
       "washed": 0,
       "hall": "",
       "commission_taken": false,
