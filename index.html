@@ -75,7 +75,7 @@
 <div class="header">
   <h1>📊 Agent 洗碼統計</h1>
   <div class="update" id="updateTime"></div>
-  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新</div>
+  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器</div>
 </div>
 
 <!-- 時間篩選 -->
@@ -189,24 +189,12 @@
 </div>
 
 <script>
-// ===== GitHub API 後端配置 =====
-const GH_REPO = 't290380662002-collab/t290380662002-collab.github.io';
-const GH_API = 'https://api.github.com/repos/' + GH_REPO + '/contents/data.json';
-// Token 存放在 localStorage，首次需輸入
-function getGHToken() {
-  let t = localStorage.getItem('gh_token');
-  if (!t) {
-    t = prompt('請輸入 GitHub Token（只需輸入一次）：');
-    if (t) localStorage.setItem('gh_token', t);
-  }
-  return t;
-}
-let dataSha = ''; // 當前 data.json 的 SHA，更新時需要
+// ===== 本地存儲 =====
+const STORAGE_KEY = 'agentWashData';
 
 let allData = null;
 let filteredRecords = [];
 let currentAgent = null;
-let isSaving = false; // 防止並發寫入
 const HOTELS = ['銀河','倫敦人','新濠天地'];
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 let customDateFrom = localStorage.getItem('customDateFrom') || '';
@@ -426,100 +414,27 @@ function submitRecord() {
   saveAndReload();
 }
 
-// ===== GitHub API 讀寫函數 =====
+// ===== 本地存儲函數 =====
 
-// 儲存數據到 GitHub，實現多人同步
-async function saveToGitHub() {
-  if (isSaving) return false;
-  isSaving = true;
-
-  // 更新時間戳
+// 儲存數據到 localStorage
+function saveToLocal() {
   const now = new Date();
   allData.last_update = now.getFullYear() + '-' +
     String(now.getMonth()+1).padStart(2,'0') + '-' +
     String(now.getDate()).padStart(2,'0') + ' ' +
     String(now.getHours()).padStart(2,'0') + ':' +
     String(now.getMinutes()).padStart(2,'0');
-
-  const token = getGHToken();
-  if (!token) {
-    console.warn('⚠️ 未設定 GitHub Token，無法同步');
-    isSaving = false;
-    return false;
-  }
-
-  try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(allData, null, 2))));
-    const body = {
-      message: '🔄 數據更新 ' + allData.last_update,
-      content: content,
-      sha: dataSha
-    };
-
-    const res = await fetch(GH_API, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (res.ok) {
-      const result = await res.json();
-      dataSha = result.content.sha;
-      console.log('✅ 數據已同步到 GitHub');
-      isSaving = false;
-      return true;
-    } else {
-      const err = await res.json();
-      console.error('❌ 同步失敗:', err);
-      if (err.message && err.message.includes('SHA')) {
-        // SHA 衝突，重新取得 SHA 再試一次
-        const shaRes = await fetch(GH_API, {
-          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        if (shaRes.ok) {
-          const shaData = await shaRes.json();
-          dataSha = shaData.sha;
-          // 重新讀取最新數據並合併
-          const freshData = JSON.parse(atob(shaData.content));
-          // 把本機新加的記錄合併進去
-          const myNewIds = allData.records.filter(r => r.id && r.id.startsWith('r1') || r.id.startsWith('w1')).map(r => r.id);
-          for (const r of allData.records) {
-            if (!freshData.records.find(fr => fr.id === r.id)) {
-              freshData.records.push(r);
-            }
-          }
-          allData = freshData;
-          isSaving = false;
-          // 重試一次
-          return saveToGitHub();
-        }
-      }
-      isSaving = false;
-      return false;
-    }
-  } catch(e) {
-    console.error('❌ 網絡錯誤:', e);
-    isSaving = false;
-    return false;
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
 }
 
-// 儲存並即時更新 UI（先更新 UI，再背景儲存，不阻塞）
+// 儲存並即時更新 UI
 function saveAndReload() {
-  // 立即更新 UI
   recalcAndRender();
-  // 背景儲存到 GitHub（完全不等待）
-  const syncEl = document.getElementById('syncStatus');
-  syncEl.innerHTML = '<span style="color:#fd7e14;">⏳ 同步中...</span>';
-  saveToGitHub().then(ok => {
-    syncEl.innerHTML = ok
-      ? '<span style="color:#28a745;">🟢 即時同步中</span> · 每3秒自動檢查更新'
-      : '<span style="color:#dc3545;">❌ 同步失敗</span> · 資料僅存在本頁，請重新整理';
-  });
+  saveToLocal();
+  document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料已儲存';
+  setTimeout(() => {
+    document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器';
+  }, 2000);
 }
 
 // 重新計算數據並渲染 UI
@@ -549,27 +464,7 @@ function recalcAndRender() {
   currentAgent = null;
 }
 
-// ===== 輪詢：每 3 秒檢查是否有其他人更新了數據 =====
-let lastSyncTime = '';
-setInterval(async () => {
-  if (isSaving) return; // 正在儲存時跳過輪詢
-  try {
-    const r = await fetch('data.json?t=' + Date.now());
-    const d = await r.json();
-    if (d.last_update && d.last_update !== allData.last_update) {
-      console.log('🔄 偵測到數據更新，即時刷新');
-      allData = d;
-      for (const rec of allData.records) {
-        if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
-      }
-      recalcAndRender();
-    }
-  } catch(e) {}
-}, 3000);
-
-function loadWithLocal() {
-  load();
-}
+// ===== 載入資料 =====
 
 function hidePanel() {
   document.getElementById('agentPanel').classList.remove('show');
@@ -651,23 +546,29 @@ function renderDetailTable(agentName) {
 }
 
 async function load() {
-  try {
-    // 從 GitHub API 讀取 data.json（帶 SHA 用於後續更新）
-    const r = await fetch('data.json?t=' + Date.now());
-    allData = await r.json();
-
-    // 同時從 API 取得 SHA（用於寫入時的版本控制）
-    fetch(GH_API, {
-      headers: { 'Authorization': 'token ' + getGHToken(), 'Accept': 'application/vnd.github.v3+json' }
-    }).then(r => r.json()).then(d => { dataSha = d.sha; }).catch(() => {});
-
-    // 為舊記錄補上 id
-    for (const rec of allData.records) {
-      if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
+  // 優先從 localStorage 讀取，其次從 data.json
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      allData = JSON.parse(stored);
+    } catch(e) {
+      allData = null;
     }
-  } catch(e) {
-    console.error('讀取失敗:', e);
-    allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
+  }
+
+  if (!allData) {
+    try {
+      const r = await fetch('data.json?t=' + Date.now());
+      allData = await r.json();
+    } catch(e) {
+      console.error('讀取失敗:', e);
+      allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
+    }
+  }
+
+  // 為舊記錄補上 id
+  for (const rec of allData.records) {
+    if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
   }
 
   recalcAndRender();
