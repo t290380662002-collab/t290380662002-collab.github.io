@@ -1,6 +1,6 @@
 {
   "title": "Agent 洗碼統計 2026年6月",
-  "last_update": "2026-06-01 20:23",
+  "last_update": "2026-06-01 21:05",
   "agents": {
     "安": {
       "銀河": {
@@ -99,8 +99,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rooms": 0,
-        "rolling": 0,
+        "rooms": 3,
+        "rolling": 240,
         "washed": 0
       }
     }
@@ -181,23 +181,6 @@
       "req": 80,
       "nights": 2,
       "total_req": 160,
-      "washed": 0,
-      "hall": "",
-      "commission_taken": false,
-      "taken_amount": null,
-      "status": "pending"
-    },
-    {
-      "id": "r1780316637350",
-      "date": "6/1",
-      "agent": "韓國",
-      "hotel": "新濠天地",
-      "area": "摩珀斯",
-      "code": "PK",
-      "name": "摩珀斯豪華客房(大床)",
-      "req": 80,
-      "nights": 3,
-      "total_req": 240,
       "washed": 0,
       "hall": "",
       "commission_taken": false,
