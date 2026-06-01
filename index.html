@@ -475,11 +475,12 @@ async function saveToGitHub() {
   isSaving = false;
 }
 
-// 儲存並即時更新 UI（不刷新頁面）
+// 儲存並即時更新 UI（先更新 UI，再背景儲存）
 async function saveAndReload() {
-  await saveToGitHub();
-  // 重新計算匯總和渲染
+  // 立即更新 UI（不等待 GitHub 儲存）
   recalcAndRender();
+  // 背景儲存到 GitHub
+  saveToGitHub();
 }
 
 // 重新計算數據並渲染 UI
