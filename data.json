@@ -89,8 +89,8 @@
     },
     "韓國": {
       "銀河": {
-        "rooms": 2,
-        "rolling": 160,
+        "rooms": 3,
+        "rolling": 240,
         "washed": 0
       },
       "倫敦人": {
@@ -222,7 +222,7 @@
       "status": "pending"
     },
     {
-      "id": "r1780324778089",
+      "id": "r1780324787958",
       "date": "6/1",
       "agent": "韓國",
       "hotel": "銀河",
@@ -230,8 +230,8 @@
       "code": "JW01",
       "name": "萬豪大床",
       "req": 80,
-      "nights": 2,
-      "total_req": 160,
+      "nights": 3,
+      "total_req": 240,
       "washed": 0,
       "hall": "",
       "commission_taken": false,
