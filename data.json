@@ -21,8 +21,8 @@
     },
     "Fifi": {
       "銀河": {
-        "rooms": 0,
-        "rolling": 0,
+        "rooms": 3,
+        "rolling": 240,
         "washed": 0
       },
       "倫敦人": {
@@ -48,8 +48,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rooms": 3,
-        "rolling": 240,
+        "rooms": 0,
+        "rolling": 0,
         "washed": 0
       }
     },
@@ -188,13 +188,13 @@
       "status": "pending"
     },
     {
-      "id": "r1780323419869",
-      "date": "6/3",
-      "agent": "Yuka",
-      "hotel": "新濠天地",
-      "area": "摩珀斯",
-      "code": "PK",
-      "name": "摩珀斯豪華客房(大床)",
+      "id": "r1780324023706",
+      "date": "6/1",
+      "agent": "Fifi",
+      "hotel": "銀河",
+      "area": "萬豪",
+      "code": "JW01",
+      "name": "萬豪大床",
       "req": 80,
       "nights": 3,
       "total_req": 240,
