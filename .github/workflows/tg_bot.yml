@@ -2,7 +2,7 @@ name: Telegram Bot 輪詢
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '* * * * *'
   workflow_dispatch:
 
 concurrency:
