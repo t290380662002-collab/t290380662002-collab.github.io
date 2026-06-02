@@ -1,0 +1,24 @@
+name: Telegram Bot 輪詢
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Telegram Bot
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+        run: python tg_bot.py
