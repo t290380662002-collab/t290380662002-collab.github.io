@@ -796,51 +796,86 @@ async function load() {
 
 // ===== Firebase 初始化與即時監聽 =====
 
+async function tryFirebaseWithUrl(url, config) {
+  // 清除舊實例
+  if (fbListener && fbRef) fbRef.off('value', fbListener);
+  if (firebase.apps.length) {
+    for (const app of firebase.apps) await app.delete();
+  }
+
+  const newConfig = { ...config, databaseURL: url };
+  delete newConfig._possibleUrls;
+
+  const app = firebase.initializeApp(newConfig);
+  fbDb = firebase.database();
+  fbRef = fbDb.ref('agentWashData');
+
+  return new Promise((resolve) => {
+    let resolved = false;
+    // 監聽連線狀態
+    fbDb.ref('.info/connected').on('value', (snap) => {
+      if (snap.val() === true && !resolved) {
+        resolved = true;
+        resolve(true);
+      }
+    });
+    // 3 秒超時
+    setTimeout(() => {
+      if (!resolved) { resolved = true; resolve(false); }
+    }, 3000);
+  });
+}
+
 function initFirebase(config) {
+  // 如果有多個可能 URL，先偵測正確的
+  const possibleUrls = config._possibleUrls;
+  if (possibleUrls && possibleUrls.length > 0) {
+    (async () => {
+      const statusEl = document.getElementById('fbStatus');
+      if (statusEl) statusEl.innerHTML = '<span style="color:#fd7e14;">⏳ 偵測資料庫位置...</span>';
+
+      for (const url of possibleUrls) {
+        console.log('🔍 嘗試:', url);
+        if (statusEl) statusEl.innerHTML = '<span style="color:#fd7e14;">⏳ 嘗試 ' + url + '...</span>';
+        const ok = await tryFirebaseWithUrl(url, config);
+        if (ok) {
+          console.log('✅ 找到資料庫:', url);
+          config.databaseURL = url;
+          delete config._possibleUrls;
+          localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(config));
+          // 成功連線，設定監聽器
+          setupFirebaseListeners();
+          updateSyncStatusUI();
+          if (statusEl) statusEl.innerHTML = '<span style="color:#28a745;">✅ 連線成功！ ' + url + '</span>';
+          setTimeout(() => closeSyncModal(), 1000);
+          return;
+        }
+        // 清除失敗的實例
+        if (fbListener && fbRef) fbRef.off('value', fbListener);
+        if (firebase.apps.length) {
+          for (const app of firebase.apps) await app.delete();
+        }
+      }
+      // 全部失敗
+      console.error('❌ 所有 URL 都無法連線');
+      fbDb = null; fbRef = null; fbConnected = false;
+      updateSyncStatusUI();
+      if (statusEl) statusEl.innerHTML = '<span style="color:#dc3545;">❌ 連線失敗，請確認已建立 Realtime Database</span>';
+    })();
+    return true; // 非同步偵測中
+  }
+
+  // 已知正確 URL，直接連線
   try {
-    // 清除舊的 Firebase 實例
-    if (fbListener && fbRef) {
-      fbRef.off('value', fbListener);
-    }
+    if (fbListener && fbRef) fbRef.off('value', fbListener);
     if (firebase.apps.length) {
       firebase.apps.forEach(app => app.delete());
     }
 
-    const app = firebase.initializeApp(config);
+    firebase.initializeApp(config);
     fbDb = firebase.database();
     fbRef = fbDb.ref('agentWashData');
-
-    // 監聽連線狀態
-    fbDb.ref('.info/connected').on('value', (snap) => {
-      fbConnected = snap.val() === true;
-      updateSyncStatusUI();
-      if (fbConnected) {
-        console.log('🟢 Firebase 已連線');
-      }
-    });
-
-    // 即時監聽資料變更（核心！零延遲同步）
-    fbListener = fbRef.on('value', (snapshot) => {
-      const d = snapshot.val();
-      if (d && d.last_update) {
-        // 只在資料真的更新時才刷新 UI
-        if (!allData || d.last_update !== allData.last_update) {
-          console.log('🔄 Firebase 偵測到更新:', d.last_update);
-          allData = d;
-          // 為記錄補上 id
-          for (const rec of (allData.records || [])) {
-            if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
-          }
-          saveToLocal(); // 同步到本地備份
-          recalcAndRender();
-        }
-      } else if (d === null && allData && allData.records && allData.records.length > 0) {
-        // Firebase 空的，上傳本機資料
-        console.log('📤 Firebase 無資料，上傳本機資料');
-        fbRef.set(allData);
-      }
-    });
-
+    setupFirebaseListeners();
     updateSyncStatusUI();
     return true;
   } catch(e) {
@@ -849,6 +884,34 @@ function initFirebase(config) {
     updateSyncStatusUI();
     return false;
   }
+}
+
+function setupFirebaseListeners() {
+  // 監聯連線狀態
+  fbDb.ref('.info/connected').on('value', (snap) => {
+    fbConnected = snap.val() === true;
+    updateSyncStatusUI();
+    if (fbConnected) console.log('🟢 Firebase 已連線');
+  });
+
+  // 即時監聽資料變更（核心！零延遲同步）
+  fbListener = fbRef.on('value', (snapshot) => {
+    const d = snapshot.val();
+    if (d && d.last_update) {
+      if (!allData || d.last_update !== allData.last_update) {
+        console.log('🔄 Firebase 偵測到更新:', d.last_update);
+        allData = d;
+        for (const rec of (allData.records || [])) {
+          if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
+        }
+        saveToLocal();
+        recalcAndRender();
+      }
+    } else if (d === null && allData && allData.records && allData.records.length > 0) {
+      console.log('📤 Firebase 無資料，上傳本機資料');
+      fbRef.set(allData);
+    }
+  });
 }
 
 function updateSyncStatusUI() {
@@ -906,15 +969,20 @@ function connectFirebase() {
     return;
   }
 
-  // 自動補上 databaseURL（根據 projectId 推算）
+  // 自動補上 databaseURL（嘗試多個區域）
   if (!config.databaseURL && config.projectId) {
-    config.databaseURL = 'https://' + config.projectId + '-default-rtdb.firebaseio.com';
-    console.log('📝 自動推算 databaseURL:', config.databaseURL);
-  }
-
-  // 如果還是沒有，嘗試舊格式
-  if (!config.databaseURL && config.projectId) {
-    config.databaseURL = 'https://' + config.projectId + '.firebaseio.com';
+    const pid = config.projectId;
+    const possibleUrls = [
+      'https://' + pid + '-default-rtdb.asia-southeast1.firebasedatabase.app',
+      'https://' + pid + '-default-rtdb.firebaseio.com',
+      'https://' + pid + '.firebaseio.com',
+      'https://' + pid + '-default-rtdb.asia-east1.firebasedatabase.app',
+      'https://' + pid + '-default-rtdb.europe-west1.firebasedatabase.app',
+    ];
+    // 依序嘗試連線，找到可用的 URL
+    config.databaseURL = possibleUrls[0]; // 先用第一個（最可能），後面會驗證
+    config._possibleUrls = possibleUrls;
+    console.log('📝 嘗試自動偵測 databaseURL...');
   }
 
   if (!config.databaseURL) {
