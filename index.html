@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent 洗碼統計 2026年6月 · Agent1.0</title>
+<title>Agent 洗碼統計 2026年6月 · Agent2.0</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; background:#f0f2f5; color:#1a1a2e; padding:12px; }
@@ -75,9 +78,9 @@
 
 <div class="header">
   <h1>📊 Agent 洗碼統計</h1>
-  <div class="ver">Agent 1.0</div>
+  <div class="ver">Agent 2.0</div>
   <div class="update" id="updateTime"></div>
-  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器</div>
+  <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️ 同步設定</span></div>
 </div>
 
 <!-- 時間篩選 -->
@@ -191,9 +194,10 @@
 </div>
 
 <script>
-// ===== 本地存儲 =====
+// ===== 本地存儲 + Firebase 同步 =====
 const STORAGE_KEY = 'agentWashData';
-let editingId = null; // 正在修改的記錄 id，null 表示新增模式
+const FB_CONFIG_KEY = 'firebaseConfig';
+let editingId = null;
 
 let allData = null;
 let filteredRecords = [];
@@ -202,6 +206,12 @@ const HOTELS = ['銀河','倫敦人','新濠天地'];
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 let customDateFrom = localStorage.getItem('customDateFrom') || '';
 let customDateTo = localStorage.getItem('customDateTo') || '';
+
+// Firebase 相關變數
+let fbDb = null;
+let fbRef = null;
+let fbConnected = false;
+let fbListener = null;
 
 function setPeriod(p) {
   currentPeriod = p;
@@ -587,27 +597,55 @@ function submitRecord() {
   saveAndReload();
 }
 
-// ===== 本地存儲函數 =====
+// ===== 存儲函數 =====
 
-// 儲存數據到 localStorage
-function saveToLocal() {
+// 更新時間戳
+function touchTimestamp() {
   const now = new Date();
   allData.last_update = now.getFullYear() + '-' +
     String(now.getMonth()+1).padStart(2,'0') + '-' +
     String(now.getDate()).padStart(2,'0') + ' ' +
     String(now.getHours()).padStart(2,'0') + ':' +
     String(now.getMinutes()).padStart(2,'0');
+}
+
+// 儲存到 localStorage（備份）
+function saveToLocal() {
+  touchTimestamp();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+}
+
+// 儲存到 Firebase（即時同步）
+function saveToFirebase() {
+  if (!fbRef || !fbConnected) return Promise.resolve(false);
+  return fbRef.set(allData).then(() => {
+    console.log('✅ Firebase 同步完成');
+    return true;
+  }).catch(e => {
+    console.error('❌ Firebase 同步失敗:', e);
+    return false;
+  });
 }
 
 // 儲存並即時更新 UI
 function saveAndReload() {
   recalcAndRender();
-  saveToLocal();
-  document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料已儲存';
-  setTimeout(() => {
-    document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器';
-  }, 2000);
+  saveToLocal(); // 本地備份
+
+  if (fbConnected) {
+    const syncEl = document.getElementById('syncStatus');
+    syncEl.innerHTML = '<span style="color:#fd7e14;">⏳ 同步中...</span>';
+    saveToFirebase().then(ok => {
+      syncEl.innerHTML = ok
+        ? '<span style="color:#28a745;">🟢 即時同步中</span> · 多人共享 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>'
+        : '<span style="color:#dc3545;">❌ 同步失敗</span> · 資料僅存在本頁 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+    });
+  } else {
+    document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料已儲存 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+    setTimeout(() => {
+      document.getElementById('syncStatus').innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+    }, 2000);
+  }
 }
 
 // 重新計算數據並渲染 UI
@@ -722,32 +760,201 @@ function renderDetailTable(agentName) {
 }
 
 async function load() {
-  // 優先從 localStorage 讀取，其次從 data.json
+  // 1. 先從 localStorage 讀取（最快渲染）
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
-    try {
-      allData = JSON.parse(stored);
-    } catch(e) {
-      allData = null;
-    }
+    try { allData = JSON.parse(stored); } catch(e) { allData = null; }
   }
 
+  // 2. 若沒有 localStorage，從 data.json 讀取
   if (!allData) {
     try {
       const r = await fetch('data.json?t=' + Date.now());
       allData = await r.json();
     } catch(e) {
-      console.error('讀取失敗:', e);
       allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
     }
   }
 
   // 為舊記錄補上 id
-  for (const rec of allData.records) {
+  for (const rec of (allData.records || [])) {
     if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
   }
 
   recalcAndRender();
+
+  // 3. 嘗試初始化 Firebase（如果已設定過）
+  const savedConfig = localStorage.getItem(FB_CONFIG_KEY);
+  if (savedConfig) {
+    try {
+      initFirebase(JSON.parse(savedConfig));
+    } catch(e) {
+      console.warn('Firebase 設定無效:', e);
+    }
+  }
+}
+
+// ===== Firebase 初始化與即時監聽 =====
+
+function initFirebase(config) {
+  try {
+    // 清除舊的 Firebase 實例
+    if (fbListener && fbRef) {
+      fbRef.off('value', fbListener);
+    }
+    if (firebase.apps.length) {
+      firebase.apps.forEach(app => app.delete());
+    }
+
+    const app = firebase.initializeApp(config);
+    fbDb = firebase.database();
+    fbRef = fbDb.ref('agentWashData');
+
+    // 監聽連線狀態
+    fbDb.ref('.info/connected').on('value', (snap) => {
+      fbConnected = snap.val() === true;
+      updateSyncStatusUI();
+      if (fbConnected) {
+        console.log('🟢 Firebase 已連線');
+      }
+    });
+
+    // 即時監聽資料變更（核心！零延遲同步）
+    fbListener = fbRef.on('value', (snapshot) => {
+      const d = snapshot.val();
+      if (d && d.last_update) {
+        // 只在資料真的更新時才刷新 UI
+        if (!allData || d.last_update !== allData.last_update) {
+          console.log('🔄 Firebase 偵測到更新:', d.last_update);
+          allData = d;
+          // 為記錄補上 id
+          for (const rec of (allData.records || [])) {
+            if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
+          }
+          saveToLocal(); // 同步到本地備份
+          recalcAndRender();
+        }
+      } else if (d === null && allData && allData.records && allData.records.length > 0) {
+        // Firebase 空的，上傳本機資料
+        console.log('📤 Firebase 無資料，上傳本機資料');
+        fbRef.set(allData);
+      }
+    });
+
+    updateSyncStatusUI();
+    return true;
+  } catch(e) {
+    console.error('Firebase 初始化失敗:', e);
+    fbConnected = false;
+    updateSyncStatusUI();
+    return false;
+  }
+}
+
+function updateSyncStatusUI() {
+  const el = document.getElementById('syncStatus');
+  if (fbConnected) {
+    el.innerHTML = '<span style="color:#28a745;">🟢 即時同步中</span> · 多人共享 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+  } else if (fbDb) {
+    el.innerHTML = '<span style="color:#fd7e14;">🟡 連線中...</span> <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+  } else {
+    el.innerHTML = '<span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️</span>';
+  }
+  // 更新彈窗狀態
+  const disconnectBtn = document.getElementById('fbDisconnect');
+  const connectBtn = document.getElementById('fbConnectBtn');
+  const statusEl = document.getElementById('fbStatus');
+  if (disconnectBtn) disconnectBtn.style.display = fbDb ? 'block' : 'none';
+  if (connectBtn) connectBtn.textContent = fbDb ? '重新連線' : '連線';
+  if (statusEl) {
+    if (fbConnected) statusEl.innerHTML = '<span style="color:#28a745;">✅ 已連線，多人即時同步中</span>';
+    else if (fbDb) statusEl.innerHTML = '<span style="color:#fd7e14;">⏳ 連線中...</span>';
+  }
+}
+
+// ===== 同步設定彈窗 =====
+
+function openSyncSettings() {
+  document.getElementById('syncModal').style.display = 'flex';
+  // 回填已儲存的 config
+  const savedConfig = localStorage.getItem(FB_CONFIG_KEY);
+  if (savedConfig) {
+    try {
+      document.getElementById('fbConfigInput').value = JSON.stringify(JSON.parse(savedConfig), null, 2);
+    } catch(e) {}
+  }
+  updateSyncStatusUI();
+}
+
+function closeSyncModal() {
+  document.getElementById('syncModal').style.display = 'none';
+}
+
+function connectFirebase() {
+  const input = document.getElementById('fbConfigInput').value.trim();
+  if (!input) { alert('請貼上 Firebase Config'); return; }
+
+  let config;
+  try {
+    // 支援兩種格式：純 JSON 或 const firebaseConfig = {...}
+    let jsonStr = input;
+    const match = input.match(/=\s*(\{[\s\S]*\})/);
+    if (match) jsonStr = match[1];
+    config = JSON.parse(jsonStr);
+  } catch(e) {
+    alert('格式錯誤，請貼上完整的 Firebase Config JSON');
+    return;
+  }
+
+  // 檢查必要欄位
+  if (!config.databaseURL) {
+    alert('缺少 databaseURL，請確認已建立 Realtime Database');
+    return;
+  }
+
+  const statusEl = document.getElementById('fbStatus');
+  statusEl.innerHTML = '<span style="color:#fd7e14;">⏳ 連線中...</span>';
+
+  // 儲存設定
+  localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(config));
+
+  const ok = initFirebase(config);
+  if (ok) {
+    statusEl.innerHTML = '<span style="color:#fd7e14;">⏳ 連線中，等待確認...</span>';
+    // 等 onValue 觸發後會自動更新狀態
+    setTimeout(() => {
+      if (fbConnected) {
+        statusEl.innerHTML = '<span style="color:#28a745;">✅ 連線成功！</span>';
+        setTimeout(() => closeSyncModal(), 1000);
+      } else {
+        statusEl.innerHTML = '<span style="color:#dc3545;">❌ 連線失敗，請檢查設定</span>';
+      }
+    }, 5000);
+  } else {
+    statusEl.innerHTML = '<span style="color:#dc3545;">❌ 初始化失敗</span>';
+  }
+}
+
+function disconnectFirebase() {
+  if (!confirm('確認斷開 Firebase 同步？\n資料會保留在本機，但不會再即時同步。')) return;
+
+  if (fbListener && fbRef) fbRef.off('value', fbListener);
+  if (fbDb) {
+    fbDb.ref('.info/connected').off();
+    fbDb = null;
+  }
+  if (firebase.apps.length) {
+    firebase.apps.forEach(app => app.delete());
+  }
+  fbRef = null;
+  fbConnected = false;
+  fbListener = null;
+
+  localStorage.removeItem(FB_CONFIG_KEY);
+  updateSyncStatusUI();
+
+  document.getElementById('fbStatus').innerHTML = '<span style="color:#888;">已斷開，回到本地模式</span>';
+  document.getElementById('fbConfigInput').value = '';
 }
 
 // 渲染 UI（從 allData 計算匯總並更新所有區塊）
@@ -1279,6 +1486,38 @@ load();
     <div style="display:flex;gap:8px;">
       <button onclick="closeTakenModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
       <button onclick="confirmTaken()" style="flex:2;padding:10px;background:#155724;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">確認已取</button>
+    </div>
+  </div>
+</div>
+
+<!-- 同步設定彈窗 -->
+<div id="syncModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:92%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <div style="font-size:16px;font-weight:bold;color:#1F4E79;margin-bottom:12px;">⚙️ 多人同步設定</div>
+
+    <div id="syncGuide" style="font-size:12px;color:#666;margin-bottom:12px;padding:10px;background:#f0f8ff;border-radius:6px;line-height:1.8;">
+      <b>📋 設定步驟（只需一次）：</b><br>
+      1. 前往 <a href="https://console.firebase.google.com" target="_blank" style="color:#1F4E79;">Firebase 控制台</a><br>
+      2. 點「建立專案」（名稱例如 agent-wash）<br>
+      3. 左側選單 → <b>Realtime Database</b> → 建立資料庫<br>
+      4. 選擇<b>「測試模式」</b>（開放讀寫）<br>
+      5. 左側 ⚙️ → 專案設定 → 一般 → 新增 Web 應用程式<br>
+      6. 複製 <code>firebaseConfig</code> 內容，貼到下方
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">貼上 Firebase Config（JSON 或 JS 格式皆可）</label>
+      <textarea id="fbConfigInput" rows="6" placeholder='例如：&#10;{&#10;  "apiKey": "AIza...",&#10;  "databaseURL": "https://xxx.firebaseio.com",&#10;  "projectId": "agent-wash",&#10;  ...&#10;}' style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeSyncModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
+      <button id="fbConnectBtn" onclick="connectFirebase()" style="flex:2;padding:10px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">連線</button>
+    </div>
+    <div id="fbStatus" style="margin-top:8px;font-size:12px;text-align:center;"></div>
+
+    <div id="fbDisconnect" style="display:none;margin-top:12px;text-align:center;">
+      <button onclick="disconnectFirebase()" style="padding:8px 20px;background:#dc3545;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;">🔴 斷開 Firebase 同步</button>
     </div>
   </div>
 </div>
