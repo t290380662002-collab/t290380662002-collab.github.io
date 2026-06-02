@@ -143,7 +143,7 @@
   </div>
 
   <div style="margin-top:8px;text-align:right;">
-    <button onclick="submitRecord()" style="padding:8px 24px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">送出</button>
+    <button onclick="submitRecord()" class="btn-submit" style="padding:8px 24px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">送出</button>
   </div>
   <div id="submitMsg" style="margin-top:6px;font-size:12px;text-align:center;color:#155724;display:none;"></div>
 </div>
@@ -191,6 +191,7 @@
 <script>
 // ===== 本地存儲 =====
 const STORAGE_KEY = 'agentWashData';
+let editingId = null; // 正在修改的記錄 id，null 表示新增模式
 
 let allData = null;
 let filteredRecords = [];
@@ -361,6 +362,84 @@ function formatDate(val) {
   return val;
 }
 
+// ===== 修改記錄：回填表單 =====
+function editRecord(id) {
+  const rec = allData.records.find(r => r.id === id);
+  if (!rec) return;
+
+  editingId = id;
+  saveToLocal();
+
+  // 回填表單
+  document.getElementById('inAgent').value = rec.agent || '';
+  document.getElementById('inHotel').value = rec.hotel || '';
+  updateAreas();
+  setTimeout(() => {
+    document.getElementById('inArea').value = rec.area || '';
+    updateCodes();
+    setTimeout(() => {
+      document.getElementById('inCode').value = rec.code || '';
+    }, 100);
+  }, 100);
+
+  // 日期：MM/DD → 2026-MM-DD
+  if (rec.date) {
+    const parts = rec.date.split('/');
+    if (parts.length === 2) {
+      const m = parts[0].padStart(2, '0');
+      const d = parts[1].padStart(2, '0');
+      document.getElementById('inDate').value = '2026-' + m + '-' + d;
+    }
+  }
+  document.getElementById('inNights').value = rec.nights || '';
+
+  document.getElementById('inType').value = 'room';
+  toggleForm();
+
+  // 切換按鍵為「更新」
+  const btn = document.querySelector('#inputSection .btn-submit');
+  if (btn) btn.textContent = '更新';
+  showCancelBtn();
+  // 滾動到表單
+  document.getElementById('inputSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('inAgent').value = '';
+  document.getElementById('inHotel').value = '';
+  document.getElementById('inArea').innerHTML = '<option value="">區域</option>';
+  document.getElementById('inCode').innerHTML = '<option value="">房型</option>';
+  document.getElementById('inDate').value = '';
+  document.getElementById('inNights').value = '';
+  document.getElementById('inType').value = 'room';
+  toggleForm();
+
+  const btn = document.querySelector('#inputSection .btn-submit');
+  if (btn) btn.textContent = '送出';
+  hideCancelBtn();
+}
+
+function showCancelBtn() {
+  let btn = document.getElementById('cancelEditBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'cancelEditBtn';
+    btn.textContent = '取消';
+    btn.style.cssText = 'padding:8px 16px;background:#6c757d;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;margin-left:6px;';
+    btn.onclick = cancelEdit;
+    const submitBtn = document.querySelector('#inputSection .btn-submit');
+    if (submitBtn) submitBtn.insertAdjacentElement('afterend', btn);
+  }
+  btn.style.display = 'inline-block';
+}
+
+function hideCancelBtn() {
+  const btn = document.getElementById('cancelEditBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+// ===== 送出 / 更新記錄 =====
 function submitRecord() {
   const agent = document.getElementById('inAgent').value;
   const type = document.getElementById('inType').value;
@@ -377,12 +456,33 @@ function submitRecord() {
     const nights = parseInt(document.getElementById('inNights').value) || 1;
     if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
-    allData.records.push({
-      id: 'r' + Date.now(),
-      date, agent, hotel, area, code, name,
-      req, nights, total_req: req * nights,
-      washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
-    });
+    if (editingId) {
+      // 更新模式：修改現有記錄
+      const rec = allData.records.find(r => r.id === editingId);
+      if (rec) {
+        rec.date = date;
+        rec.agent = agent;
+        rec.hotel = hotel;
+        rec.area = area;
+        rec.code = code;
+        rec.name = name;
+        rec.req = req;
+        rec.nights = nights;
+        rec.total_req = req * nights;
+      }
+      editingId = null;
+      const btn = document.querySelector('#inputSection .btn-submit');
+      if (btn) btn.textContent = '送出';
+      hideCancelBtn();
+    } else {
+      // 新增模式
+      allData.records.push({
+        id: 'r' + Date.now(),
+        date, agent, hotel, area, code, name,
+        req, nights, total_req: req * nights,
+        washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
+      });
+    }
   } else {
     const date = formatDate(document.getElementById('inWashDate').value);
     const amt = parseInt(document.getElementById('inWashAmt').value) || 0;
@@ -391,7 +491,6 @@ function submitRecord() {
     if (!amt) { alert('請輸入洗碼量'); return; }
 
     if (targetIdx) {
-      // 對應到指定拿房記錄
       const rec = allData.records.find(r => r.id === targetIdx);
       if (rec) {
         rec.washed = amt;
@@ -399,7 +498,6 @@ function submitRecord() {
         rec.hall = hall || rec.hall;
       }
     } else {
-      // 不對應房間的獨立洗碼
       allData.records.push({
         id: 'w' + Date.now(),
         date: date || '', agent, hotel,
@@ -410,6 +508,12 @@ function submitRecord() {
       });
     }
   }
+
+  // 清空表單
+  document.getElementById('inDate').value = '';
+  document.getElementById('inNights').value = '';
+  document.getElementById('inWashAmt').value = '';
+  document.getElementById('inWashDate').value = '';
 
   saveAndReload();
 }
@@ -492,7 +596,10 @@ function renderRoomTable(agentName) {
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
-      <td><span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span></td>
+      <td>
+        <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
+        <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
+      </td>
     </tr>`;
   }
 }
