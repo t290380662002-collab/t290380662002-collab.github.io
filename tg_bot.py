@@ -386,10 +386,10 @@ def main():
 
 
 if __name__ == "__main__":
-    # 檢查是否為 Render 環境（持續運行模式）
-    RENDER_MODE = os.environ.get("RENDER", "0") == "1"
+    # 檢查是否為持續運行模式（Render 或 GitHub Actions 長輪詢）
+    LONGPOLL_MODE = os.environ.get("RENDER", "0") == "1" or os.environ.get("LONGPOLL", "0") == "1"
 
-    if RENDER_MODE:
+    if LONGPOLL_MODE:
         # Render 模式：持續長輪詢
         print("🚀 Render 模式：持續運行")
         # 先驗證 Token
