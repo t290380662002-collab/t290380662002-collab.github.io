@@ -122,17 +122,32 @@ def cmd_start(chat_id):
 def cmd_status(chat_id):
     data = get_data()
     agents = data.get("agents", {})
+    records = data.get("records", [])
     if not agents: return tg_send(chat_id, "📋 尚無數據")
 
-    lines = ["📊 *Agent 洗碼統計總覽*\n"]
+    # 從 records 重新計算各 Agent 匯總（與網頁版一致）
+    calc = {}
+    for name in agents:
+        if name == "房間總計": continue
+        calc[name] = {}
+        for h in HOTELS:
+            calc[name][h] = {"rooms":0, "rolling":0, "washed":0}
 
-    # 房間總計 = 所有 Agent 加總
+    for rec in records:
+        name = rec.get("agent","")
+        hotel = rec.get("hotel","")
+        if name in calc and hotel in calc[name]:
+            calc[name][hotel]["rooms"] += rec.get("nights", 0) or 0
+            calc[name][hotel]["rolling"] += rec.get("total_req", 0) or 0
+            if rec.get("washed"):
+                calc[name][hotel]["washed"] += float(rec.get("washed", 0) or 0)
+
+    lines = ["📊 *Agent 洗碼統計總覽*\n"]
     grand = {}
     for h in HOTELS:
         grand[h] = {"rooms":0, "rolling":0, "washed":0}
 
-    for name, ad in agents.items():
-        if name == "房間總計": continue
+    for name, ad in calc.items():
         lines.append(f"👤 *{name}*")
         tr = tw = tm = 0; hl = []
         for hotel in HOTELS:
