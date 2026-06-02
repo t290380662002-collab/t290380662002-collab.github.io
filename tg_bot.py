@@ -125,7 +125,11 @@ def cmd_status(chat_id):
     if not agents: return tg_send(chat_id, "📋 尚無數據")
 
     lines = ["📊 *Agent 洗碼統計總覽*\n"]
-    room_total = agents.get("房間總計")
+
+    # 房間總計 = 所有 Agent 加總
+    grand = {}
+    for h in HOTELS:
+        grand[h] = {"rooms":0, "rolling":0, "washed":0}
 
     for name, ad in agents.items():
         if name == "房間總計": continue
@@ -138,6 +142,9 @@ def cmd_status(chat_id):
                 d = w - l; ds = f"+{fmt_wash(d)}" if d > 0 else fmt_wash(d)
                 hl.append(f"  {hotel}: {r}晚 | 轉碼{fmt_wash(l)}萬 | 洗碼{fmt_wash(w)}萬 | 差異{ds}萬")
                 tr += l; tw += w; tm += r
+                grand[hotel]["rooms"] += r
+                grand[hotel]["rolling"] += l
+                grand[hotel]["washed"] += w
         if hl:
             lines.extend(hl)
             td = tw - tr; tds = f"+{fmt_wash(td)}" if td > 0 else fmt_wash(td)
@@ -147,19 +154,20 @@ def cmd_status(chat_id):
         lines.append("")
 
     # 房間總計
-    if room_total:
+    gt = {"rooms":0, "rolling":0, "washed":0}
+    has_data = False
+    total_lines = []
+    for hotel in HOTELS:
+        r = grand[hotel]["rooms"]; l = grand[hotel]["rolling"]; w = grand[hotel]["washed"]
+        if r or l or w:
+            has_data = True
+            total_lines.append(f"  {hotel}: {r}晚 | 轉碼{fmt_wash(l)}萬 | 洗碼{fmt_wash(w)}萬")
+            gt["rooms"] += r; gt["rolling"] += l; gt["washed"] += w
+
+    if has_data:
         lines.append("🏨 *房間總計*")
-        tr = tw = tm = 0
-        for hotel in HOTELS:
-            h = room_total.get(hotel, {})
-            r, l, w = h.get("rooms",0), h.get("rolling",0), h.get("washed",0)
-            if r or l or w:
-                lines.append(f"  {hotel}: {r}晚 | 轉碼{fmt_wash(l)}萬 | 洗碼{fmt_wash(w)}萬")
-                tr += l; tw += w; tm += r
-        if tm:
-            lines.append(f"  ➡️ 合計: {tm}晚 | 轉碼{fmt_wash(tr)}萬 | 洗碼{fmt_wash(tw)}萬")
-        else:
-            lines.append("  尚無記錄")
+        lines.extend(total_lines)
+        lines.append(f"  ➡️ 合計: {gt['rooms']}晚 | 轉碼{fmt_wash(gt['rolling'])}萬 | 洗碼{fmt_wash(gt['washed'])}萬")
 
     tg_send(chat_id, "\n".join(lines))
 
