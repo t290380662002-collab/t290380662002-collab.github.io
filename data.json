@@ -1,207 +1,127 @@
 {
   "title": "Agent 洗碼統計",
-  "last_update": "2026-06-02 22:13",
-  "agents": {
-    "Fifi": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    },
-    "H": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    },
-    "Ring": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    },
-    "Yuka": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    },
-    "安": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    },
-    "韓國": {
-      "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      },
-      "銀河": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
-      }
-    }
-  },
+  "last_update": "2026-06-02 22:18",
+  "agents": {},
   "records": [
     {
+      "id": "r1748860800001",
+      "date": "6/2",
       "agent": "Fifi",
+      "hotel": "新濠天地",
       "area": "摩珀斯",
       "code": "PT",
-      "commission_taken": false,
-      "date": "6/2",
-      "hall": "",
-      "hotel": "新濠天地",
-      "id": "r17804094281591",
       "name": "摩珀斯豪華客房(雙床)",
-      "nights": 2,
       "req": 80,
-      "status": "pending",
+      "nights": 2,
       "total_req": 160,
-      "washed": 0
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
     },
     {
+      "id": "w1748774400002",
+      "date": "6/1",
       "agent": "韓國",
+      "hotel": "倫敦人",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
-      "date": "6/1",
-      "hall": "",
-      "hotel": "倫敦人",
-      "id": "w17804094281592",
-      "isWashFree": true,
       "name": "獨立洗碼",
-      "nights": 0,
       "req": 0,
-      "status": "done",
+      "nights": 0,
       "total_req": 0,
-      "washed": 153.3
+      "washed": 153.3,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "done",
+      "isWashFree": true
     },
     {
-      "agent": "安",
-      "area": "映星匯",
-      "code": "EDT",
-      "commission_taken": false,
+      "id": "r1748870400003",
       "date": "6/28",
-      "hall": "",
-      "hotel": "新濠天地",
-      "id": "r17804094281593",
-      "name": "映星匯套房(雙床)",
-      "nights": 1,
-      "req": 60,
-      "status": "pending",
-      "total_req": 60,
-      "washed": 0
-    },
-    {
       "agent": "安",
+      "hotel": "新濠天地",
       "area": "映星匯",
       "code": "EDT",
-      "commission_taken": false,
-      "date": "6/14",
-      "hall": "",
-      "hotel": "新濠天地",
-      "id": "r17804094281594",
       "name": "映星匯套房(雙床)",
-      "nights": 2,
       "req": 60,
-      "status": "pending",
+      "nights": 1,
+      "total_req": 60,
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
+    },
+    {
+      "id": "r1748870400004",
+      "date": "6/14",
+      "agent": "安",
+      "hotel": "新濠天地",
+      "area": "映星匯",
+      "code": "EDT",
+      "name": "映星匯套房(雙床)",
+      "req": 60,
+      "nights": 2,
       "total_req": 120,
-      "washed": 0
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
     },
     {
+      "id": "r1748870400005",
+      "date": "6/6",
       "agent": "安",
+      "hotel": "新濠天地",
       "area": "摩珀斯",
       "code": "PK",
-      "commission_taken": false,
-      "date": "6/6",
-      "hall": "",
-      "hotel": "新濠天地",
-      "id": "r17804094281595",
       "name": "摩珀斯豪華客房(大床)",
-      "nights": 2,
       "req": 80,
-      "status": "pending",
+      "nights": 2,
       "total_req": 160,
-      "washed": 0
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
     },
     {
+      "id": "r1748870400006",
+      "date": "6/6",
       "agent": "安",
+      "hotel": "新濠天地",
       "area": "摩珀斯",
       "code": "PK",
-      "commission_taken": false,
-      "date": "6/6",
-      "hall": "",
-      "hotel": "新濠天地",
-      "id": "r17804094281596",
       "name": "摩珀斯豪華客房(大床)",
-      "nights": 2,
       "req": 80,
-      "status": "pending",
+      "nights": 2,
       "total_req": 160,
-      "washed": 0
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
+    },
+    {
+      "id": "r1748870400007",
+      "date": "6/2",
+      "agent": "H",
+      "hotel": "新濠天地",
+      "area": "摩珀斯",
+      "code": "PK",
+      "name": "摩珀斯豪華客房(大床)",
+      "req": 80,
+      "nights": 1,
+      "total_req": 80,
+      "washed": 0,
+      "hall": "",
+      "commission_taken": false,
+      "taken_amount": null,
+      "status": "pending"
     }
   ],
   "commission_rates": [
