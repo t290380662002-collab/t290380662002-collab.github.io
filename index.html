@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent 洗碼統計 2026年6月</title>
+<title>Agent 洗碼統計 2026年6月 · Agent1.0</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; background:#f0f2f5; color:#1a1a2e; padding:12px; }
   .header { text-align:center; padding:16px 0 8px; }
   .header h1 { font-size:20px; margin-bottom:4px; }
+  .header .ver { font-size:11px; color:#999; margin-bottom:2px; }
   .header .update { font-size:12px; color:#888; }
   .summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
   .card { background:#fff; border-radius:10px; padding:14px; flex:1; min-width:calc(25% - 14px); box-shadow:0 1px 3px rgba(0,0,0,0.08); text-align:center; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; position:relative; }
@@ -74,6 +75,7 @@
 
 <div class="header">
   <h1>📊 Agent 洗碼統計</h1>
+  <div class="ver">Agent 1.0</div>
   <div class="update" id="updateTime"></div>
   <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器</div>
 </div>
