@@ -906,9 +906,19 @@ function connectFirebase() {
     return;
   }
 
-  // 檢查必要欄位
+  // 自動補上 databaseURL（根據 projectId 推算）
+  if (!config.databaseURL && config.projectId) {
+    config.databaseURL = 'https://' + config.projectId + '-default-rtdb.firebaseio.com';
+    console.log('📝 自動推算 databaseURL:', config.databaseURL);
+  }
+
+  // 如果還是沒有，嘗試舊格式
+  if (!config.databaseURL && config.projectId) {
+    config.databaseURL = 'https://' + config.projectId + '.firebaseio.com';
+  }
+
   if (!config.databaseURL) {
-    alert('缺少 databaseURL，請確認已建立 Realtime Database');
+    alert('缺少 databaseURL，請先到 Firebase 控制台建立 Realtime Database');
     return;
   }
 
@@ -1499,10 +1509,11 @@ load();
       <b>📋 設定步驟（只需一次）：</b><br>
       1. 前往 <a href="https://console.firebase.google.com" target="_blank" style="color:#1F4E79;">Firebase 控制台</a><br>
       2. 點「建立專案」（名稱例如 agent-wash）<br>
-      3. 左側選單 → <b>Realtime Database</b> → 建立資料庫<br>
-      4. 選擇<b>「測試模式」</b>（開放讀寫）<br>
-      5. 左側 ⚙️ → 專案設定 → 一般 → 新增 Web 應用程式<br>
-      6. 複製 <code>firebaseConfig</code> 內容，貼到下方
+      3. 左側選單 → Build → <b>Realtime Database</b> → Create Database<br>
+      4. 選擇<b>「Start in test mode」</b>（開放讀寫）→ Enable<br>
+      5. 左側 ⚙️ → 專案設定 → 一般 → 選 Web 應用程式<br>
+      6. 複製 <code>firebaseConfig</code> 內容，貼到下方<br>
+      <span style="color:#dc3545;">⚠️ databaseURL 會自動根據 projectId 推算，不用手動填</span>
     </div>
 
     <div style="margin-bottom:12px;">
