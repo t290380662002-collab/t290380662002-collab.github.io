@@ -88,7 +88,12 @@ def get_last_update():
 
 
 def set_last_update(uid):
-    requests.put(f"{FB_STATE}/_lastUpdateId.json", json=uid, timeout=10)
+    try:
+        r = requests.put(f"{FB_STATE}/_lastUpdateId.json", json=uid, timeout=10)
+        if r.status_code not in (200, 204):
+            print(f"⚠️ 保存 offset 失敗: {r.status_code}")
+    except Exception as e:
+        print(f"⚠️ 保存 offset 失敗: {e}")
 
 
 # ===== 指令處理 =====
@@ -310,11 +315,24 @@ def handle_text(chat_id, text):
 # ===== 主流程 =====
 
 def main():
+    # 啟動時驗證 Token
+    try:
+        vr = requests.get(f"{TG_API}/getMe", timeout=10)
+        if vr.status_code == 200 and vr.json().get("ok"):
+            bot_info = vr.json()["result"]
+            print(f"✅ Bot 上線: @{bot_info['username']} ({bot_info['first_name']})")
+        else:
+            print(f"❌ Bot Token 無效: {vr.status_code} {vr.text[:200]}")
+            return
+    except Exception as e:
+        print(f"❌ 無法連接 Telegram: {e}")
+        return
+
     print("⏳ 檢查 Telegram 訊息...")
 
     offset = get_last_update() + 1
     try:
-        r = requests.get(f"{TG_API}/getUpdates", params={"offset": offset, "timeout": 30}, timeout=35)
+        r = requests.get(f"{TG_API}/getUpdates", params={"offset": offset, "timeout": 0}, timeout=10)
     except Exception as e:
         print(f"❌ 網絡錯誤: {e}")
         return
