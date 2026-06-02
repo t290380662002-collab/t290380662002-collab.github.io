@@ -292,6 +292,17 @@ const HOTEL_MAP = {
 };
 
 function toggleForm() {
+  // 編輯模式中不允許切換類型
+  if (editingId) {
+    const rec = allData.records.find(r => r.id === editingId);
+    if (rec) {
+      const expectedType = rec.isWashFree ? 'wash' : 'room';
+      if (document.getElementById('inType').value !== expectedType) {
+        document.getElementById('inType').value = expectedType;
+        return;
+      }
+    }
+  }
   const type = document.getElementById('inType').value;
   document.getElementById('roomForm').style.display = type === 'room' ? 'flex' : 'none';
   document.getElementById('washForm').style.display = type === 'wash' ? 'flex' : 'none';
@@ -368,33 +379,60 @@ function editRecord(id) {
   if (!rec) return;
 
   editingId = id;
-  saveToLocal();
 
-  // 回填表單
-  document.getElementById('inAgent').value = rec.agent || '';
-  document.getElementById('inHotel').value = rec.hotel || '';
-  updateAreas();
-  setTimeout(() => {
-    document.getElementById('inArea').value = rec.area || '';
-    updateCodes();
-    setTimeout(() => {
-      document.getElementById('inCode').value = rec.code || '';
-    }, 100);
-  }, 100);
+  // 判斷記錄類型：獨立洗碼 vs 拿房
+  const isWashFree = rec.isWashFree === true;
 
-  // 日期：MM/DD → 2026-MM-DD
-  if (rec.date) {
-    const parts = rec.date.split('/');
-    if (parts.length === 2) {
-      const m = parts[0].padStart(2, '0');
-      const d = parts[1].padStart(2, '0');
-      document.getElementById('inDate').value = '2026-' + m + '-' + d;
+  if (isWashFree) {
+    // 獨立洗碼 → 切換到洗碼表單，回填資料
+    document.getElementById('inAgent').value = rec.agent || '';
+    document.getElementById('inHotel').value = rec.hotel || '';
+    document.getElementById('inType').value = 'wash';
+    toggleForm();
+
+    if (rec.date) {
+      const parts = rec.date.split('/');
+      if (parts.length === 2) {
+        document.getElementById('inWashDate').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+      }
     }
-  }
-  document.getElementById('inNights').value = rec.nights || '';
+    document.getElementById('inWashAmt').value = rec.washed || '';
+    document.getElementById('inWashTarget').value = ''; // 獨立洗碼不綁定房間
 
-  document.getElementById('inType').value = 'room';
-  toggleForm();
+    // 回填貴賓廳
+    const hallSel = document.getElementById('inHall');
+    if (rec.hall) {
+      // 確保 hall 選項存在
+      for (let i = 0; i < hallSel.options.length; i++) {
+        if (hallSel.options[i].value === rec.hall) {
+          hallSel.value = rec.hall;
+          break;
+        }
+      }
+    }
+  } else {
+    // 拿房記錄 → 回填拿房表單
+    document.getElementById('inAgent').value = rec.agent || '';
+    document.getElementById('inHotel').value = rec.hotel || '';
+    updateAreas();
+    setTimeout(() => {
+      document.getElementById('inArea').value = rec.area || '';
+      updateCodes();
+      setTimeout(() => {
+        document.getElementById('inCode').value = rec.code || '';
+      }, 100);
+    }, 100);
+
+    if (rec.date) {
+      const parts = rec.date.split('/');
+      if (parts.length === 2) {
+        document.getElementById('inDate').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+      }
+    }
+    document.getElementById('inNights').value = rec.nights || '';
+    document.getElementById('inType').value = 'room';
+    toggleForm();
+  }
 
   // 切換按鍵為「更新」
   const btn = document.querySelector('#inputSection .btn-submit');
@@ -412,6 +450,10 @@ function cancelEdit() {
   document.getElementById('inCode').innerHTML = '<option value="">房型</option>';
   document.getElementById('inDate').value = '';
   document.getElementById('inNights').value = '';
+  document.getElementById('inWashDate').value = '';
+  document.getElementById('inWashAmt').value = '';
+  document.getElementById('inHall').value = '';
+  document.getElementById('inWashTarget').value = '';
   document.getElementById('inType').value = 'room';
   toggleForm();
 
@@ -490,7 +532,22 @@ function submitRecord() {
     const targetIdx = document.getElementById('inWashTarget').value;
     if (!amt) { alert('請輸入洗碼量'); return; }
 
-    if (targetIdx) {
+    if (editingId) {
+      // 更新模式：修改獨立洗碼記錄
+      const rec = allData.records.find(r => r.id === editingId);
+      if (rec) {
+        rec.date = date || rec.date;
+        rec.agent = agent;
+        rec.hotel = hotel;
+        rec.washed = amt;
+        rec.hall = hall || rec.hall || '';
+      }
+      editingId = null;
+      const btn = document.querySelector('#inputSection .btn-submit');
+      if (btn) btn.textContent = '送出';
+      hideCancelBtn();
+    } else if (targetIdx) {
+      // 關聯到拿房記錄的洗碼
       const rec = allData.records.find(r => r.id === targetIdx);
       if (rec) {
         rec.washed = amt;
@@ -514,6 +571,7 @@ function submitRecord() {
   document.getElementById('inNights').value = '';
   document.getElementById('inWashAmt').value = '';
   document.getElementById('inWashDate').value = '';
+  document.getElementById('inWashTarget').value = '';
 
   saveAndReload();
 }
