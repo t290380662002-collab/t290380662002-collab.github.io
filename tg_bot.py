@@ -310,9 +310,15 @@ def cmd_list(chat_id):
     data = get_data()
     records = data.get("records",[])
     if not records: return tg_send(chat_id, "📋 尚無記錄")
-    recent = records[-20:]
-    lines = ["📋 *近期記錄*\n"]
-    for r in reversed(recent):
+
+    # 按日期排序
+    def sort_date(r):
+        try: d = r.get("date","").split("/"); return (int(d[0]), int(d[1]))
+        except: return (0,0)
+
+    sorted_recs = sorted(records, key=sort_date, reverse=True)[:20]
+    lines = ["📋 *近期記錄（按日期）*\n"]
+    for r in sorted_recs:
         icon = "✅" if r.get("status")=="done" else "⏳"
         lines.append(f"{icon} {r.get('date','')} | {r.get('agent','')} | {r.get('hotel','')}·{r.get('area','')} | {r.get('code','')} | 轉碼{fmt_wash(r.get('total_req',0))}萬 | 洗碼{fmt_wash(r.get('washed',0))}萬")
     tg_send(chat_id, "\n".join(lines))
