@@ -778,12 +778,16 @@ async function load() {
     try { allData = JSON.parse(stored); } catch(e) { allData = null; }
   }
 
-  // 2. 若沒有 localStorage，從 data.json 讀取
-  if (!allData) {
-    try {
-      const r = await fetch('data.json?t=' + Date.now());
-      allData = await r.json();
-    } catch(e) {
+  // 2. 總是也從 data.json 讀取，取較多 records 的版本
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    const jsonData = await r.json();
+    if (!allData || (jsonData && jsonData.records && 
+        jsonData.records.length > (allData.records || []).length)) {
+      allData = jsonData;
+    }
+  } catch(e) {
+    if (!allData) {
       allData = { title: '', last_update: '', agents: {}, records: [], commission_rates: [] };
     }
   }
