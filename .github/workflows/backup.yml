@@ -1,0 +1,35 @@
+name: 自動備份 Firebase 數據
+
+on:
+  schedule:
+    - cron: '0 * * * *'       # 每小時備份一次
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 從 Firebase 拉取數據
+        run: |
+          curl -s "https://anget1-default-rtdb.asia-southeast1.firebasedatabase.app/agentWashData.json" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          data['last_update'] = __import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M')
+          with open('data_backup.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+          print(f'✅ 備份完成：{len(data.get(\"records\",[]))} 筆記錄')
+          "
+
+      - name: 提交備份到 Git
+        run: |
+          git config user.name "Backup Bot"
+          git config user.email "backup@auto.local"
+          git add data_backup.json
+          if git diff --staged --quiet; then
+            echo "無變更，跳過"
+          else
+            git commit -m "🔄 自動備份 $(date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
