@@ -136,7 +136,7 @@
       <option value="">選擇對應的拿房記錄</option>
     </select>
     <input id="inWashDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-    <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inWashAmt" type="number" placeholder="洗碼量(萬)" min="0" step="0.01" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
     <select id="inHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">貴賓廳</option>
     </select>
@@ -358,19 +358,28 @@ function updateWashTargets() {
   if (done.length > 0) {
     targetSel.innerHTML += '<option value="" disabled>── 已洗碼記錄 ──</option>';
     for (const r of done) {
-      targetSel.innerHTML += `<option value="${r.id}" style="color:#28a745;">✅ ${r.date} | ${r.area}·${r.code} | 已洗${r.washed}萬</option>`;
+      targetSel.innerHTML += `<option value="${r.id}" style="color:#28a745;">✅ ${r.date} | ${r.area}·${r.code} | 已洗${fmtWash(r.washed)}萬</option>`;
     }
   }
 }
 
 function formatDate(val) {
   if (!val) return '';
-  // 如果是 YYYY-MM-DD 格式，轉成 M/D
   const parts = val.split('-');
   if (parts.length === 3) {
     return parseInt(parts[1]) + '/' + parseInt(parts[2]);
   }
   return val;
+}
+
+// 格式化洗碼量：保留小數點後兩位，去除不必要的尾零
+function fmtWash(val) {
+  if (val == null || val === 0) return '-';
+  const n = Number(val);
+  if (isNaN(n)) return '-';
+  const s = n.toFixed(2);
+  // 去除尾零（保留到小數點後兩位但去除多餘的 .00）
+  return s.replace(/\.?0+$/, '');
 }
 
 // ===== 修改記錄：回填表單 =====
@@ -527,7 +536,7 @@ function submitRecord() {
     }
   } else {
     const date = formatDate(document.getElementById('inWashDate').value);
-    const amt = parseInt(document.getElementById('inWashAmt').value) || 0;
+    const amt = parseFloat(document.getElementById('inWashAmt').value) || 0;
     const hall = document.getElementById('inHall').value;
     const targetIdx = document.getElementById('inWashTarget').value;
     if (!amt) { alert('請輸入洗碼量'); return; }
@@ -653,7 +662,7 @@ function renderRoomTable(agentName) {
     tbody.innerHTML += `<tr>
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
-      <td>${rec.total_req}萬</td><td>${rec.washed || '-'}</td><td>${statusHtml}</td>
+      <td>${rec.total_req}萬</td><td>${fmtWash(rec.washed)}</td><td>${statusHtml}</td>
       <td>
         <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
         <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
@@ -680,7 +689,7 @@ function renderDetailTable(agentName) {
       const dH = data[h];
       const dDiff = dH.washed - dH.rolling;
       const dClass = dDiff > 0 ? 'val-green' : dDiff < 0 ? 'val-red' : 'val-gray';
-      row += `<td>${dH.rooms || '-'}</td><td>${dH.rolling ? dH.rolling+'萬' : '-'}</td><td>${dH.washed ? dH.washed+'萬' : '-'}</td><td class="${dClass}">${dDiff ? (dDiff>0?'+':'')+dDiff+'萬' : '-'}</td>`;
+      row += `<td>${dH.rooms || '-'}</td><td>${dH.rolling ? dH.rolling+'萬' : '-'}</td><td>${dH.washed ? fmtWash(dH.washed)+'萬' : '-'}</td><td class="${dClass}">${dDiff ? (dDiff>0?'+':'')+fmtWash(dDiff)+'萬' : '-'}</td>`;
       totalRoll += dH.rolling; totalWash += dH.washed;
       grand.rooms[i] += dH.rooms;
       grand.rolling[i] += dH.rolling;
@@ -688,7 +697,7 @@ function renderDetailTable(agentName) {
     }
     const total = totalWash - totalRoll;
     const tClass = total > 0 ? 'val-green' : total < 0 ? 'val-red' : 'val-gray';
-    row += `<td class="${tClass}">${total > 0 ? '+' + total : total}萬</td>`;
+    row += `<td class="${tClass}">${total > 0 ? '+' + fmtWash(total) : fmtWash(total)}萬</td>`;
     dtbody.innerHTML += `<tr>${row}</tr>`;
   }
 
@@ -700,13 +709,13 @@ function renderDetailTable(agentName) {
     const gClass = gDiff > 0 ? 'val-green' : gDiff < 0 ? 'val-red' : 'val-gray';
     totalRow += `<td style="font-weight:bold;">${grand.rooms[i] || '-'}</td>`;
     totalRow += `<td style="font-weight:bold;">${grand.rolling[i] ? grand.rolling[i]+'萬' : '-'}</td>`;
-    totalRow += `<td style="font-weight:bold;">${grand.washed[i] ? grand.washed[i]+'萬' : '-'}</td>`;
+    totalRow += `<td style="font-weight:bold;">${grand.washed[i] ? fmtWash(grand.washed[i])+'萬' : '-'}</td>`;
     totalRow += `<td class="${gClass}" style="font-weight:bold;">${gDiff ? (gDiff>0?'+':'')+gDiff+'萬' : '-'}</td>`;
     grandTotalRoll += grand.rolling[i]; grandTotalWash += grand.washed[i];
   }
   const grandDiff = grandTotalWash - grandTotalRoll;
   const grandClass = grandDiff > 0 ? 'val-green' : grandDiff < 0 ? 'val-red' : 'val-gray';
-  totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + grandDiff : grandDiff}萬</td>`;
+  totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + fmtWash(grandDiff) : fmtWash(grandDiff)}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
 }
 
@@ -906,7 +915,7 @@ function showPanel(agentName) {
       <div class="label">${h}</div>
       <div class="value">${dH.nights || dH.rooms || 0} 晚 · 轉碼 ${dH.rolling || 0}萬</div>
       <div style="margin-top:4px;display:flex;justify-content:space-around;">
-        <span style="font-size:12px;color:#666;">洗碼: ${dH.washed || 0}萬</span>
+        <span style="font-size:12px;color:#666;">洗碼: ${fmtWash(dH.washed)}萬</span>
         <span style="font-size:13px;font-weight:bold;${dDiff>=0?'color:#155724':'color:#dc3545'}">${dDiff>=0?'+':''}${dDiff||0}萬</span>
       </div>
     </div>`;
@@ -985,7 +994,7 @@ function showPanel(agentName) {
         <td style="padding:7px 4px;white-space:nowrap;text-align:center;"><b>${rec.hotel}</b>·${rec.area}</td>
         <td style="padding:7px 4px;white-space:nowrap;text-align:center;">${rec.code} ${rec.name}</td>
         <td style="padding:7px 4px;text-align:center;">${rec.total_req}萬</td>
-        <td style="padding:7px 4px;text-align:center;font-weight:bold;">${hasWash ? rec.washed+'萬' : '-'}</td>
+        <td style="padding:7px 4px;text-align:center;font-weight:bold;">${hasWash ? fmtWash(rec.washed)+'萬' : '-'}</td>
         <td style="padding:7px 4px;text-align:center;">${rec.hall ? `<span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 5px;border-radius:8px;">${rec.hall}</span>` : '-'}</td>
         <td style="padding:7px 4px;text-align:center;font-weight:bold;color:#1F4E79;">
           ${commissionVal > 0 ? commissionVal.toLocaleString('en-US',{maximumFractionDigits:0}) : (hasWash ? '—' : '')}
@@ -1090,7 +1099,7 @@ function closeWashModal() {
 }
 
 function confirmWash() {
-  const amt = parseInt(document.getElementById('washModalAmt').value);
+  const amt = parseFloat(document.getElementById('washModalAmt').value);
   if (!amt) { alert('請輸入洗碼量'); return; }
   const hall = document.getElementById('washModalHall').value;
 
@@ -1241,7 +1250,7 @@ load();
 
     <div style="margin-bottom:10px;">
       <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">洗碼量 (萬)</label>
-      <input id="washModalAmt" type="number" placeholder="例如 808" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
+      <input id="washModalAmt" type="number" placeholder="例如 808.23" step="0.01" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:16px;">
     </div>
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">貴賓廳</label>
