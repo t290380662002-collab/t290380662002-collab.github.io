@@ -316,7 +316,7 @@ def cmd_list(chat_id):
         try: d = r.get("date","").split("/"); return (int(d[0]), int(d[1]))
         except: return (0,0)
 
-    sorted_recs = sorted(records, key=sort_date, reverse=True)[:20]
+    sorted_recs = sorted(records, key=sort_date)[:20]
     lines = ["📋 *近期記錄（按日期）*\n"]
     for r in sorted_recs:
         icon = "✅" if r.get("status")=="done" else "⏳"
