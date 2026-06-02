@@ -323,9 +323,14 @@ def cmd_commission(chat_id):
     records, rates = data.get("records",[]), data.get("commission_rates",[])
     if not records: return tg_send(chat_id, "💰 尚無碼糧數據")
 
-    lines = ["💰 *碼糧明細*\n"]
+    # 排序函數：按日期 M/D
+    def sort_date(r):
+        try: d = r.get("date","").split("/"); return (int(d[0]), int(d[1]))
+        except: return (0,0)
+
+    lines = ["💰 *碼糧明細（按日期）*\n"]
     for agent in AGENTS:
-        ar = [r for r in records if r.get("agent")==agent and r.get("washed")]
+        ar = sorted([r for r in records if r.get("agent")==agent and r.get("washed")], key=sort_date)
         if not ar: continue
         tc = tt = 0; lines.append(f"👤 *{agent}*")
         for r in ar:
