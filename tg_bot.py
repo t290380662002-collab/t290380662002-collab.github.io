@@ -15,6 +15,18 @@ FB_STATE = FB_DB.replace("agentWashData", "botState")
 HOTELS = ["銀河", "倫敦人", "新濠天地"]
 AGENTS = ["安", "Fifi", "Yuka", "H", "Ring", "韓國"]
 
+# 場所 → 酒店對照
+HALL_HOTEL_MAP = {
+    "御匾會": "倫敦人",
+    "勵盈1": "新濠天地",
+    "勵盈2": "新濠天地",
+    "金門1": "新濠天地",
+    "金門8": "新濠天地",
+    "永利會": "銀河",
+    "上葡京老佛爺": "新濠天地",
+    "上葡京西塔": "新濠天地",
+}
+
 HOTEL_MAP = {
     "銀河": {
         "萬豪": [["JW01","萬豪大床",80],["JW01T","萬豪雙床",80],["JW06","萬豪一房一廳",200]],
@@ -101,6 +113,99 @@ def set_last_update(uid):
             print(f"⚠️ 保存 offset 失敗: {r.status_code}")
     except Exception as e:
         print(f"⚠️ 保存 offset 失敗: {e}")
+
+
+# ===== 自動解析文字格式 =====
+
+import re
+
+def auto_parse(text, chat_id):
+    """自動解析格式：
+    代理：XXX
+    場所：XXX
+    佣金：X.X%
+    
+    日期:X/X
+    客：XXX
+    洗碼：XXX
+    """
+    if "代理：" not in text or "場所：" not in text:
+        return False  # 不符合格式
+
+    lines = text.strip().split("\n")
+    agent = None; hall = None; commission = None
+    records = []
+    current = {}
+
+    for line in lines:
+        line = line.strip()
+        if not line: continue
+
+        # 標頭行
+        if "代理：" in line:
+            agent = line.split("代理：")[-1].strip()
+            if not agent or agent not in AGENTS:
+                agent = "韓國"  # 找不到就歸韓國
+        elif "場所：" in line:
+            hall = line.split("場所：")[-1].strip()
+        elif "佣金：" in line:
+            c = line.split("佣金：")[-1].strip().replace("%","")
+            try: commission = float(c)
+            except: commission = 1.2
+        elif "日期:" in line or "日期：" in line:
+            if current: records.append(current)  # 存上一筆
+            d = line.replace("日期:","").replace("日期：","").strip()
+            current = {"date": d}
+        elif "客：" in line:
+            current["customer"] = line.split("客：")[-1].strip()
+        elif "洗碼：" in line:
+            try:
+                current["wash"] = float(line.split("洗碼：")[-1].strip())
+            except:
+                current["wash"] = 0
+    if current: records.append(current)
+
+    if not records:
+        return False
+
+    # 場所 → 酒店
+    hotel = HALL_HOTEL_MAP.get(hall, "其他")
+
+    data = get_data()
+    added = 0
+    for rec in records:
+        data.setdefault("records", []).append({
+            "id": f"w{int(datetime.now().timestamp()*1000)}_{added}",
+            "date": rec.get("date", "?"),
+            "agent": agent,
+            "hotel": hotel,
+            "area": "(獨立洗碼)",
+            "code": "-",
+            "name": rec.get("customer", "?")[:20],
+            "req": 0,
+            "nights": 0,
+            "total_req": 0,
+            "washed": rec.get("wash", 0),
+            "hall": hall or "",
+            "commission_taken": False,
+            "taken_amount": None,
+            "status": "done",
+            "isWashFree": True
+        })
+        added += 1
+
+    data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    save_data(data)
+
+    # 回報
+    lines = [f"✅ *自動解析完成！*\n👤 {agent} | 🏛️ {hall or '?'} | 🏨 {hotel}\n"]
+    total = 0
+    for i, rec in enumerate(records):
+        w = rec.get("wash", 0); total += w
+        lines.append(f"{i+1}. {rec.get('date','?')} | {rec.get('customer','?')[:15]} | 洗碼 {fmt_wash(w)}萬")
+    lines.append(f"\n📊 共 {added} 筆 | 總洗碼 {fmt_wash(total)}萬")
+    tg_send(chat_id, "\n".join(lines))
+    return True
 
 
 # ===== 指令處理 =====
@@ -422,7 +527,9 @@ def main():
             elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
             elif text == "/help" or text == "❓ 幫助": cmd_start(chat_id)
             elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
-            else: handle_text(chat_id, text)
+            else: 
+                if not auto_parse(text, chat_id):
+                    handle_text(chat_id, text)
 
         elif cb:
             chat_id = cb["message"]["chat"]["id"]
@@ -499,7 +606,9 @@ if __name__ == "__main__":
                         elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
                         elif text == "/help" or text == "❓ 幫助": cmd_start(chat_id)
                         elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
-                        else: handle_text(chat_id, text)
+                        else: 
+                            if not auto_parse(text, chat_id):
+                                handle_text(chat_id, text)
                     elif cb:
                         chat_id = cb["message"]["chat"]["id"]
                         data_str = cb["data"]
