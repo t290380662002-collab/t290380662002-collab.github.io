@@ -676,7 +676,7 @@ function recalcAndRender() {
     if (agentKey && allData.agents[agentKey][rec.hotel]) {
       allData.agents[agentKey][rec.hotel].rooms += rec.nights || 0;
       allData.agents[agentKey][rec.hotel].rolling += rec.total_req || 0;
-      if (rec.washed) allData.agents[agentKey][rec.hotel].washed += rec.washed;
+      if (rec.washed) allData.agents[agentKey][rec.hotel].washed = Math.round((allData.agents[agentKey][rec.hotel].washed + rec.washed) * 100) / 100;
     }
   }
 
@@ -745,7 +745,7 @@ function renderDetailTable(agentName) {
       totalRoll += dH.rolling; totalWash += dH.washed;
       grand.rooms[i] += dH.rooms;
       grand.rolling[i] += dH.rolling;
-      grand.washed[i] += dH.washed;
+      grand.washed[i] = Math.round((grand.washed[i] + dH.washed) * 100) / 100;
     }
     const total = totalWash - totalRoll;
     const tClass = total > 0 ? 'val-green' : total < 0 ? 'val-red' : 'val-gray';
@@ -1125,7 +1125,7 @@ function renderUI() {
       const h = HOTELS[i];
       grand.rooms[i] += data[h].rooms || 0;
       grand.rolling[i] += data[h].rolling || 0;
-      grand.washed[i] += data[h].washed || 0;
+      grand.washed[i] = Math.round((grand.washed[i] + (data[h].washed || 0)) * 100) / 100;
     }
   }
   let grandTotalRoll = 0, grandTotalWash = 0;

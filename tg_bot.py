@@ -245,7 +245,7 @@ def cmd_status(chat_id):
             calc[name][hotel]["rooms"] += rec.get("nights", 0) or 0
             calc[name][hotel]["rolling"] += rec.get("total_req", 0) or 0
             if rec.get("washed"):
-                calc[name][hotel]["washed"] += float(rec.get("washed", 0) or 0)
+                calc[name][hotel]["washed"] = round(calc[name][hotel]["washed"] + float(rec.get("washed", 0) or 0), 2)
 
     lines = ["📊 *Agent 洗碼統計總覽*\n"]
     grand = {}
@@ -282,7 +282,7 @@ def cmd_status(chat_id):
         if r or l or w:
             has_data = True
             total_lines.append(f"  {hotel}: {r}晚 | 轉碼{fmt_wash(l)}萬 | 洗碼{fmt_wash(w)}萬")
-            gt["rooms"] += r; gt["rolling"] += l; gt["washed"] += w
+            gt["rooms"] += r; gt["rolling"] += l; gt["washed"] = round(gt["washed"] + w, 2)
 
     if has_data:
         lines.append("🏨 *房間總計*")
