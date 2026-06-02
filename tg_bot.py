@@ -125,6 +125,8 @@ def cmd_status(chat_id):
     if not agents: return tg_send(chat_id, "📋 尚無數據")
 
     lines = ["📊 *Agent 洗碼統計總覽*\n"]
+    room_total = agents.get("房間總計")
+
     for name, ad in agents.items():
         if name == "房間總計": continue
         lines.append(f"👤 *{name}*")
@@ -143,6 +145,22 @@ def cmd_status(chat_id):
         else:
             lines.append("  尚無記錄")
         lines.append("")
+
+    # 房間總計
+    if room_total:
+        lines.append("🏨 *房間總計*")
+        tr = tw = tm = 0
+        for hotel in HOTELS:
+            h = room_total.get(hotel, {})
+            r, l, w = h.get("rooms",0), h.get("rolling",0), h.get("washed",0)
+            if r or l or w:
+                lines.append(f"  {hotel}: {r}晚 | 轉碼{fmt_wash(l)}萬 | 洗碼{fmt_wash(w)}萬")
+                tr += l; tw += w; tm += r
+        if tm:
+            lines.append(f"  ➡️ 合計: {tm}晚 | 轉碼{fmt_wash(tr)}萬 | 洗碼{fmt_wash(tw)}萬")
+        else:
+            lines.append("  尚無記錄")
+
     tg_send(chat_id, "\n".join(lines))
 
 
