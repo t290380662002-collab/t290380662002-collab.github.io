@@ -705,7 +705,7 @@ function renderRoomTable(agentName) {
   recs = [...recs].sort((a, b) => {
     const [am, ad] = a.date.split('/').map(Number);
     const [bm, bd] = b.date.split('/').map(Number);
-    return am !== bm ? am - bm : ad - bd;
+    return bm !== am ? bm - am : bd - ad;
   });
   for (const rec of recs) {
     const statusHtml = rec.status === 'done'
