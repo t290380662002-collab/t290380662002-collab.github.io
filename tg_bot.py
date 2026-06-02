@@ -120,7 +120,7 @@ def set_last_update(uid):
 import re
 
 def auto_parse(text, chat_id):
-    """自動解析格式：
+    """自動解析格式（支援全形：和半形:）：
     代理：XXX
     場所：XXX
     佣金：X.X%
@@ -129,8 +129,11 @@ def auto_parse(text, chat_id):
     客：XXX
     洗碼：XXX
     """
-    if "代理：" not in text or "場所：" not in text:
+    if "代理" not in text or "場所" not in text:
         return False  # 不符合格式
+
+    # 標準化：全形冒號 → 半形
+    text = text.replace("：", ":")
 
     lines = text.strip().split("\n")
     agent = None; hall = None; commission = None
@@ -142,25 +145,24 @@ def auto_parse(text, chat_id):
         if not line: continue
 
         # 標頭行
-        if "代理：" in line:
-            agent = line.split("代理：")[-1].strip()
+        if line.startswith("代理:"):
+            agent = line.split("代理:")[-1].strip()
             if not agent or agent not in AGENTS:
-                agent = "韓國"  # 找不到就歸韓國
-        elif "場所：" in line:
-            hall = line.split("場所：")[-1].strip()
-        elif "佣金：" in line:
-            c = line.split("佣金：")[-1].strip().replace("%","")
+                agent = "韓國"
+        elif line.startswith("場所:"):
+            hall = line.split("場所:")[-1].strip()
+        elif line.startswith("佣金:"):
+            c = line.split("佣金:")[-1].strip().replace("%","")
             try: commission = float(c)
             except: commission = 1.2
-        elif "日期:" in line or "日期：" in line:
-            if current: records.append(current)  # 存上一筆
-            d = line.replace("日期:","").replace("日期：","").strip()
-            current = {"date": d}
-        elif "客：" in line:
-            current["customer"] = line.split("客：")[-1].strip()
-        elif "洗碼：" in line:
+        elif line.startswith("日期:"):
+            if current: records.append(current)
+            current = {"date": line.split("日期:")[-1].strip()}
+        elif line.startswith("客:"):
+            current["customer"] = line.split("客:")[-1].strip()
+        elif line.startswith("洗碼:"):
             try:
-                current["wash"] = float(line.split("洗碼：")[-1].strip())
+                current["wash"] = float(line.split("洗碼:")[-1].strip())
             except:
                 current["wash"] = 0
     if current: records.append(current)
