@@ -763,9 +763,9 @@ function renderDetailTable(agentName) {
     totalRow += `<td style="font-weight:bold;">${grand.rolling[i] ? grand.rolling[i]+'萬' : '-'}</td>`;
     totalRow += `<td style="font-weight:bold;">${grand.washed[i] ? fmtWash(grand.washed[i])+'萬' : '-'}</td>`;
     totalRow += `<td class="${gClass}" style="font-weight:bold;">${gDiff ? (gDiff>0?'+':'')+gDiff+'萬' : '-'}</td>`;
-    grandTotalRoll += grand.rolling[i]; grandTotalWash += grand.washed[i];
+    grandTotalRoll += grand.rolling[i]; grandTotalWash = Math.round((grandTotalWash + grand.washed[i]) * 100) / 100;
   }
-  const grandDiff = grandTotalWash - grandTotalRoll;
+  const grandDiff = Math.round((grandTotalWash - grandTotalRoll) * 100) / 100;
   const grandClass = grandDiff > 0 ? 'val-green' : grandDiff < 0 ? 'val-red' : 'val-gray';
   totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + fmtWash(grandDiff) : fmtWash(grandDiff)}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
@@ -1131,10 +1131,10 @@ function renderUI() {
   let grandTotalRoll = 0, grandTotalWash = 0;
   for (let i = 0; i < HOTELS.length; i++) {
     grandTotalRoll += grand.rolling[i];
-    grandTotalWash += grand.washed[i];
+    grandTotalWash = Math.round((grandTotalWash + grand.washed[i]) * 100) / 100;
   }
 
-  const tDiffAll = grandTotalWash - grandTotalRoll;
+  const tDiffAll = Math.round((grandTotalWash - grandTotalRoll) * 100) / 100;
   const tDiffAllClass = tDiffAll >= 0 ? 'diff-positive' : 'diff-negative';
   sumDiv.innerHTML += `<div class="card" style="background:#1F4E79;color:#fff;">
     <div class="name">房間總計</div>
