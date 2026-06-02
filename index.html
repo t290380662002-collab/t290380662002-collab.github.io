@@ -1240,6 +1240,12 @@ function showPanel(agentName) {
 
   // 碼糧明細（表格格式，跟拿房記錄一致）
   const agentRecords = allData.records.filter(r => r.agent === agentName);
+  // 按入住日期排序（越早越前面）
+  agentRecords.sort((a, b) => {
+    const [am, ad] = a.date.split('/').map(Number);
+    const [bm, bd] = b.date.split('/').map(Number);
+    return am !== bm ? am - bm : ad - bd;
+  });
   let commHtml = '';
   let totalCommission = 0;
   let totalTaken = 0;
