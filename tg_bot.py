@@ -386,4 +386,77 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # 檢查是否為 Render 環境（持續運行模式）
+    RENDER_MODE = os.environ.get("RENDER", "0") == "1"
+
+    if RENDER_MODE:
+        # Render 模式：持續長輪詢
+        print("🚀 Render 模式：持續運行")
+        # 先驗證 Token
+        try:
+            vr = requests.get(f"{TG_API}/getMe", timeout=10)
+            if vr.status_code == 200 and vr.json().get("ok"):
+                bot_info = vr.json()["result"]
+                print(f"✅ Bot 上線: @{bot_info['username']} ({bot_info['first_name']})")
+            else:
+                print(f"❌ Bot Token 無效: {vr.status_code} {vr.text[:200]}")
+                exit(1)
+        except Exception as e:
+            print(f"❌ 無法連接 Telegram: {e}")
+            exit(1)
+
+        # 清掉舊的 webhook（避免 409 錯誤）
+        requests.get(f"{TG_API}/deleteWebhook", timeout=10)
+        print("🧹 已清除 webhook")
+
+        while True:
+            offset = get_last_update() + 1
+            try:
+                r = requests.get(f"{TG_API}/getUpdates", params={"offset": offset, "timeout": 30}, timeout=35)
+            except Exception as e:
+                print(f"⚠️ 網絡錯誤: {e}，5秒後重試...")
+                import time; time.sleep(5)
+                continue
+
+            if r.status_code == 409:
+                print("⚠️ 409 衝突，5秒後重試...")
+                import time; time.sleep(5)
+                continue
+
+            if r.status_code != 200:
+                print(f"❌ Telegram API 錯誤: {r.status_code} {r.text[:200]}，5秒後重試...")
+                import time; time.sleep(5)
+                continue
+
+            updates = r.json().get("result", [])
+            if updates:
+                print(f"  📬 收到 {len(updates)} 則新訊息")
+                for up in updates:
+                    uid = up["update_id"]
+                    set_last_update(uid)
+                    msg = up.get("message") or up.get("edited_message")
+                    cb = up.get("callback_query")
+                    if msg:
+                        chat_id = msg["chat"]["id"]
+                        text = (msg.get("text") or "").strip()
+                        print(f"    💬 chat={chat_id} text={text[:50]}")
+                        if text == "/start": cmd_start(chat_id)
+                        elif text == "/status": cmd_status(chat_id)
+                        elif text == "/room": cmd_room(chat_id)
+                        elif text == "/wash": cmd_wash(chat_id)
+                        elif text == "/list": cmd_list(chat_id)
+                        elif text == "/commission": cmd_commission(chat_id)
+                        elif text == "/fund": cmd_fund(chat_id)
+                        elif text == "/delete": cmd_delete(chat_id)
+                        elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
+                        else: handle_text(chat_id, text)
+                    elif cb:
+                        chat_id = cb["message"]["chat"]["id"]
+                        data_str = cb["data"]
+                        cid = cb["id"]
+                        print(f"    🔘 chat={chat_id} data={data_str}")
+                        handle_callback(chat_id, data_str, cid)
+            # 處理完立即繼續輪詢，不等待
+    else:
+        # 本地 / GitHub Actions 模式：跑一次就結束
+        main()
