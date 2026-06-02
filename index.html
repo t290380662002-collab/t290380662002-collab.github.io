@@ -194,6 +194,18 @@
 </div>
 
 <script>
+// ===== 預設 Firebase 設定 =====
+const DEFAULT_FB_CONFIG = {
+  apiKey: "AIzaSyDH1sGsGWZXZfrDbQ7PNw6E7VksMW58MzE",
+  authDomain: "anget1.firebaseapp.com",
+  databaseURL: "https://anget1-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "anget1",
+  storageBucket: "anget1.firebasestorage.app",
+  messagingSenderId: "782894503904",
+  appId: "1:782894503904:web:cefce1606c95cd31bafd85",
+  measurementId: "G-D7MT0C1Z0D"
+};
+
 // ===== 本地存儲 + Firebase 同步 =====
 const STORAGE_KEY = 'agentWashData';
 const FB_CONFIG_KEY = 'firebaseConfig';
@@ -783,15 +795,10 @@ async function load() {
 
   recalcAndRender();
 
-  // 3. 嘗試初始化 Firebase（如果已設定過）
-  const savedConfig = localStorage.getItem(FB_CONFIG_KEY);
-  if (savedConfig) {
-    try {
-      initFirebase(JSON.parse(savedConfig));
-    } catch(e) {
-      console.warn('Firebase 設定無效:', e);
-    }
-  }
+  // 3. 自動初始化 Firebase（用預設設定）
+  const fbConfig = DEFAULT_FB_CONFIG;
+  localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(fbConfig));
+  initFirebase(fbConfig);
 }
 
 // ===== Firebase 初始化與即時監聽 =====
@@ -939,13 +946,8 @@ function updateSyncStatusUI() {
 
 function openSyncSettings() {
   document.getElementById('syncModal').style.display = 'flex';
-  // 回填已儲存的 config
-  const savedConfig = localStorage.getItem(FB_CONFIG_KEY);
-  if (savedConfig) {
-    try {
-      document.getElementById('fbConfigInput').value = JSON.stringify(JSON.parse(savedConfig), null, 2);
-    } catch(e) {}
-  }
+  // 回填預設 config
+  document.getElementById('fbConfigInput').value = JSON.stringify(DEFAULT_FB_CONFIG, null, 2);
   updateSyncStatusUI();
 }
 
