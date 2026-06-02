@@ -313,7 +313,15 @@ def main():
     print("⏳ 檢查 Telegram 訊息...")
 
     offset = get_last_update() + 1
-    r = requests.get(f"{TG_API}/getUpdates", params={"offset": offset, "timeout": 30}, timeout=35)
+    try:
+        r = requests.get(f"{TG_API}/getUpdates", params={"offset": offset, "timeout": 30}, timeout=35)
+    except Exception as e:
+        print(f"❌ 網絡錯誤: {e}")
+        return
+
+    if r.status_code == 409:
+        print("⚠️ 409 衝突：另一個實例正在執行，跳過本次輪詢")
+        return
 
     if r.status_code != 200:
         print(f"❌ Telegram API 錯誤: {r.status_code} {r.text[:200]}")
