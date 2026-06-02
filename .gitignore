@@ -1,0 +1,6 @@
+logs/
+*.zip
+__pycache__/
+*.pyc
+.env
+pertty-print
