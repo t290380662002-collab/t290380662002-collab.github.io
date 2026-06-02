@@ -51,10 +51,17 @@ def fb_put(data, path):
     return r.status_code == 200
 
 
-def tg_send(chat_id, text, keyboard=None):
+def tg_send(chat_id, text, keyboard=None, reply_kb=None):
     body = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
     if keyboard: body["reply_markup"] = {"inline_keyboard": keyboard}
+    if reply_kb: body["reply_markup"] = {"keyboard": reply_kb, "resize_keyboard": True}
     requests.post(f"{TG_API}/sendMessage", json=body, timeout=10)
+
+MAIN_KB = [
+    [{"text": "📊 總覽"}, {"text": "📝 拿房"}, {"text": "💰 洗碼"}],
+    [{"text": "📋 記錄"}, {"text": "💵 碼糧"}, {"text": "🏛️ 公積金"}],
+    [{"text": "🗑️ 刪除"}, {"text": "❓ 幫助"}]
+]
 
 
 def tg_answer(cid, text=""):
@@ -109,7 +116,7 @@ def cmd_start(chat_id):
         "/commission — 碼糧明細\n"
         "/fund — 公積金\n"
         "/delete — 刪除記錄"
-    ))
+    ), reply_kb=MAIN_KB)
 
 
 def cmd_status(chat_id):
@@ -268,7 +275,7 @@ def handle_callback(chat_id, data_str, cid):
         idx = next((i for i,r in enumerate(records) if r.get("id")==rid), -1)
         if idx == -1: return tg_send(chat_id, "❌ 找不到此記錄")
         target = records.pop(idx); save_data(data)
-        tg_send(chat_id, f"✅ 已刪除：\n{target.get('date','')} | {target.get('agent','')} | {target.get('hotel','')}·{target.get('area','')} | {target.get('code','')}\n\n🌐 網頁已即時同步")
+        tg_send(chat_id, f"✅ 已刪除：\n{target.get('date','')} | {target.get('agent','')} | {target.get('hotel','')}·{target.get('area','')} | {target.get('code','')}\n\n🌐 網頁已即時同步", reply_kb=MAIN_KB)
 
 
 # ===== 文字處理 =====
@@ -288,7 +295,7 @@ def handle_text(chat_id, text):
         s = state
         rec = {"id":f"r{int(datetime.now().timestamp()*1000)}","date":s["date"],"agent":s["agent"],"hotel":s["hotel"],"area":s["area"],"code":s["code"],"name":s["name"],"req":s["req"],"nights":nights,"total_req":s["req"]*nights,"washed":0,"hall":"","commission_taken":False,"taken_amount":None,"status":"pending"}
         data = get_data(); data.setdefault("records",[]).append(rec); save_data(data); clear_state(chat_id)
-        tg_send(chat_id, f"✅ *拿房記錄已新增！*\n\n👤 {s['agent']} | 📅 {s['date']}\n🏨 {s['hotel']}·{s['area']} | {s['code']} {s['name']}\n轉碼需求 {s['req']*nights}萬 | {nights}晚\n\n🌐 網頁已即時同步")
+        tg_send(chat_id, f"✅ *拿房記錄已新增！*\n\n👤 {s['agent']} | 📅 {s['date']}\n🏨 {s['hotel']}·{s['area']} | {s['code']} {s['name']}\n轉碼需求 {s['req']*nights}萬 | {nights}晚\n\n🌐 網頁已即時同步", reply_kb=MAIN_KB)
 
     elif state.get("step") == "wash_amt":
         try: amt = float(text)
@@ -309,7 +316,7 @@ def handle_text(chat_id, text):
             for r in data.get("records",[]):
                 if r.get("id")==s["washTarget"]: r["washed"]=s["washAmt"]; r["status"]="done"; break
         save_data(data); clear_state(chat_id)
-        tg_send(chat_id, f"✅ *洗碼記錄已新增！*\n\n👤 {s['agent']} | 🏨 {s['hotel']}\n💰 洗碼 {fmt_wash(s['washAmt'])}萬 | 🏛️ {s.get('hall','未選')}\n\n🌐 網頁已即時同步")
+        tg_send(chat_id, f"✅ *洗碼記錄已新增！*\n\n👤 {s['agent']} | 🏨 {s['hotel']}\n💰 洗碼 {fmt_wash(s['washAmt'])}萬 | 🏛️ {s.get('hall','未選')}\n\n🌐 網頁已即時同步", reply_kb=MAIN_KB)
 
 
 # ===== 主流程 =====
@@ -365,13 +372,14 @@ def main():
             print(f"    💬 chat={chat_id} text={text[:50]}")
 
             if text == "/start": cmd_start(chat_id)
-            elif text == "/status": cmd_status(chat_id)
-            elif text == "/room": cmd_room(chat_id)
-            elif text == "/wash": cmd_wash(chat_id)
-            elif text == "/list": cmd_list(chat_id)
-            elif text == "/commission": cmd_commission(chat_id)
-            elif text == "/fund": cmd_fund(chat_id)
-            elif text == "/delete": cmd_delete(chat_id)
+            elif text == "/status" or text == "📊 總覽": cmd_status(chat_id)
+            elif text == "/room" or text == "📝 拿房": cmd_room(chat_id)
+            elif text == "/wash" or text == "💰 洗碼": cmd_wash(chat_id)
+            elif text == "/list" or text == "📋 記錄": cmd_list(chat_id)
+            elif text == "/commission" or text == "💵 碼糧": cmd_commission(chat_id)
+            elif text == "/fund" or text == "🏛️ 公積金": cmd_fund(chat_id)
+            elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
+            elif text == "/help" or text == "❓ 幫助": cmd_start(chat_id)
             elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
             else: handle_text(chat_id, text)
 
@@ -441,13 +449,14 @@ if __name__ == "__main__":
                         text = (msg.get("text") or "").strip()
                         print(f"    💬 chat={chat_id} text={text[:50]}")
                         if text == "/start": cmd_start(chat_id)
-                        elif text == "/status": cmd_status(chat_id)
-                        elif text == "/room": cmd_room(chat_id)
-                        elif text == "/wash": cmd_wash(chat_id)
-                        elif text == "/list": cmd_list(chat_id)
-                        elif text == "/commission": cmd_commission(chat_id)
-                        elif text == "/fund": cmd_fund(chat_id)
-                        elif text == "/delete": cmd_delete(chat_id)
+                        elif text == "/status" or text == "📊 總覽": cmd_status(chat_id)
+                        elif text == "/room" or text == "📝 拿房": cmd_room(chat_id)
+                        elif text == "/wash" or text == "💰 洗碼": cmd_wash(chat_id)
+                        elif text == "/list" or text == "📋 記錄": cmd_list(chat_id)
+                        elif text == "/commission" or text == "💵 碼糧": cmd_commission(chat_id)
+                        elif text == "/fund" or text == "🏛️ 公積金": cmd_fund(chat_id)
+                        elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
+                        elif text == "/help" or text == "❓ 幫助": cmd_start(chat_id)
                         elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
                         else: handle_text(chat_id, text)
                     elif cb:
