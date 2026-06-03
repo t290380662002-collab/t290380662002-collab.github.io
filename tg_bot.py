@@ -149,7 +149,12 @@ def auto_parse(text, chat_id):
         # 標頭行（支援代理或Agent）
         if line.startswith("代理:") or line.startswith("Agent:") or line.startswith("agent:") or line.startswith("Anget:") or line.startswith("anget:"):
             agent = line.split(":")[-1].strip()
-            if not agent or agent not in AGENTS:
+            # 大小寫不敏感比對
+            agent_lower = agent.lower()
+            matched = next((a for a in AGENTS if a.lower() == agent_lower), None)
+            if matched:
+                agent = matched
+            elif not agent:
                 agent = "韓國"
         elif line.startswith("場所:"):
             hall = line.split("場所:")[-1].strip()
