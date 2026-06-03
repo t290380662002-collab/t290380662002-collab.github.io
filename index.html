@@ -1146,42 +1146,76 @@ function renderUI() {
   // ===== 公積金區塊 =====
   const fundRate = 0.01;
   let fundHtml = '';
-  let fundGrandTotal = 0;
+  let fundTotal = 0;
+  let fundTaken = 0;
+  let fundPending = 0;
+  const fundRows = [];
 
-  for (const [name, data] of Object.entries(agents)) {
-    if (name === '房間總計') continue;
-    let liyiWash = 0;
-    for (const rec of filteredRecords) {
-      if (rec.agent === name && rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
-        liyiWash += rec.washed;
-      }
-    }
-    if (liyiWash > 0) {
-      const fundVal = liyiWash * 10000 * (fundRate / 100);
-      const formatted = fundVal.toLocaleString('en-US', {maximumFractionDigits:0});
-      fundHtml += `
-        <div class="comm-item">
-          <div>
-            <span class="clabel">${name}</span>
-            <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">勵盈1</span>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:#888;">${liyiWash}萬 × ${fundRate}%</div>
-            <div style="font-size:14px;font-weight:bold;color:#155724;">+${formatted}</div>
-          </div>
-        </div>`;
-      fundGrandTotal += fundVal;
+  for (const rec of filteredRecords) {
+    if (rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
+      const f = rec.washed * 10000 * fundRate;
+      const isTaken = !!(rec.fund_taken);
+      fundRows.push({ rec, agent: rec.agent || '', fund: f, taken: isTaken });
+      fundTotal += f;
+      if (isTaken) fundTaken += f;
     }
   }
+  fundPending = fundTotal - fundTaken;
 
-  const fundFormatted = fundGrandTotal.toLocaleString('en-US', {maximumFractionDigits:0});
+  for (const item of fundRows) {
+    const r = item.rec;
+    const agent = item.agent;
+    const f = item.fund;
+    const isTaken = item.taken;
+    const status = isTaken ? '✅已提取' : '⏳未提取';
+    const formatted = f.toLocaleString('en-US', {maximumFractionDigits:0});
+    const washedStr = (r.washed || 0).toLocaleString('en-US', {maximumFractionDigits:2});
+    fundHtml += `
+      <div class="comm-item" id="fundRow_${r.id}">
+        <div>
+          <span class="clabel">${agent}</span>
+          <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">${r.date||'?'}</span>
+          ${isTaken ? '<span style="font-size:10px;color:#28a745;margin-left:6px;">✅已提取</span>' : ''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#888;">${washedStr}萬 × ${(fundRate*100)}%</div>
+          <div style="font-size:14px;font-weight:bold;color:#155724;">+${formatted}</div>
+          ${!isTaken ? `<button onclick="markFundTaken('${r.id}')" style="margin-top:4px;padding:2px 10px;font-size:11px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;">💰 提取</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  const fundFormatted = fundTotal.toLocaleString('en-US', {maximumFractionDigits:0});
+  const takenFormatted = fundTaken.toLocaleString('en-US', {maximumFractionDigits:0});
+  const pendingFormatted = fundPending.toLocaleString('en-US', {maximumFractionDigits:0});
   document.getElementById('fundContent').innerHTML =
     fundHtml || '<div style="padding:12px;text-align:center;color:#999;">尚無新濠天地洗碼記錄</div>';
-  document.getElementById('fundTotal').innerHTML = fundGrandTotal > 0 ? `
+  document.getElementById('fundTotal').innerHTML = fundTotal > 0 ? `
     <div style="margin-top:10px;padding:10px;background:#d4edda;border-radius:8px;border:1px solid #c3e6cb;text-align:center;">
       <div style="font-size:13px;font-weight:bold;color:#155724;">🏛️ 公積金合計</div>
       <div style="font-size:22px;font-weight:bold;color:#155724;">${fundFormatted}</div>
+      <div style="font-size:12px;color:#155724;margin-top:4px;">✅ 已提取：${takenFormatted} ｜ ⏳ 未提取：${pendingFormatted}</div>
     </div>` : '';
+}
+
+function markFundTaken(recId) {
+  if (!fbRef) { alert('❌ 未連線 Firebase'); return; }
+  if (!confirm('確認標記此筆公積金為「已提取」？')) return;
+  fbRef.once('value').then(snap => {
+    const data = snap.val() || {};
+    const records = data.records || [];
+    const idx = records.findIndex(r => r.id === recId);
+    if (idx === -1) { alert('❌ 找不到記錄'); return; }
+    records[idx].fund_taken = true;
+    data.records = records;
+    data.last_update = new Date().toISOString().slice(0,16).replace('T',' ');
+    fbRef.set(data).then(() => {
+      const el = document.getElementById('fundRow_' + recId);
+      if (el) el.style.display = 'none';
+      alert('✅ 已標記為已提取！');
+      recalcAndRender();
+    }).catch(e => alert('❌ 寫入失敗：' + e));
+  });
 }
 
 function showPanel(agentName) {

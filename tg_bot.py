@@ -365,14 +365,13 @@ def cmd_fund(chat_id):
     lines = ["🏛️ *公積金（新濠天地 · 勵盈1 × 0.01%）*\n"]
     total = 0; taken = 0
     fund_rows = []
-    for agent in AGENTS:
-        for r in records:
-            if r.get("agent")==agent and r.get("hotel")=="新濠天地" and r.get("hall")=="勵盈1" and r.get("washed"):
-                f = float(r["washed"]) * 10000 * 0.0001
-                is_taken = r.get("fund_taken", False)
-                fund_rows.append({"rec": r, "agent": agent, "fund": f, "taken": is_taken})
-                total += f
-                if is_taken: taken += f
+    for r in records:
+        if r.get("hotel")=="新濠天地" and r.get("hall")=="勵盈1" and r.get("washed"):
+            f = float(r["washed"]) * 10000 * 0.0001
+            is_taken = r.get("fund_taken", False)
+            fund_rows.append({"rec": r, "agent": r.get("agent",""), "fund": f, "taken": is_taken})
+            total += f
+            if is_taken: taken += f
     pending = total - taken
 
     kb = []
@@ -380,7 +379,6 @@ def cmd_fund(chat_id):
         r = item["rec"]; agent = item["agent"]; f = item["fund"]; is_taken = item["taken"]
         status = "✅已提取" if is_taken else "⏳未提取"
         lines.append(f"{status} 👤 {agent} | {r.get('date','')} | 洗碼{fmt_wash(r['washed'])}萬 | 公積金 {f:,.0f}")
-        # 未提取才顯示提取按鈕
         if not is_taken:
             kb.append([{"text": f"💰 提取 {agent} {r.get('date','')}", "callback_data": f"fund:{r.get('id','')}"}])
 
@@ -391,8 +389,6 @@ def cmd_fund(chat_id):
         tg_send(chat_id, "\n".join(lines), keyboard=kb)
     else:
         tg_send(chat_id, "\n".join(lines))
-    lines.append(f"\n➡️ 公積金總計: *{total:,.0f}*")
-    tg_send(chat_id, "\n".join(lines))
 
 
 def cmd_delete(chat_id):
