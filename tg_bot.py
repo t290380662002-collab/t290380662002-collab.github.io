@@ -374,19 +374,16 @@ def cmd_fund(chat_id):
             if is_taken: taken += f
     pending = total - taken
 
-    kb = []
     for item in fund_rows:
         r = item["rec"]; agent = item["agent"]; f = item["fund"]; is_taken = item["taken"]
         status = "✅已提取" if is_taken else "⏳未提取"
         lines.append(f"{status} 👤 {agent} | {r.get('date','')} | 洗碼{fmt_wash(r['washed'])}萬 | 公積金 {f:,.0f}")
-        if not is_taken:
-            kb.append([{"text": f"💰 提取 {agent} {r.get('date','')}", "callback_data": f"fund:{r.get('id','')}"}])
 
     lines.append(f"\n➡️ 公積金總計: *{total:,.0f}*")
     lines.append(f"✅ 已提取：{taken:,.0f} | ⏳ 未提取：{pending:,.0f}")
 
-    if kb:
-        tg_send(chat_id, "\n".join(lines), keyboard=kb)
+    if pending > 0:
+        tg_send(chat_id, "\n".join(lines), keyboard=[[{"text":"💰 一鍵提取全部","callback_data":"fund:all"}]])
     else:
         tg_send(chat_id, "\n".join(lines))
 
@@ -455,12 +452,21 @@ def handle_callback(chat_id, data_str, cid):
     elif data_str.startswith("fund:"):
         rid = data_str[5:]
         data = get_data()
-        for r in data.get("records",[]):
-            if r.get("id")==rid:
-                r["fund_taken"] = True
-                break
-        save_data(data)
-        tg_send(chat_id, "✅ 已標記為「已提取」！\n\n🌐 網頁已即時同步")
+        if rid == "all":
+            changed = 0
+            for r in data.get("records",[]):
+                if r.get("hotel")=="新濠天地" and r.get("hall")=="勵盈1" and r.get("washed") and not r.get("fund_taken"):
+                    r["fund_taken"] = True
+                    changed += 1
+            save_data(data)
+            tg_send(chat_id, f"✅ 已一鍵提取 {changed} 筆公積金！\n\n🌐 網頁已即時同步")
+        else:
+            for r in data.get("records",[]):
+                if r.get("id")==rid:
+                    r["fund_taken"] = True
+                    break
+            save_data(data)
+            tg_send(chat_id, "✅ 已標記為「已提取」！\n\n🌐 網頁已即時同步")
         cmd_fund(chat_id)  # 刷新顯示
 
     elif data_str.startswith("del:"):

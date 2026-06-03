@@ -1144,7 +1144,8 @@ function renderUI() {
   </div>`;
 
   // ===== 公積金區塊 =====
-  const fundRate = 0.01;
+  const fundRate = 0.01; // 0.01%
+  const fundMultiplier = 0.0001; // 0.01% = 0.0001
   let fundHtml = '';
   let fundTotal = 0;
   let fundTaken = 0;
@@ -1153,7 +1154,7 @@ function renderUI() {
 
   for (const rec of filteredRecords) {
     if (rec.hotel === '新濠天地' && rec.hall === '勵盈1' && rec.washed) {
-      const f = rec.washed * 10000 * fundRate;
+      const f = rec.washed * 10000 * fundMultiplier;
       const isTaken = !!(rec.fund_taken);
       fundRows.push({ rec, agent: rec.agent || '', fund: f, taken: isTaken });
       fundTotal += f;
@@ -1167,20 +1168,18 @@ function renderUI() {
     const agent = item.agent;
     const f = item.fund;
     const isTaken = item.taken;
-    const status = isTaken ? '✅已提取' : '⏳未提取';
     const formatted = f.toLocaleString('en-US', {maximumFractionDigits:0});
     const washedStr = (r.washed || 0).toLocaleString('en-US', {maximumFractionDigits:2});
     fundHtml += `
-      <div class="comm-item" id="fundRow_${r.id}">
+      <div class="comm-item" id="fundRow_${r.id}" style="${isTaken?'opacity:0.5;':''}">
         <div>
           <span class="clabel">${agent}</span>
           <span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 6px;border-radius:8px;margin-left:4px;">${r.date||'?'}</span>
           ${isTaken ? '<span style="font-size:10px;color:#28a745;margin-left:6px;">✅已提取</span>' : ''}
         </div>
         <div style="text-align:right;">
-          <div style="font-size:11px;color:#888;">${washedStr}萬 × ${(fundRate*100)}%</div>
+          <div style="font-size:11px;color:#888;">${washedStr}萬 × ${fundRate}%</div>
           <div style="font-size:14px;font-weight:bold;color:#155724;">+${formatted}</div>
-          ${!isTaken ? `<button onclick="markFundTaken('${r.id}')" style="margin-top:4px;padding:2px 10px;font-size:11px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;">💰 提取</button>` : ''}
         </div>
       </div>`;
   }
@@ -1188,6 +1187,7 @@ function renderUI() {
   const fundFormatted = fundTotal.toLocaleString('en-US', {maximumFractionDigits:0});
   const takenFormatted = fundTaken.toLocaleString('en-US', {maximumFractionDigits:0});
   const pendingFormatted = fundPending.toLocaleString('en-US', {maximumFractionDigits:0});
+  const hasPending = fundPending > 0;
   document.getElementById('fundContent').innerHTML =
     fundHtml || '<div style="padding:12px;text-align:center;color:#999;">尚無新濠天地洗碼記錄</div>';
   document.getElementById('fundTotal').innerHTML = fundTotal > 0 ? `
@@ -1195,24 +1195,28 @@ function renderUI() {
       <div style="font-size:13px;font-weight:bold;color:#155724;">🏛️ 公積金合計</div>
       <div style="font-size:22px;font-weight:bold;color:#155724;">${fundFormatted}</div>
       <div style="font-size:12px;color:#155724;margin-top:4px;">✅ 已提取：${takenFormatted} ｜ ⏳ 未提取：${pendingFormatted}</div>
+      ${hasPending ? `<button onclick="markAllFundTaken()" style="margin-top:8px;padding:6px 20px;font-size:13px;background:#28a745;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">💰 一鍵提取全部</button>` : ''}
     </div>` : '';
 }
 
-function markFundTaken(recId) {
+function markAllFundTaken() {
   if (!fbRef) { alert('❌ 未連線 Firebase'); return; }
-  if (!confirm('確認標記此筆公積金為「已提取」？')) return;
+  if (!confirm('確認一鍵提取全部未提取公積金？')) return;
   fbRef.once('value').then(snap => {
     const data = snap.val() || {};
     const records = data.records || [];
-    const idx = records.findIndex(r => r.id === recId);
-    if (idx === -1) { alert('❌ 找不到記錄'); return; }
-    records[idx].fund_taken = true;
+    let changed = 0;
+    for (const r of records) {
+      if (r.hotel === '新濠天地' && r.hall === '勵盈1' && r.washed && !r.fund_taken) {
+        r.fund_taken = true;
+        changed++;
+      }
+    }
+    if (changed === 0) { alert('沒有需要提取的公積金'); return; }
     data.records = records;
     data.last_update = new Date().toISOString().slice(0,16).replace('T',' ');
     fbRef.set(data).then(() => {
-      const el = document.getElementById('fundRow_' + recId);
-      if (el) el.style.display = 'none';
-      alert('✅ 已標記為已提取！');
+      alert('✅ 已一鍵提取 ' + changed + ' 筆公積金！');
       recalcAndRender();
     }).catch(e => alert('❌ 寫入失敗：' + e));
   });
