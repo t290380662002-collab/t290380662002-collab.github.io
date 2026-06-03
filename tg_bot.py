@@ -129,8 +129,8 @@ def auto_parse(text, chat_id):
     客：XXX
     洗碼：XXX
     """
-    # 支援 "代理" 或 "Agent" 開頭
-    has_agent = "代理" in text or "Agent" in text or "agent" in text
+    # 支援 "代理" 或 "Agent"/"Anget" 開頭
+    has_agent = "代理" in text or "Agent" in text or "agent" in text or "Anget" in text or "anget" in text
     if not has_agent or "場所" not in text:
         return False  # 不符合格式
 
@@ -147,7 +147,7 @@ def auto_parse(text, chat_id):
         if not line: continue
 
         # 標頭行（支援代理或Agent）
-        if line.startswith("代理:") or line.startswith("Agent:") or line.startswith("agent:"):
+        if line.startswith("代理:") or line.startswith("Agent:") or line.startswith("agent:") or line.startswith("Anget:") or line.startswith("anget:"):
             agent = line.split(":")[-1].strip()
             if not agent or agent not in AGENTS:
                 agent = "韓國"
