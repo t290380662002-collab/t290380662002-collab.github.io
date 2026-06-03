@@ -121,7 +121,7 @@ import re
 
 def auto_parse(text, chat_id):
     """自動解析格式（支援全形：和半形:）：
-    代理：XXX
+    代理：XXX / Agent：XXX
     場所：XXX
     佣金：X.X%
     
@@ -129,7 +129,9 @@ def auto_parse(text, chat_id):
     客：XXX
     洗碼：XXX
     """
-    if "代理" not in text or "場所" not in text:
+    # 支援 "代理" 或 "Agent" 開頭
+    has_agent = "代理" in text or "Agent" in text or "agent" in text
+    if not has_agent or "場所" not in text:
         return False  # 不符合格式
 
     # 標準化：全形冒號 → 半形
@@ -144,9 +146,9 @@ def auto_parse(text, chat_id):
         line = line.strip()
         if not line: continue
 
-        # 標頭行
-        if line.startswith("代理:"):
-            agent = line.split("代理:")[-1].strip()
+        # 標頭行（支援代理或Agent）
+        if line.startswith("代理:") or line.startswith("Agent:") or line.startswith("agent:"):
+            agent = line.split(":")[-1].strip()
             if not agent or agent not in AGENTS:
                 agent = "韓國"
         elif line.startswith("場所:"):
