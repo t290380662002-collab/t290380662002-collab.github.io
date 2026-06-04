@@ -789,7 +789,7 @@ function renderRoomTable(agentName) {
   tbody.innerHTML = '';
   let recs = agentName ? filteredRecords.filter(r => r.agent === agentName) : filteredRecords;
   // 排除獨立洗碼記錄
-  recs = recs.filter(r => r.area !== '獨立洗碼');
+  recs = recs.filter(r => r.area !== '(獨立洗碼)');
   recs = [...recs].sort((a, b) => {
     const [am, ad] = a.date.split('/').map(Number);
     const [bm, bd] = b.date.split('/').map(Number);
@@ -821,7 +821,7 @@ function renderStandaloneTable(agentName) {
   tbody.innerHTML = '';
   let recs = agentName ? filteredRecords.filter(r => r.agent === agentName) : filteredRecords;
   // 只保留獨立洗碼記錄
-  recs = recs.filter(r => r.area === '獨立洗碼');
+  recs = recs.filter(r => r.area === '(獨立洗碼)');
   recs = [...recs].sort((a, b) => {
     const [am, ad] = a.date.split('/').map(Number);
     const [bm, bd] = b.date.split('/').map(Number);
