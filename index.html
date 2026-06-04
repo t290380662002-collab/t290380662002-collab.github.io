@@ -66,11 +66,23 @@
   .val-green { color:#28a745; font-weight:bold; }
   .val-red { color:#dc3545; font-weight:bold; }
   .val-gray { color:#aaa; }
+
+  /* Tab 導航 */
+  .tab-nav { display:flex; gap:0; margin-bottom:12px; justify-content:center; }
+  .tab-btn { padding:10px 28px; border:2px solid #1F4E79; font-size:15px; font-weight:bold; cursor:pointer; background:#fff; color:#1F4E79; transition:all 0.2s; }
+  .tab-btn:first-child { border-radius:10px 0 0 10px; }
+  .tab-btn:last-child { border-radius:0 10px 10px 0; }
+  .tab-btn.active { background:#1F4E79; color:#fff; }
+  .tab-btn:hover:not(.active) { background:#e8ecf1; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
   @media (max-width:600px) {
     .card { min-width:calc(50% - 10px); }
     th, td { padding:5px 2px; font-size:11px; }
     .detail-grid { grid-template-columns:1fr; }
     .comm-grid { grid-template-columns:1fr; }
+    .tab-btn { padding:8px 16px; font-size:13px; }
   }
 </style>
 </head>
@@ -101,6 +113,15 @@
   .period-btn:hover { background:#e8ecf1; }
   .period-btn.active:hover { background:#16375a; }
 </style>
+
+<!-- Tab 導航 -->
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabBtnMain" onclick="switchTab('main')">📊 主畫面</button>
+  <button class="tab-btn" id="tabBtnCommission" onclick="switchTab('commission')">🏨 佣金明细</button>
+</div>
+
+<!-- 主畫面分頁 -->
+<div class="tab-content active" id="mainTab">
 
 <div class="summary" id="summary"></div>
 
@@ -204,6 +225,12 @@
   <div id="fundTotal"></div>
 </div>
 
+</div>
+<!-- 主畫面分頁結束 -->
+
+<!-- 佣金明细分頁 -->
+<div class="tab-content" id="commissionTab">
+
 <!-- 佣金明细独立分区 -->
 <div class="table-section" id="commissionDetailSection">
   <h3>🏨 佣金明细
@@ -215,6 +242,9 @@
   </h3>
   <div id="commissionDetailContent" style="overflow-x:auto;"></div>
 </div>
+
+</div>
+<!-- 佣金明细分頁結束 -->
 
 <script>
 // ===== 預設 Firebase 設定 =====
@@ -269,6 +299,23 @@ function setPeriodCustom() {
   localStorage.setItem('customDateFrom', from);
   localStorage.setItem('customDateTo', to);
   location.reload();
+}
+
+// ===== Tab 切換 =====
+let currentTab = 'main';
+let commissionTabRendered = false;
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('mainTab').classList.toggle('active', tab === 'main');
+  document.getElementById('commissionTab').classList.toggle('active', tab === 'commission');
+  document.getElementById('tabBtnMain').classList.toggle('active', tab === 'main');
+  document.getElementById('tabBtnCommission').classList.toggle('active', tab === 'commission');
+
+  if (tab === 'commission' && !commissionTabRendered) {
+    renderCommissionDetailMain();
+    commissionTabRendered = true;
+  }
 }
 
 function filterByPeriod(records) {
@@ -707,7 +754,10 @@ function recalcAndRender() {
   populateCommissionFilter();
   populateCommissionFilterMain();
   renderUI();
-  renderCommissionDetailMain();
+  // 佣金明細只在用戶切換到該分頁時才渲染
+  if (currentTab === 'commission' && commissionTabRendered) {
+    renderCommissionDetailMain();
+  }
   // 關閉面板
   document.getElementById('agentPanel').classList.remove('show');
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
