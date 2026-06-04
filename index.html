@@ -165,8 +165,19 @@
     <div class="comm-grid" id="rateGrid"></div>
   </div>
   <div class="commission-section" style="margin-top:10px;">
-    <div class="comm-title" style="text-align:center;">🏨 碼糧明細</div>
-    <div id="commGrid" style="overflow-x:auto;"></div>
+    <div class="comm-title" style="text-align:center;">🏨 碼糧明細
+      <span style="font-size:12px;font-weight:normal;margin-left:8px;">
+        <select id="commAgentFilter" onchange="filterCommissionDetail()" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
+          <option value="">全部</option>
+        </select>
+      </span>
+    </div>
+    <div style="margin-bottom:10px;">
+        <select id="commAgentFilter" onchange="filterCommissionDetail()" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;font-size:13px;">
+          <option value="">全部</option>
+        </select>
+      </div>
+      <div id="commGrid" style="overflow-x:auto;"></div>
   </div>
 </div>
 
@@ -661,6 +672,7 @@ function saveAndReload() {
 }
 
 // 重新計算數據並渲染 UI
+
 function recalcAndRender() {
   filteredRecords = filterByPeriod(allData.records);
 
@@ -680,6 +692,7 @@ function recalcAndRender() {
     }
   }
 
+  populateCommissionFilter();
   renderUI();
   // 關閉面板
   document.getElementById('agentPanel').classList.remove('show');
@@ -1221,6 +1234,123 @@ function markAllFundTaken() {
     }).catch(e => alert('❌ 寫入失敗：' + e));
   });
 }
+function renderCommissionDetail(agentName) {
+  var rates = allData.commission_rates || [];
+  var agentRecords = agentName
+    ? allData.records.filter(function(r) { return r.agent === agentName; })
+    : allData.records;
+  agentRecords.sort(function(a, b) {
+    var amad = a.date.split('/').map(Number);
+    var bmbd = b.date.split('/').map(Number);
+    return amad[0] !== bmbd[0] ? amad[0] - bmbd[0] : amad[1] - bmbd[1];
+  });
+  var commHtml = '';
+  var totalCommission = 0;
+  var totalTaken = 0;
+  var showAgentCol = !agentName;
+
+  if (agentRecords.length === 0) {
+    commHtml = '<div style="padding:12px;text-align:center;color:#999;">尚無拿房記錄</div>';
+  } else {
+    commHtml = '<table id="commTable" style="width:100%;border-collapse:collapse;font-size:13px;">' +
+      '<thead><tr style="background:#1F4E79;color:#fff;">' +
+      (showAgentCol ? '<th style="padding:8px 4px;text-align:center;font-size:11px;">Agent</th>' : '') +
+      '<th style="padding:8px 6px;text-align:center;font-size:11px;">入住</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">酒店·區域</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">房型</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">轉碼需求</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">洗碼</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">貴賓廳</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">碼糧</th>' +
+      '<th style="padding:8px 6px;text-align:center;font-size:11px;">狀態</th>' +
+      '</tr></thead><tbody>';
+
+    for (var i = 0; i < agentRecords.length; i++) {
+      var rec = agentRecords[i];
+      var hasWash = rec.washed && rec.washed > 0;
+      var hallRate = rates.find(function(r) { return r.name === rec.hall; });
+      var commissionVal = 0;
+
+      if (hasWash && hallRate) {
+        commissionVal = rec.washed * 10000 * (hallRate.rate / 100);
+        totalCommission += commissionVal;
+        if (rec.commission_taken) totalTaken += (rec.taken_amount || commissionVal);
+      }
+
+      var actualTaken = rec.commission_taken ? (rec.taken_amount || commissionVal) : 0;
+      var remain = commissionVal - actualTaken;
+      var statusTag;
+      if (!hasWash) {
+        statusTag = '<span class="status-done" style="background:#fff3cd;color:#856404;border-color:#ffc107;padding:2px 6px;border-radius:10px;font-size:11px;">⏳ 未洗碼</span>';
+      } else if (!hallRate) {
+        statusTag = '<span class="status-done" style="background:#e9ecef;color:#666;padding:2px 6px;border-radius:10px;font-size:11px;">-</span>';
+      } else if (!rec.commission_taken) {
+        statusTag = '<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(\'' + rec.id + '\',' + commissionVal + ')">💰 點我</span>';
+      } else if (remain > 0) {
+        statusTag = '<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(\'' + rec.id + '\',' + commissionVal + ')">✅ 已取 ' + actualTaken.toLocaleString() + '（餘' + remain.toLocaleString() + '）</span>';
+      } else {
+        statusTag = '<span class="status-done" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal(\'' + rec.id + '\',' + commissionVal + ')">✅ 已取 ' + actualTaken.toLocaleString() + '</span>';
+      }
+
+      commHtml += '<tr style="border-bottom:1px solid #eee;">' +
+        (showAgentCol ? '<td style="padding:7px 4px;text-align:center;font-weight:bold;font-size:12px;">' + rec.agent + '</td>' : '') +
+        '<td style="padding:7px 6px;white-space:nowrap;text-align:center;">' + rec.date + '</td>' +
+        '<td style="padding:7px 4px;white-space:nowrap;text-align:center;"><b>' + rec.hotel + '</b>·' + rec.area + '</td>' +
+        '<td style="padding:7px 4px;white-space:nowrap;text-align:center;">' + rec.code + ' ' + rec.name + '</td>' +
+        '<td style="padding:7px 4px;text-align:center;">' + rec.total_req + '萬</td>' +
+        '<td style="padding:7px 4px;text-align:center;font-weight:bold;">' + (hasWash ? fmtWash(rec.washed) + '萬' : '-') + '</td>' +
+        '<td style="padding:7px 4px;text-align:center;">' + (rec.hall ? '<span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 5px;border-radius:8px;">' + rec.hall + '</span>' : '-') + '</td>' +
+        '<td style="padding:7px 4px;text-align:center;font-weight:bold;color:#1F4E79;">' +
+          (commissionVal > 0 ? commissionVal.toLocaleString('en-US',{maximumFractionDigits:0}) : (hasWash ? '-' : '')) +
+          (hasWash && hallRate ? '<div style="font-size:9px;color:#aaa;font-weight:normal;">x' + hallRate.rate + '%</div>' : '') +
+        '</td>' +
+        '<td style="padding:7px 6px;text-align:center;">' + statusTag + '</td>' +
+        '</tr>';
+    }
+    commHtml += '</tbody></table>';
+
+    if (totalCommission > 0) {
+      var formattedTotal = totalCommission.toLocaleString('en-US', {maximumFractionDigits:0});
+      var formattedTaken = totalTaken.toLocaleString('en-US', {maximumFractionDigits:0});
+      var formattedPending = (totalCommission - totalTaken).toLocaleString('en-US', {maximumFractionDigits:0});
+      commHtml += '<div style="margin-top:8px;background:#f8f9fa;border-radius:8px;border:1px solid #dee2e6;overflow:hidden;">' +
+        '<div style="display:flex;text-align:center;align-items:flex-end;">' +
+        '<div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">' +
+        '<div style="font-size:10px;color:#888;">應得碼糧</div>' +
+        '<div style="font-size:15px;font-weight:bold;color:#1F4E79;">' + formattedTotal + '</div></div>' +
+        '<div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">' +
+        '<div style="font-size:10px;color:#888;">已取碼糧</div>' +
+        '<div style="font-size:15px;font-weight:bold;color:#155724;">' + formattedTaken + '</div></div>' +
+        '<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+        '<div><div style="font-size:10px;color:#888;">未取碼糧</div>' +
+        '<div style="font-size:15px;font-weight:bold;color:#856404;">' + formattedPending + '</div></div>' +
+        (agentName && formattedPending !== '0' ? '<button onclick="takeAllComm(\'' + agentName + '\')" style="padding:3px 12px;background:#155724;color:#fff;border:none;border-radius:12px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;">全取 ✅</button>' : '') +
+        '</div></div></div>';
+    }
+  }
+  document.getElementById('commGrid').innerHTML = commHtml;
+}
+
+function populateCommissionFilter() {
+  var sel = document.getElementById('commAgentFilter');
+  if (!sel || !allData.agents) return;
+  sel.innerHTML = '<option value="">全部</option>';
+  var names = Object.keys(allData.agents);
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    if (name !== '房間總計') {
+      sel.innerHTML += '<option value="' + name + '">' + name + '</option>';
+    }
+  }
+}
+
+function filterCommissionDetail() {
+  var sel = document.getElementById('commAgentFilter');
+  var agentName = sel ? sel.value : '';
+  renderCommissionDetail(agentName || null);
+}
+
+
 
 function showPanel(agentName) {
   const data = allData.agents[agentName];
@@ -1276,100 +1406,7 @@ function showPanel(agentName) {
   }
   document.getElementById('rateGrid').innerHTML = rateHtml;
 
-  // 碼糧明細（表格格式，跟拿房記錄一致）
-  const agentRecords = allData.records.filter(r => r.agent === agentName);
-  // 按入住日期排序（越早越前面）
-  agentRecords.sort((a, b) => {
-    const [am, ad] = a.date.split('/').map(Number);
-    const [bm, bd] = b.date.split('/').map(Number);
-    return am !== bm ? am - bm : ad - bd;
-  });
-  let commHtml = '';
-  let totalCommission = 0;
-  let totalTaken = 0;
-
-  if (agentRecords.length === 0) {
-    commHtml = '<div style="padding:12px;text-align:center;color:#999;">尚無拿房記錄</div>';
-  } else {
-    commHtml = `<table id="commTable" style="width:100%;border-collapse:collapse;font-size:13px;">
-      <thead><tr style="background:#1F4E79;color:#fff;">
-        <th style="padding:8px 6px;text-align:center;font-size:11px;">入住</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">酒店·區域</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">房型</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">轉碼需求</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">洗碼</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">貴賓廳</th>
-        <th style="padding:8px 4px;text-align:center;font-size:11px;">碼糧</th>
-        <th style="padding:8px 6px;text-align:center;font-size:11px;">狀態</th>
-      </tr></thead><tbody>`;
-
-    for (const rec of agentRecords) {
-      const hasWash = rec.washed && rec.washed > 0;
-      const hallRate = rates.find(r => r.name === rec.hall);
-      let commissionVal = 0;
-
-      if (hasWash && hallRate) {
-        commissionVal = rec.washed * 10000 * (hallRate.rate / 100);
-        totalCommission += commissionVal;
-        // 用實際已取金額，沒設 taken_amount 則視為全部已取
-        if (rec.commission_taken) totalTaken += (rec.taken_amount || commissionVal);
-      }
-
-      const actualTaken = rec.commission_taken ? (rec.taken_amount || commissionVal) : 0;
-      const remain = commissionVal - actualTaken;
-
-      const statusTag = !hasWash ? '<span class="status-done" style="background:#fff3cd;color:#856404;border-color:#ffc107;padding:2px 6px;border-radius:10px;font-size:11px;">⏳ 未洗碼</span>'
-        : !hallRate ? '<span class="status-done" style="background:#e9ecef;color:#666;padding:2px 6px;border-radius:10px;font-size:11px;">—</span>'
-        : !rec.commission_taken
-          ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">💰 點我</span>`
-          : remain > 0
-            ? `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}（餘${remain.toLocaleString()}）</span>`
-            : `<span class="status-done" style="cursor:pointer;text-decoration:underline;" onclick="openTakenModal('${rec.id}',${commissionVal})">✅ 已取 ${actualTaken.toLocaleString()}</span>`;
-
-      commHtml += `<tr style="border-bottom:1px solid #eee;">
-        <td style="padding:7px 6px;white-space:nowrap;text-align:center;">${rec.date}</td>
-        <td style="padding:7px 4px;white-space:nowrap;text-align:center;"><b>${rec.hotel}</b>·${rec.area}</td>
-        <td style="padding:7px 4px;white-space:nowrap;text-align:center;">${rec.code} ${rec.name}</td>
-        <td style="padding:7px 4px;text-align:center;">${rec.total_req}萬</td>
-        <td style="padding:7px 4px;text-align:center;font-weight:bold;">${hasWash ? fmtWash(rec.washed)+'萬' : '-'}</td>
-        <td style="padding:7px 4px;text-align:center;">${rec.hall ? `<span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 5px;border-radius:8px;">${rec.hall}</span>` : '-'}</td>
-        <td style="padding:7px 4px;text-align:center;font-weight:bold;color:#1F4E79;">
-          ${commissionVal > 0 ? commissionVal.toLocaleString('en-US',{maximumFractionDigits:0}) : (hasWash ? '—' : '')}
-          ${hasWash && hallRate ? `<div style="font-size:9px;color:#aaa;font-weight:normal;">×${hallRate.rate}%</div>` : ''}
-        </td>
-        <td style="padding:7px 6px;text-align:center;">${statusTag}</td>
-      </tr>`;
-    }
-    commHtml += '</tbody></table>';
-
-    // 碼糧匯總行
-    if (totalCommission > 0) {
-      const formattedTotal = totalCommission.toLocaleString('en-US', {maximumFractionDigits:0});
-      const formattedTaken = totalTaken.toLocaleString('en-US', {maximumFractionDigits:0});
-      const formattedPending = (totalCommission - totalTaken).toLocaleString('en-US', {maximumFractionDigits:0});
-      commHtml += `
-        <div style="margin-top:8px;background:#f8f9fa;border-radius:8px;border:1px solid #dee2e6;overflow:hidden;">
-          <div style="display:flex;text-align:center;align-items:flex-end;">
-            <div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">
-              <div style="font-size:10px;color:#888;">應得碼糧</div>
-              <div style="font-size:15px;font-weight:bold;color:#1F4E79;">${formattedTotal}</div>
-            </div>
-            <div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">
-              <div style="font-size:10px;color:#888;">已取碼糧</div>
-              <div style="font-size:15px;font-weight:bold;color:#155724;">${formattedTaken}</div>
-            </div>
-            <div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <div>
-                <div style="font-size:10px;color:#888;">未取碼糧</div>
-                <div style="font-size:15px;font-weight:bold;color:#856404;">${formattedPending}</div>
-              </div>
-              ${formattedPending !== '0' ? `<button onclick="takeAllComm('${agentName}')" style="padding:3px 12px;background:#155724;color:#fff;border:none;border-radius:12px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;">全取 ✅</button>` : ''}
-            </div>
-          </div>
-        </div>`;
-    }
-  }
-  document.getElementById('commGrid').innerHTML = commHtml;
+  renderCommissionDetail(agentName);
 
   panel.classList.add('show');
   currentAgent = agentName;
