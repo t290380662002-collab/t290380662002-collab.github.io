@@ -248,6 +248,18 @@
       </select>
     </span>
   </h3>
+  <!-- 佣金明细时间筛选 -->
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+    <button class="period-btn active" id="commBtnMonth" onclick="setCommPeriod('month')">本月</button>
+    <button class="period-btn" id="commBtnLastMonth" onclick="setCommPeriod('lastmonth')">上月</button>
+    <button class="period-btn" id="commBtnYear" onclick="setCommPeriod('year')">本年</button>
+    <button class="period-btn" id="commBtnAll" onclick="setCommPeriod('all')">全部</button>
+    <span style="color:#ccc;">|</span>
+    <span style="font-size:12px;color:#888;">自訂</span>
+    <input id="commDateFrom" type="date" onchange="setCommPeriodCustom()" style="padding:3px 5px;border:1px solid #ddd;border-radius:6px;font-size:11px;">
+    <span style="font-size:12px;">~</span>
+    <input id="commDateTo" type="date" onchange="setCommPeriodCustom()" style="padding:3px 5px;border:1px solid #ddd;border-radius:6px;font-size:11px;">
+  </div>
   <div id="commissionDetailContent" style="overflow-x:auto;"></div>
 </div>
 
@@ -324,6 +336,65 @@ function switchTab(tab) {
     renderCommissionDetailMain();
     commissionTabRendered = true;
   }
+}
+
+// ===== 佣金明细分页专属时间筛选 =====
+let commPeriod = 'month';
+let commDateFrom = '';
+let commDateTo = '';
+
+function setCommPeriod(p) {
+  commPeriod = p;
+  commDateFrom = '';
+  commDateTo = '';
+  document.getElementById('commDateFrom').value = '';
+  document.getElementById('commDateTo').value = '';
+  updateCommPeriodBtns();
+  renderCommissionDetailMain();
+}
+
+function setCommPeriodCustom() {
+  const from = document.getElementById('commDateFrom').value;
+  const to = document.getElementById('commDateTo').value;
+  if (!from && !to) return;
+  commPeriod = 'custom';
+  commDateFrom = from;
+  commDateTo = to;
+  updateCommPeriodBtns();
+  renderCommissionDetailMain();
+}
+
+function updateCommPeriodBtns() {
+  document.querySelectorAll('#commissionDetailSection .period-btn').forEach(b => b.classList.remove('active'));
+  const map = { month: 'commBtnMonth', lastmonth: 'commBtnLastMonth', year: 'commBtnYear', all: 'commBtnAll' };
+  const btnId = map[commPeriod];
+  if (btnId) document.getElementById(btnId).classList.add('active');
+}
+
+function filterCommByPeriod(records) {
+  if (commPeriod === 'all' || !records || records.length === 0) return records;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return records.filter(r => {
+    const [m, d] = r.date.split('/').map(Number);
+    if (!m || !d) return true;
+    const rd = new Date(now.getFullYear(), m - 1, d);
+    if (rd > today) rd.setFullYear(rd.getFullYear() - 1);
+    if (commPeriod === 'month') {
+      return rd.getFullYear() === now.getFullYear() && rd.getMonth() === now.getMonth();
+    } else if (commPeriod === 'lastmonth') {
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return rd.getFullYear() === lm.getFullYear() && rd.getMonth() === lm.getMonth();
+    } else if (commPeriod === 'year') {
+      return rd.getFullYear() === now.getFullYear();
+    } else if (commPeriod === 'custom') {
+      let ok = true;
+      if (commDateFrom) { const fd = new Date(commDateFrom); fd.setHours(0,0,0,0); if (rd < fd) ok = false; }
+      if (commDateTo) { const td = new Date(commDateTo); td.setHours(23,59,59,999); if (rd > td) ok = false; }
+      return ok;
+    }
+    return true;
+  });
 }
 
 function filterByPeriod(records) {
@@ -1356,6 +1427,8 @@ function renderCommissionDetail(agentName, targetId) {
   var agentRecords = agentName
     ? allData.records.filter(function(r) { return r.agent === agentName && r.area === '(獨立洗碼)'; })
     : allData.records.filter(function(r) { return r.area === '(獨立洗碼)'; });
+  // 佣金明细分页专属时间筛选
+  agentRecords = filterCommByPeriod(agentRecords);
   agentRecords.sort(function(a, b) {
     var amad = a.date.split('/').map(Number);
     var bmbd = b.date.split('/').map(Number);
