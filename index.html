@@ -1354,8 +1354,8 @@ function renderCommissionDetail(agentName, targetId) {
   targetId = targetId || 'commGrid';
   var rates = allData.commission_rates || [];
   var agentRecords = agentName
-    ? allData.records.filter(function(r) { return r.agent === agentName; })
-    : allData.records;
+    ? allData.records.filter(function(r) { return r.agent === agentName && r.area === '(獨立洗碼)'; })
+    : allData.records.filter(function(r) { return r.area === '(獨立洗碼)'; });
   agentRecords.sort(function(a, b) {
     var amad = a.date.split('/').map(Number);
     var bmbd = b.date.split('/').map(Number);
