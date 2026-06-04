@@ -204,6 +204,18 @@
   <div id="fundTotal"></div>
 </div>
 
+<!-- 佣金明细独立分区 -->
+<div class="table-section" id="commissionDetailSection">
+  <h3>🏨 佣金明细
+    <span style="font-size:12px;font-weight:normal;margin-left:8px;">
+      <select id="commMainAgentFilter" onchange="filterCommissionDetailMain()" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
+        <option value="">全部</option>
+      </select>
+    </span>
+  </h3>
+  <div id="commissionDetailContent" style="overflow-x:auto;"></div>
+</div>
+
 <script>
 // ===== 預設 Firebase 設定 =====
 const DEFAULT_FB_CONFIG = {
@@ -693,7 +705,9 @@ function recalcAndRender() {
   }
 
   populateCommissionFilter();
+  populateCommissionFilterMain();
   renderUI();
+  renderCommissionDetailMain();
   // 關閉面板
   document.getElementById('agentPanel').classList.remove('show');
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -1212,6 +1226,11 @@ function renderUI() {
     </div>` : '';
 }
 
+// 主页面佣金明细初始化
+function renderCommissionDetailMain() {
+  renderCommissionDetail(null, 'commissionDetailContent');
+}
+
 function markAllFundTaken() {
   if (!fbRef) { alert('❌ 未連線 Firebase'); return; }
   if (!confirm('確認一鍵提取全部未提取公積金？')) return;
@@ -1234,7 +1253,8 @@ function markAllFundTaken() {
     }).catch(e => alert('❌ 寫入失敗：' + e));
   });
 }
-function renderCommissionDetail(agentName) {
+function renderCommissionDetail(agentName, targetId) {
+  targetId = targetId || 'commGrid';
   var rates = allData.commission_rates || [];
   var agentRecords = agentName
     ? allData.records.filter(function(r) { return r.agent === agentName; })
@@ -1328,11 +1348,11 @@ function renderCommissionDetail(agentName) {
         '</div></div></div>';
     }
   }
-  document.getElementById('commGrid').innerHTML = commHtml;
+  document.getElementById(targetId).innerHTML = commHtml;
 }
 
-function populateCommissionFilter() {
-  var sel = document.getElementById('commAgentFilter');
+function populateCommissionFilterMain() {
+  var sel = document.getElementById('commMainAgentFilter');
   if (!sel || !allData.agents) return;
   sel.innerHTML = '<option value="">全部</option>';
   var names = Object.keys(allData.agents);
@@ -1344,7 +1364,13 @@ function populateCommissionFilter() {
   }
 }
 
-function filterCommissionDetail() {
+function filterCommissionDetailMain() {
+  var sel = document.getElementById('commMainAgentFilter');
+  var agentName = sel ? sel.value : '';
+  renderCommissionDetail(agentName || null, 'commissionDetailContent');
+}
+
+function populateCommissionFilter() {
   var sel = document.getElementById('commAgentFilter');
   var agentName = sel ? sel.value : '';
   renderCommissionDetail(agentName || null);
