@@ -1445,12 +1445,11 @@ function renderCommissionDetail(agentName, targetId) {
     commHtml = '<table id="commTable" style="width:100%;border-collapse:collapse;font-size:13px;">' +
       '<thead><tr style="background:#1F4E79;color:#fff;">' +
       (showAgentCol ? '<th style="padding:8px 4px;text-align:center;font-size:11px;">Agent</th>' : '') +
-      '<th style="padding:8px 6px;text-align:center;font-size:11px;">入住</th>' +
+      '<th style="padding:8px 6px;text-align:center;font-size:11px;">日期</th>' +
       '<th style="padding:8px 4px;text-align:center;font-size:11px;">酒店·區域</th>' +
-      '<th style="padding:8px 4px;text-align:center;font-size:11px;">房型</th>' +
-      '<th style="padding:8px 4px;text-align:center;font-size:11px;">轉碼需求</th>' +
-      '<th style="padding:8px 4px;text-align:center;font-size:11px;">洗碼</th>' +
       '<th style="padding:8px 4px;text-align:center;font-size:11px;">貴賓廳</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">房型</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">洗碼</th>' +
       '<th style="padding:8px 4px;text-align:center;font-size:11px;">碼糧</th>' +
       '<th style="padding:8px 6px;text-align:center;font-size:11px;">狀態</th>' +
       '</tr></thead><tbody>';
@@ -1486,10 +1485,9 @@ function renderCommissionDetail(agentName, targetId) {
         (showAgentCol ? '<td style="padding:7px 4px;text-align:center;font-weight:bold;font-size:12px;">' + rec.agent + '</td>' : '') +
         '<td style="padding:7px 6px;white-space:nowrap;text-align:center;">' + rec.date + '</td>' +
         '<td style="padding:7px 4px;white-space:nowrap;text-align:center;"><b>' + rec.hotel + '</b>·' + rec.area + '</td>' +
-        '<td style="padding:7px 4px;white-space:nowrap;text-align:center;">' + rec.code + ' ' + rec.name + '</td>' +
-        '<td style="padding:7px 4px;text-align:center;">' + rec.total_req + '萬</td>' +
-        '<td style="padding:7px 4px;text-align:center;font-weight:bold;">' + (hasWash ? fmtWash(rec.washed) + '萬' : '-') + '</td>' +
         '<td style="padding:7px 4px;text-align:center;">' + (rec.hall ? '<span style="font-size:10px;background:#e8ecf1;color:#1F4E79;padding:1px 5px;border-radius:8px;">' + rec.hall + '</span>' : '-') + '</td>' +
+        '<td style="padding:7px 4px;white-space:nowrap;text-align:center;">' + rec.code + ' ' + rec.name + '</td>' +
+        '<td style="padding:7px 4px;text-align:center;font-weight:bold;">' + (hasWash ? fmtWash(rec.washed) + '萬' : '-') + '</td>' +
         '<td style="padding:7px 4px;text-align:center;font-weight:bold;color:#1F4E79;">' +
           (commissionVal > 0 ? commissionVal.toLocaleString('en-US',{maximumFractionDigits:0}) : (hasWash ? '-' : '')) +
           (hasWash && hallRate ? '<div style="font-size:9px;color:#aaa;font-weight:normal;">x' + hallRate.rate + '%</div>' : '') +
