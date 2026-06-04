@@ -597,6 +597,14 @@ def main():
 
 
 if __name__ == "__main__":
+    # 印出版本資訊方便偵錯
+    try:
+        import subprocess
+        commit = subprocess.check_output(["git","log","--oneline","-1"], cwd="/workspace/ghpages", stderr=subprocess.DEVNULL).decode().strip()
+    except:
+        commit = "unknown"
+    print(f"📦 啟動 | commit: {commit}")
+
     # 檢查是否為持續運行模式（Render 或 GitHub Actions 長輪詢）
     LONGPOLL_MODE = os.environ.get("RENDER", "0") == "1" or os.environ.get("LONGPOLL", "0") == "1"
 
