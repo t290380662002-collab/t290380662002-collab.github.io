@@ -210,6 +210,14 @@
   </table>
 </div>
 
+<div class="table-section" id="standaloneSection">
+  <h3>🔄 獨立洗碼</h3>
+  <table id="standaloneTable">
+    <thead><tr><th>日期</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>已洗碼</th><th>狀態</th><th>操作</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 <div class="table-section">
   <h3>💰 詳細彙總</h3>
   <table id="detailTable">
@@ -771,19 +779,26 @@ function hidePanel() {
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
   currentAgent = null;
   renderRoomTable();
+  renderStandaloneTable();
   renderDetailTable();
 }
 
-// 渲染拿房記錄表格（可過濾 Agent）
+// 渲染拿房記錄表格（可過濾 Agent，排除獨立洗碼）
 function renderRoomTable(agentName) {
   const tbody = document.querySelector('#roomTable tbody');
   tbody.innerHTML = '';
   let recs = agentName ? filteredRecords.filter(r => r.agent === agentName) : filteredRecords;
+  // 排除獨立洗碼記錄
+  recs = recs.filter(r => r.area !== '獨立洗碼');
   recs = [...recs].sort((a, b) => {
     const [am, ad] = a.date.split('/').map(Number);
     const [bm, bd] = b.date.split('/').map(Number);
     return am !== bm ? am - bm : ad - bd;
   });
+  if (recs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:#999;">尚無拿房記錄</td></tr>';
+    return;
+  }
   for (const rec of recs) {
     const statusHtml = rec.status === 'done'
       ? '<span class="status-done">✅</span>'
@@ -792,6 +807,39 @@ function renderRoomTable(agentName) {
       <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${fmtWash(rec.washed)}</td><td>${statusHtml}</td>
+      <td>
+        <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
+        <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
+      </td>
+    </tr>`;
+  }
+}
+
+// 渲染獨立洗碼表格（可過濾 Agent）
+function renderStandaloneTable(agentName) {
+  const tbody = document.querySelector('#standaloneTable tbody');
+  tbody.innerHTML = '';
+  let recs = agentName ? filteredRecords.filter(r => r.agent === agentName) : filteredRecords;
+  // 只保留獨立洗碼記錄
+  recs = recs.filter(r => r.area === '獨立洗碼');
+  recs = [...recs].sort((a, b) => {
+    const [am, ad] = a.date.split('/').map(Number);
+    const [bm, bd] = b.date.split('/').map(Number);
+    return am !== bm ? am - bm : ad - bd;
+  });
+  if (recs.length === 0) {
+    document.getElementById('standaloneSection').style.display = 'none';
+    return;
+  }
+  document.getElementById('standaloneSection').style.display = '';
+  for (const rec of recs) {
+    const statusHtml = rec.status === 'done'
+      ? '<span class="status-done">✅</span>'
+      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal('${rec.id}')">⏳ 點我填洗碼</span>`;
+    tbody.innerHTML += `<tr>
+      <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
+      <td>${rec.code}</td><td>${rec.name || '?'}</td>
+      <td>${fmtWash(rec.washed)}</td><td>${statusHtml}</td>
       <td>
         <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
         <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
@@ -1192,9 +1240,8 @@ function renderUI() {
   }
 
   renderRoomTable();
+  renderStandaloneTable();
   renderDetailTable();
-
-  // 房間總計卡片
   const grand = { rooms: [0,0,0], rolling: [0,0,0], washed: [0,0,0] };
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
@@ -1487,6 +1534,7 @@ function showPanel(agentName) {
   panel.classList.add('show');
   currentAgent = agentName;
   renderRoomTable(agentName);
+  renderStandaloneTable(agentName);
   renderDetailTable(agentName);
 }
 
