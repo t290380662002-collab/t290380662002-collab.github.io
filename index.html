@@ -101,17 +101,27 @@
   <div id="syncStatus" style="font-size:11px;margin-top:2px;"><span style="color:#888;">📋 本地模式</span> · 資料僅存在此瀏覽器 <span style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="openSyncSettings()">⚙️ 同步設定</span></div>
 </div>
 
-<!-- 時間篩選 -->
-<div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap;align-items:center;">
-  <button class="period-btn active" onclick="setPeriod('month')" id="btnMonth">本月</button>
-  <button class="period-btn" onclick="setPeriod('lastmonth')" id="btnLastMonth">上月</button>
-  <button class="period-btn" onclick="setPeriod('year')" id="btnYear">本年</button>
-  <button class="period-btn" onclick="setPeriod('all')" id="btnAll">全部</button>
-  <span style="margin:0 4px;color:#ccc;">|</span>
-  <span style="font-size:12px;color:#888;">自訂</span>
-  <input id="dateFrom" type="date" onchange="setPeriodCustom()" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+<!-- 主畫面時間篩選 -->
+<div class="comm-date-nav" style="display:flex;align-items:center;justify-content:center;gap:2px;margin-bottom:10px;user-select:none;">
+  <button class="comm-arrow" onclick="mainNavMonth(-1)" title="上個月" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:8px 0 0 8px;cursor:pointer;font-size:14px;color:#555;">◀</button>
+  <button class="comm-month-label" id="mainMonthLabel" onclick="toggleMainMonthMenu()" style="padding:6px 20px;border:1px solid #1F4E79;background:#1F4E79;color:#fff;border-radius:0;cursor:pointer;font-size:14px;font-weight:bold;min-width:120px;">本月</button>
+  <button class="comm-arrow" onclick="mainNavMonth(1)" title="下個月" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:0 8px 8px 0;cursor:pointer;font-size:14px;color:#555;">▶</button>
+  <!-- 月份選擇下拉 -->
+  <div class="comm-month-menu" id="mainMonthMenu" style="display:none;position:absolute;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:100;min-width:160px;overflow:hidden;">
+    <div class="comm-menu-item" onclick="mainPickQuick('lastmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 上月</div>
+    <div class="comm-menu-item" onclick="mainPickQuick('month')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;background:#e8f0fe;font-weight:bold;">📅 本月</div>
+    <div class="comm-menu-item" onclick="mainPickQuick('nextmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 下月</div>
+    <div class="comm-menu-item" onclick="mainPickQuick('year')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📆 本年</div>
+    <div class="comm-menu-item" onclick="mainPickQuick('all')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📋 全部</div>
+    <div class="comm-menu-item" onclick="mainShowCustom()" style="padding:10px 16px;cursor:pointer;font-size:14px;color:#1F4E79;">📐 自訂日期範圍...</div>
+  </div>
+</div>
+<!-- 主畫面自訂日期範圍輸入（預設隱藏） -->
+<div id="mainCustomRow" style="display:none;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+  <input id="dateFrom" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
   <span style="font-size:12px;color:#888;">~</span>
-  <input id="dateTo" type="date" onchange="setPeriodCustom()" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+  <input id="dateTo" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+  <button onclick="mainApplyCustom()" style="padding:4px 12px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確定</button>
 </div>
 <style>
   .period-btn { padding:6px 16px;border:1px solid #ddd;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;background:#fff;color:#666;transition:all 0.15s; }
@@ -304,24 +314,165 @@ let allData = null;
 let filteredRecords = [];
 let currentAgent = null;
 const HOTELS = ['銀河','倫敦人','新濠天地'];
+
+// ===== 主畫面時間篩選狀態 =====
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
 let customDateFrom = localStorage.getItem('customDateFrom') || '';
 let customDateTo = localStorage.getItem('customDateTo') || '';
-
-// Firebase 相關變數
-let fbDb = null;
-let fbRef = null;
-let fbConnected = false;
-let fbListener = null;
-
-function setPeriod(p) {
-  currentPeriod = p;
-  customDateFrom = '';
-  customDateTo = '';
-  localStorage.setItem('currentPeriod', p);
+let mainYear = parseInt(localStorage.getItem('mainYear')) || new Date().getFullYear();
+let mainMonth = parseInt(localStorage.getItem('mainMonth')) || (new Date().getMonth() + 1);
+let mainMode = currentPeriod === 'custom' ? 'custom' : (currentPeriod || 'month');
+// 遷移舊版 'lastmonth' → 月份導航模式
+if (currentPeriod === 'lastmonth') {
+  const lm = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+  mainYear = lm.getFullYear();
+  mainMonth = lm.getMonth() + 1;
+  mainMode = 'month';
+  currentPeriod = 'month';
+  localStorage.setItem('currentPeriod', 'month');
+  localStorage.setItem('mainYear', mainYear);
+  localStorage.setItem('mainMonth', mainMonth);
   localStorage.removeItem('customDateFrom');
   localStorage.removeItem('customDateTo');
-  location.reload();
+}
+// 遷移舊版 'year'/'all' 模式
+if (currentPeriod === 'year') {
+  mainMode = 'year'; mainYear = new Date().getFullYear();
+}
+if (currentPeriod === 'all') {
+  mainMode = 'all';
+}
+
+const MAIN_MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function mainUpdateLabel() {
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  const label = document.getElementById('mainMonthLabel');
+  if (!label) return;
+  if (mainMode === 'month') {
+    const prefix = (mainYear === curY && mainMonth === curM) ? '本月 ' : '';
+    label.textContent = prefix + mainYear + '年' + MAIN_MONTH_NAMES[mainMonth - 1];
+  } else if (mainMode === 'year') {
+    const prefix = (mainYear === curY) ? '本年 ' : '';
+    label.textContent = prefix + mainYear + '年';
+  } else if (mainMode === 'all') {
+    label.textContent = '全部';
+  } else if (mainMode === 'custom') {
+    label.textContent = '自訂日期';
+  }
+}
+
+function mainNavMonth(dir) {
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  if (mainMode === 'month') {
+    mainMonth += dir;
+    if (mainMonth < 1) { mainMonth = 12; mainYear--; }
+    if (mainMonth > 12) { mainMonth = 1; mainYear++; }
+    if (mainYear > curY || (mainYear === curY && mainMonth > curM)) {
+      mainYear = curY; mainMonth = curM;
+    }
+    currentPeriod = 'month';
+  } else if (mainMode === 'year') {
+    mainYear += dir;
+    if (mainYear > curY) mainYear = curY;
+    currentPeriod = 'year';
+  }
+  saveMainPeriod();
+  mainUpdateLabel();
+  recalcAndRender();
+}
+
+function toggleMainMonthMenu() {
+  const menu = document.getElementById('mainMonthMenu');
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = now.getMonth() + 1;
+    const items = document.querySelectorAll('#mainMonthMenu .comm-menu-item');
+    const lm = new Date(curY, curM - 2, 1);
+    items[0].textContent = '📅 上月（' + lm.getFullYear() + '年' + MAIN_MONTH_NAMES[lm.getMonth()] + '）';
+    items[1].textContent = '📅 本月（' + curY + '年' + MAIN_MONTH_NAMES[curM - 1] + '）';
+    const nm = new Date(curY, curM, 1);
+    items[2].textContent = '📅 下月（' + nm.getFullYear() + '年' + MAIN_MONTH_NAMES[nm.getMonth()] + '）';
+  }
+}
+
+function mainPickQuick(type) {
+  document.getElementById('mainMonthMenu').style.display = 'none';
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  customDateFrom = ''; customDateTo = '';
+  document.getElementById('mainCustomRow').style.display = 'none';
+  if (type === 'month') {
+    mainMode = 'month'; mainYear = curY; mainMonth = curM; currentPeriod = 'month';
+  } else if (type === 'lastmonth') {
+    mainMode = 'month';
+    const lm = new Date(curY, curM - 2, 1);
+    mainYear = lm.getFullYear(); mainMonth = lm.getMonth() + 1;
+    currentPeriod = 'month';
+  } else if (type === 'nextmonth') {
+    mainMode = 'month';
+    const nm = new Date(curY, curM, 1);
+    mainYear = nm.getFullYear(); mainMonth = nm.getMonth() + 1;
+    currentPeriod = 'month';
+  } else if (type === 'year') {
+    mainMode = 'year'; mainYear = curY; currentPeriod = 'year';
+  } else if (type === 'all') {
+    mainMode = 'all'; currentPeriod = 'all';
+  }
+  saveMainPeriod();
+  mainUpdateLabel();
+  recalcAndRender();
+}
+
+function mainShowCustom() {
+  document.getElementById('mainMonthMenu').style.display = 'none';
+  document.getElementById('mainCustomRow').style.display = 'flex';
+  mainMode = 'custom';
+  mainUpdateLabel();
+}
+
+function mainApplyCustom() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  customDateFrom = from;
+  customDateTo = to;
+  currentPeriod = 'custom';
+  mainMode = 'custom';
+  localStorage.setItem('currentPeriod', 'custom');
+  localStorage.setItem('customDateFrom', from);
+  localStorage.setItem('customDateTo', to);
+  mainUpdateLabel();
+  recalcAndRender();
+}
+
+function saveMainPeriod() {
+  localStorage.setItem('currentPeriod', currentPeriod);
+  localStorage.setItem('mainYear', mainYear);
+  localStorage.setItem('mainMonth', mainMonth);
+  if (currentPeriod !== 'custom') {
+    localStorage.removeItem('customDateFrom');
+    localStorage.removeItem('customDateTo');
+  }
+}
+
+// 相容舊版 setPeriod（不再使用 location.reload）
+function setPeriod(p) {
+  const now = new Date();
+  mainMode = p;
+  currentPeriod = p;
+  mainYear = now.getFullYear();
+  mainMonth = now.getMonth() + 1;
+  customDateFrom = '';
+  customDateTo = '';
+  saveMainPeriod();
 }
 
 function setPeriodCustom() {
@@ -331,11 +482,15 @@ function setPeriodCustom() {
   currentPeriod = 'custom';
   customDateFrom = from;
   customDateTo = to;
+  mainMode = 'custom';
   localStorage.setItem('currentPeriod', 'custom');
   localStorage.setItem('customDateFrom', from);
   localStorage.setItem('customDateTo', to);
-  location.reload();
 }
+let fbDb = null;
+let fbRef = null;
+let fbConnected = false;
+let fbListener = null;
 
 // ===== Tab 切換 =====
 let currentTab = 'main';
@@ -518,8 +673,10 @@ function filterCommByPeriod(records) {
 
 function filterByPeriod(records) {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth(); // 0-based
+  const y = mainYear || now.getFullYear();
+  const m = (mainMonth || (now.getMonth() + 1)) - 1; // 0-based
+
+  if (currentPeriod === 'all' || !records) return records;
 
   return records.filter(r => {
     if (!r.date) return true;
@@ -528,7 +685,7 @@ function filterByPeriod(records) {
 
     let recYear, recMonth, recDay;
     if (parts.length === 2) {
-      recYear = y;
+      recYear = now.getFullYear();
       recMonth = parseInt(parts[0]);
       recDay = parseInt(parts[1]);
     } else if (parts.length === 3) {
@@ -539,10 +696,6 @@ function filterByPeriod(records) {
 
     if (currentPeriod === 'month') {
       return recYear === y && recMonth === (m + 1);
-    } else if (currentPeriod === 'lastmonth') {
-      const lm = m === 0 ? 12 : m;
-      const ly = m === 0 ? y - 1 : y;
-      return recYear === ly && recMonth === lm;
     } else if (currentPeriod === 'year') {
       return recYear === y;
     } else if (currentPeriod === 'custom') {
@@ -1358,19 +1511,14 @@ function disconnectFirebase() {
 
 // 渲染 UI（從 allData 計算匯總並更新所有區塊）
 function renderUI() {
-  // 設定時間篩選按鈕狀態
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  if (currentPeriod === 'month') document.getElementById('btnMonth').classList.add('active');
-  else if (currentPeriod === 'lastmonth') document.getElementById('btnLastMonth').classList.add('active');
-  else if (currentPeriod === 'year') document.getElementById('btnYear').classList.add('active');
-  else document.getElementById('btnAll').classList.add('active');
+  // 更新月份導航標籤
+  mainUpdateLabel();
 
   // 顯示當前篩選期間
-  let periodLabel = currentPeriod === 'month' ? '本月' :
-    currentPeriod === 'lastmonth' ? '上月' :
-    currentPeriod === 'year' ? '本年' :
-    currentPeriod === 'custom' ? '自訂' : '全部';
-  if (currentPeriod === 'custom' && customDateFrom && customDateTo) {
+  let periodLabel = mainMode === 'month' ? mainYear + '年' + MAIN_MONTH_NAMES[mainMonth - 1] :
+    mainMode === 'year' ? mainYear + '年' :
+    mainMode === 'custom' ? '自訂' : '全部';
+  if (mainMode === 'custom' && customDateFrom && customDateTo) {
     periodLabel += ' ' + formatDate(customDateFrom) + ' ~ ' + formatDate(customDateTo);
   }
   document.getElementById('updateTime').textContent =
