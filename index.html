@@ -113,7 +113,7 @@
     <div style="font-size:48px;margin-bottom:8px;">🔐</div>
     <h2>Agent 洗碼統計</h2>
     <div class="pin-sub">請輸入 PIN 碼以解鎖</div>
-    <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="****" onkeydown="if(event.key==='Enter')verifyPin()" autofocus>
+    <input type="password" class="pin-input" id="pinInput" maxlength="20" placeholder="PIN 碼" onkeydown="if(event.key==='Enter')verifyPin()" autofocus>
     <div class="pin-msg" id="pinMsg"></div>
     <button class="pin-btn" onclick="verifyPin()">解鎖</button>
     <div class="pin-hint" onclick="resetPin()">忘記 PIN 碼？點此重置</div>
