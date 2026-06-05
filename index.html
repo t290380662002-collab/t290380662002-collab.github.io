@@ -372,13 +372,9 @@ function mainNavMonth(dir) {
     mainMonth += dir;
     if (mainMonth < 1) { mainMonth = 12; mainYear--; }
     if (mainMonth > 12) { mainMonth = 1; mainYear++; }
-    if (mainYear > curY || (mainYear === curY && mainMonth > curM)) {
-      mainYear = curY; mainMonth = curM;
-    }
     currentPeriod = 'month';
   } else if (mainMode === 'year') {
     mainYear += dir;
-    if (mainYear > curY) mainYear = curY;
     currentPeriod = 'year';
   }
   saveMainPeriod();
@@ -542,17 +538,11 @@ function commNavMonth(dir) {
   const curY = now.getFullYear();
   const curM = now.getMonth() + 1;
   if (commMode === 'month') {
-    // 切換到上一月或下一月
     commMonth += dir;
     if (commMonth < 1) { commMonth = 12; commYear--; }
     if (commMonth > 12) { commMonth = 1; commYear++; }
-    // 不能超過當前月
-    if (commYear > curY || (commYear === curY && commMonth > curM)) {
-      commYear = curY; commMonth = curM;
-    }
   } else if (commMode === 'year') {
     commYear += dir;
-    if (commYear > curY) commYear = curY;
   }
   commUpdateLabel();
   renderCommissionDetailMain();
