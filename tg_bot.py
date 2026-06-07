@@ -386,11 +386,9 @@ def cmd_fund(chat_id):
     lines.append(f"✅ 已提取：{taken:,.0f} | ⏳ 未提取：{pending:,.0f}")
 
     if kb:
-        tg_send(chat_id, "
-".join(lines), keyboard=kb)
+        tg_send(chat_id, "\n".join(lines), keyboard=kb)
     else:
-        tg_send(chat_id, "
-".join(lines))
+        tg_send(chat_id, "\n".join(lines))
 
 
 def cmd_delete(chat_id):
