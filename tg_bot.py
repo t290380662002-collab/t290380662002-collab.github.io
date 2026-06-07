@@ -154,7 +154,7 @@ def auto_parse(text, chat_id):
             matched = next((a for a in AGENTS if a.lower() == agent_lower), None)
             if matched:
                 agent = matched
-            elif not agent:
+            else:
                 agent = "韓國"
         elif line.startswith("場所:"):
             hall = line.split("場所:")[-1].strip()
@@ -374,18 +374,23 @@ def cmd_fund(chat_id):
             if is_taken: taken += f
     pending = total - taken
 
+    kb = []
     for item in fund_rows:
         r = item["rec"]; agent = item["agent"]; f = item["fund"]; is_taken = item["taken"]
         status = "✅已提取" if is_taken else "⏳未提取"
         lines.append(f"{status} 👤 {agent} | {r.get('date','')} | 洗碼{fmt_wash(r['washed'])}萬 | 公積金 {f:,.0f}")
+        if not is_taken:
+            kb.append([{"text": f"💰 提取 {agent} {r.get('date','')}", "callback_data": f"fund:{r.get('id','')}"}])
 
     lines.append(f"\n➡️ 公積金總計: *{total:,.0f}*")
     lines.append(f"✅ 已提取：{taken:,.0f} | ⏳ 未提取：{pending:,.0f}")
 
-    if pending > 0:
-        tg_send(chat_id, "\n".join(lines), keyboard=[[{"text":"💰 一鍵提取全部","callback_data":"fund:all"}]])
+    if kb:
+        tg_send(chat_id, "
+".join(lines), keyboard=kb)
     else:
-        tg_send(chat_id, "\n".join(lines))
+        tg_send(chat_id, "
+".join(lines))
 
 
 def cmd_delete(chat_id):
