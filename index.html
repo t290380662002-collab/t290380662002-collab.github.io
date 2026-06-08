@@ -1683,7 +1683,7 @@ function renderUI() {
       <span style="font-weight:500;">總洗碼 ${grandTotalWash}萬</span>
     </div>
     <div style="text-align:center;font-size:28px;font-weight:bold;margin-top:6px;">
-      <span style="background:rgba(255,255,255,0.2);padding:8px 24px;border-radius:24px;display:inline-block;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${tDiffAll>0?'+'+tDiffAll:tDiffAll}萬</span>
+      <span style="background:rgba(255,255,255,0.15);padding:8px 24px;border-radius:24px;display:inline-block;box-shadow:0 2px 8px rgba(0,0,0,0.2);color:${tDiffAll>0?'#4ade80':(tDiffAll<0?'#f87171':'#fff')};">${tDiffAll>0?'+'+tDiffAll:tDiffAll}萬</span>
     </div></div>`;
 
   // ===== 公積金區塊 =====
