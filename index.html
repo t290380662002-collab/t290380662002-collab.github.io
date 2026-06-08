@@ -1672,18 +1672,18 @@ function renderUI() {
 
   const tDiffAll = Math.round((grandTotalWash - grandTotalRoll) * 100) / 100;
   const tDiffAllClass = tDiffAll >= 0 ? 'diff-positive' : 'diff-negative';
-  sumDiv.innerHTML += `<div class="card" style="background:linear-gradient(135deg, #1a1a3e, #1F4E79);color:#fff;border:none;border-radius:14px;padding:18px 16px;min-width:calc(25% - 14px);box-shadow:0 4px 16px rgba(31,78,121,0.25);">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">🏨 房間總計</div>
-      <div style="font-size:11px;background:rgba(255,107,107,0.2);color:#ff6b6b;padding:3px 10px;border-radius:10px;">總晚數 ${grand.rooms.reduce((a,b)=>a+b,0)} 晚</div>
+  sumDiv.innerHTML += `<div class="card" style="background:linear-gradient(135deg, #1a1a3e, #1F4E79);color:#fff;border:none;border-radius:16px;padding:20px 18px;min-width:calc(25% - 14px);box-shadow:0 6px 20px rgba(31,78,121,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:22px;font-weight:bold;letter-spacing:1px;">🏨 房間總計</div>
+      <div style="font-size:14px;background:rgba(255,107,107,0.25);color:#ff6b6b;padding:4px 12px;border-radius:12px;font-weight:bold;">總晚數 ${grand.rooms.reduce((a,b)=>a+b,0)} 晚</div>
     </div>
-    <div style="display:flex;gap:10px;justify-content:center;font-size:12px;opacity:0.85;margin-bottom:6px;">
-      <span>總轉碼 ${grandTotalRoll}萬</span>
-      <span style="color:#ccc;">|</span>
-      <span>總洗碼 ${grandTotalWash}萬</span>
+    <div style="display:flex;gap:16px;justify-content:center;font-size:15px;margin-bottom:10px;">
+      <span style="font-weight:500;">總轉碼 ${grandTotalRoll}萬</span>
+      <span style="color:rgba(255,255,255,0.5);">|</span>
+      <span style="font-weight:500;">總洗碼 ${grandTotalWash}萬</span>
     </div>
-    <div style="text-align:center;font-size:24px;font-weight:bold;margin-top:2px;">
-      <span class="diff ${tDiffAllClass}" style="background:rgba(255,255,255,0.15);padding:4px 16px;border-radius:20px;display:inline-block;">${tDiffAll>0?'+'+tDiffAll:tDiffAll}萬</span>
+    <div style="text-align:center;font-size:28px;font-weight:bold;margin-top:6px;">
+      <span style="background:rgba(255,255,255,0.2);padding:8px 24px;border-radius:24px;display:inline-block;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${tDiffAll>0?'+'+tDiffAll:tDiffAll}萬</span>
     </div></div>`;
 
   // ===== 公積金區塊 =====
