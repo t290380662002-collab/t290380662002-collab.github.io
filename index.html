@@ -1793,6 +1793,7 @@ function renderCommissionDetail(agentName, targetId) {
       '<th style="padding:8px 4px;text-align:center;font-size:11px;">洗碼</th>' +
       '<th style="padding:8px 4px;text-align:center;font-size:11px;">碼糧</th>' +
       '<th style="padding:8px 6px;text-align:center;font-size:11px;">狀態</th>' +
+      '<th style="padding:8px 4px;text-align:center;font-size:11px;">操作</th>' +
       '</tr></thead><tbody>';
 
     for (var i = 0; i < agentRecords.length; i++) {
@@ -1834,6 +1835,7 @@ function renderCommissionDetail(agentName, targetId) {
           (hasWash && hallRate ? '<div style="font-size:9px;color:#aaa;font-weight:normal;">x' + hallRate.rate + '%</div>' : '') +
         '</td>' +
         '<td style="padding:7px 6px;text-align:center;">' + statusTag + '</td>' +
+        '<td style="padding:7px 4px;text-align:center;"><span style="cursor:pointer;color:#007bff;font-size:13px;" onclick="editCommRecord(\'' + rec.id + '\')">✏️</span></td>' +
         '</tr>';
     }
     commHtml += '</tbody></table>';
@@ -1877,6 +1879,54 @@ function filterCommissionDetailMain() {
   var sel = document.getElementById('commMainAgentFilter');
   var agentName = sel ? sel.value : '';
   renderCommissionDetail(agentName || null, 'commissionDetailContent');
+}
+
+// ===== 佣金記錄編輯 =====
+const COMM_HALLS = ['御匾會','勵盈1','勵盈2','金門1','金門8','永利會','上葡京老佛爺','上葡京西塔'];
+
+function editCommRecord(id) {
+  var rec = allData.records.find(function(r) { return r.id === id; });
+  if (!rec) return;
+  document.getElementById('commEditId').value = id;
+  document.getElementById('commEditDate').value = rec.date || '';
+  document.getElementById('commEditHotel').value = rec.hotel || '倫敦人';
+  document.getElementById('commEditArea').value = rec.area || '(獨立洗碼)';
+  // 填充貴賓廳選項
+  var hallSel = document.getElementById('commEditHall');
+  hallSel.innerHTML = '';
+  COMM_HALLS.forEach(function(h) {
+    hallSel.innerHTML += '<option value="' + h + '"' + (h === rec.hall ? ' selected' : '') + '>' + h + '</option>';
+  });
+  document.getElementById('commEditCode').value = rec.code || '-';
+  document.getElementById('commEditName').value = rec.name || '';
+  document.getElementById('commEditWashed').value = rec.washed || '';
+  document.getElementById('commEditModal').style.display = 'flex';
+}
+
+function closeCommEditModal() {
+  document.getElementById('commEditModal').style.display = 'none';
+}
+
+function saveCommEdit() {
+  var id = document.getElementById('commEditId').value;
+  var idx = allData.records.findIndex(function(r) { return r.id === id; });
+  if (idx === -1) return;
+  var rec = allData.records[idx];
+  rec.date = document.getElementById('commEditDate').value.trim();
+  rec.hotel = document.getElementById('commEditHotel').value;
+  rec.area = document.getElementById('commEditArea').value;
+  rec.hall = document.getElementById('commEditHall').value;
+  rec.code = document.getElementById('commEditCode').value.trim() || '-';
+  rec.name = document.getElementById('commEditName').value.trim() || '?';
+  var w = parseFloat(document.getElementById('commEditWashed').value);
+  rec.washed = isNaN(w) ? 0 : w;
+  if (rec.washed > 0) rec.status = 'done';
+
+  allData.last_update = new Date().toISOString().slice(0,16).replace('T',' ');
+  saveToLocal();
+  if (fbRef) fbRef.set(allData);
+  closeCommEditModal();
+  recalcAndRender();
 }
 
 function populateCommissionFilter() {
@@ -2247,6 +2297,27 @@ load();
 
     <div id="fbDisconnect" style="display:none;margin-top:12px;text-align:center;">
       <button onclick="disconnectFirebase()" style="padding:8px 20px;background:#dc3545;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;">🔴 斷開 Firebase 同步</button>
+    </div>
+  </div>
+</div>
+
+<!-- 佣金記錄編輯彈窗 -->
+<div id="commEditModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:92%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="font-size:16px;font-weight:bold;color:#1F4E79;margin-bottom:12px;">✏️ 修改佣金記錄</div>
+    <input type="hidden" id="commEditId">
+    <table style="width:100%;font-size:13px;">
+      <tr><td style="padding:4px 4px;color:#888;white-space:nowrap;">日期</td><td><input id="commEditDate" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;" placeholder="M/D"></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">酒店</td><td><select id="commEditHotel" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="銀河">銀河</option><option value="倫敦人">倫敦人</option><option value="新濠天地">新濠天地</option></select></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">區域</td><td><select id="commEditArea" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="(獨立洗碼)">(獨立洗碼)</option></select></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">貴賓廳</td><td><select id="commEditHall" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"></select></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">Code</td><td><input id="commEditCode" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;" placeholder="-"></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">名稱</td><td><input id="commEditName" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;" placeholder="客人/房型"></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">洗碼(萬)</td><td><input id="commEditWashed" type="number" step="0.01" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"></td></tr>
+    </table>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="closeCommEditModal()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;background:#fff;">取消</button>
+      <button onclick="saveCommEdit()" style="flex:2;padding:10px;background:#1F4E79;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;">保存</button>
     </div>
   </div>
 </div>
