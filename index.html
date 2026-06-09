@@ -2005,7 +2005,12 @@ function showPanel(agentName) {
   }
   document.getElementById('rateGrid').innerHTML = rateHtml;
 
+  // 面板佣金明细跟随主画面日期筛选
+  var _cm = commMode, _cy = commYear, _cmo = commMonth, _cf = commDateFrom, _ct = commDateTo;
+  commMode = mainMode; commYear = mainYear; commMonth = mainMonth;
+  commDateFrom = customDateFrom; commDateTo = customDateTo;
   renderCommissionDetail(agentName);
+  commMode = _cm; commYear = _cy; commMonth = _cmo; commDateFrom = _cf; commDateTo = _ct;
 
   panel.classList.add('show');
   currentAgent = agentName;
