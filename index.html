@@ -1744,7 +1744,16 @@ function renderUI() {
 
 // 主页面佣金明细初始化
 function renderCommissionDetailMain() {
+  // 跟隨主畫面日期篩選
+  var _cm = commMode, _cy = commYear, _cmo = commMonth, _cf = commDateFrom, _ct = commDateTo;
+  commMode = mainMode; commYear = mainYear; commMonth = mainMonth;
+  commDateFrom = customDateFrom; commDateTo = customDateTo;
   renderCommissionDetail(null, 'commissionDetailContent');
+  // 同步月份標籤顯示
+  var _ml = document.getElementById('commMonthLabel');
+  var labelEl = document.getElementById('mainMonthLabel');
+  if (_ml && labelEl) { _ml.textContent = labelEl.textContent; }
+  commMode = _cm; commYear = _cy; commMonth = _cmo; commDateFrom = _cf; commDateTo = _ct;
 }
 
 function markAllFundTaken() {
