@@ -71,7 +71,7 @@ def tg_send(chat_id, text, keyboard=None, reply_kb=None):
 
 MAIN_KB = [
     [{"text": "📊 總覽"}, {"text": "📝 拿房"}, {"text": "💰 洗碼"}],
-    [{"text": "📋 記錄"}, {"text": "💵 碼糧"}, {"text": "🏛️ 公積金"}],
+    [{"text": "📋 代理紀錄"}, {"text": "💵 碼糧"}, {"text": "🏛️ 公積金"}],
     [{"text": "🗑️ 刪除"}, {"text": "❓ 幫助"}]
 ]
 
@@ -226,7 +226,7 @@ def cmd_start(chat_id):
         "/status — 各 Agent 洗碼總覽\n"
         "/room — 新增拿房\n"
         "/wash — 新增洗碼\n"
-        "/list — 近期記錄\n"
+        "/list — 代理紀錄（選Agent+時間看獨立洗碼）\n"
         "/commission — 碼糧明細\n"
         "/fund — 公積金\n"
         "/delete — 刪除記錄"
@@ -314,21 +314,35 @@ def cmd_wash(chat_id):
 
 
 def cmd_list(chat_id):
-    data = get_data()
-    records = data.get("records",[])
-    if not records: return tg_send(chat_id, "📋 尚無記錄")
+    """代理紀錄：選擇 Agent → 選擇時間 → 顯示獨立洗碼"""
+    tg_send(chat_id, "📋 代理紀錄\n\n請選擇 Agent：",
+            [[{"text": a, "callback_data": f"la:{a}"}] for a in AGENTS])
 
-    # 按日期排序
-    def sort_date(r):
-        try: d = r.get("date","").split("/"); return (int(d[0]), int(d[1]))
-        except: return (0,0)
-
-    sorted_recs = sorted(records, key=sort_date)[:20]
-    lines = ["📋 *近期記錄（按日期）*\n"]
-    for r in sorted_recs:
-        icon = "✅" if r.get("status")=="done" else "⏳"
-        lines.append(f"{icon} {r.get('date','')} | {r.get('agent','')} | {r.get('hotel','')}·{r.get('area','')} | {r.get('code','')} | 轉碼{fmt_wash(r.get('total_req',0))}萬 | 洗碼{fmt_wash(r.get('washed',0))}萬")
-    tg_send(chat_id, "\n".join(lines))
+# 時間篩選輔助函數
+def filter_records_by_period(records, period):
+    """period: month / lastmonth / year / all"""
+    if period == 'all': return records
+    now = datetime.now()
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    filtered = []
+    for r in records:
+        try:
+            parts = r.get('date', '').split('/')
+            if len(parts) < 2: continue
+            m, d = int(parts[0]), int(parts[1])
+            rd = datetime(now.year, m, d)
+            if rd > today: rd = rd.replace(year=rd.year - 1)
+        except:
+            continue
+        if period == 'month':
+            if rd.year == now.year and rd.month == now.month: filtered.append(r)
+        elif period == 'lastmonth':
+            lm = now.month - 1 if now.month > 1 else 12
+            ly = now.year if now.month > 1 else now.year - 1
+            if rd.year == ly and rd.month == lm: filtered.append(r)
+        elif period == 'year':
+            if rd.year == now.year: filtered.append(r)
+    return filtered
 
 
 def cmd_commission(chat_id):
@@ -410,6 +424,37 @@ def handle_callback(chat_id, data_str, cid):
         agent = data_str[3:]
         set_state(chat_id, {"step":"room_hotel","agent":agent})
         tg_send(chat_id, f"✅ Agent: {agent}\n\n請選擇酒店：", [[{"text":h,"callback_data":f"rh:{h}"}] for h in HOTELS])
+
+    elif data_str.startswith("la:"):
+        agent = data_str[3:]
+        # 代理紀錄流程：選擇時間範圍
+        tg_send(chat_id, f"✅ Agent: {agent}\n\n請選擇時間範圍：",
+                [[{"text":"本月","callback_data":f"lt:{agent}:month"},
+                  {"text":"上月","callback_data":f"lt:{agent}:lastmonth"}],
+                 [{"text":"本年","callback_data":f"lt:{agent}:year"},
+                  {"text":"全部","callback_data":f"lt:{agent}:all"}]])
+
+    elif data_str.startswith("lt:"):
+        parts = data_str[3:].split(":")
+        agent, period = parts[0], parts[1] if len(parts) > 1 else 'month'
+        period_names = {"month":"本月","lastmonth":"上月","year":"本年","all":"全部"}
+        data = get_data()
+        records = [r for r in data.get("records",[]) if r.get("agent")==agent and r.get("area")=="(獨立洗碼)" and r.get("washed")]
+        records = filter_records_by_period(records, period)
+        if not records:
+            tg_send(chat_id, f"📋 {agent} · {period_names.get(period, period)}\n\n尚無獨立洗碼記錄", reply_kb=MAIN_KB)
+            return
+        def sort_date(r):
+            try: d=r.get("date","").split("/"); return (int(d[0]),int(d[1]))
+            except: return (0,0)
+        records.sort(key=sort_date)
+        lines = [f"📋 *{agent} · {period_names.get(period, period)} 獨立洗碼*\n"]
+        total = 0
+        for r in records:
+            w = float(r.get("washed",0)); total += w
+            lines.append(f"  {r.get('date','')} | {r.get('hotel','')} | {r.get('hall','')} | {r.get('name','?')[:15]} | 洗碼{fmt_wash(w)}萬")
+        lines.append(f"\n➡️ 共 {len(records)} 筆 | 總洗碼 {fmt_wash(total)}萬")
+        tg_send(chat_id, "\n".join(lines), reply_kb=MAIN_KB)
 
     elif data_str.startswith("rh:"):
         hotel = data_str[3:]; state = get_state(chat_id); state["step"]="room_area"; state["hotel"]=hotel
@@ -579,7 +624,7 @@ def main():
             elif text == "/status" or text == "📊 總覽": cmd_status(chat_id)
             elif text == "/room" or text == "📝 拿房": cmd_room(chat_id)
             elif text == "/wash" or text == "💰 洗碼": cmd_wash(chat_id)
-            elif text == "/list" or text == "📋 記錄": cmd_list(chat_id)
+            elif text == "/list" or text == "📋 代理紀錄": cmd_list(chat_id)
             elif text == "/commission" or text == "💵 碼糧": cmd_commission(chat_id)
             elif text == "/fund" or text == "🏛️ 公積金": cmd_fund(chat_id)
             elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
@@ -685,7 +730,7 @@ if __name__ == "__main__":
                         elif text == "/status" or text == "📊 總覽": cmd_status(chat_id)
                         elif text == "/room" or text == "📝 拿房": cmd_room(chat_id)
                         elif text == "/wash" or text == "💰 洗碼": cmd_wash(chat_id)
-                        elif text == "/list" or text == "📋 記錄": cmd_list(chat_id)
+                        elif text == "/list" or text == "📋 代理紀錄": cmd_list(chat_id)
                         elif text == "/commission" or text == "💵 碼糧": cmd_commission(chat_id)
                         elif text == "/fund" or text == "🏛️ 公積金": cmd_fund(chat_id)
                         elif text == "/delete" or text == "🗑️ 刪除": cmd_delete(chat_id)
