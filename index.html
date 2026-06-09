@@ -194,9 +194,9 @@
     <select id="inCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">房型</option>
     </select>
-    <input id="inDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="入住日期">
-    <input id="inCheckout" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="退房日期">
-    <input id="inNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="入住日期" onchange="calcCheckout()">
+    <input id="inCheckout" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#f5f5f5;color:#555;" placeholder="退房日期" readonly>
+    <input id="inNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="calcCheckout()">
   </div>
 
   <!-- 洗碼型表單 -->
@@ -892,6 +892,23 @@ function formatDate(val) {
   return val;
 }
 
+// 自動計算退房日期 = 入住日期 + 晚數
+function calcCheckout() {
+  const dateVal = document.getElementById('inDate').value;
+  const nights = parseInt(document.getElementById('inNights').value) || 0;
+  const checkoutEl = document.getElementById('inCheckout');
+  if (!dateVal || nights <= 0) {
+    checkoutEl.value = '';
+    return;
+  }
+  const d = new Date(dateVal + 'T00:00:00');
+  d.setDate(d.getDate() + nights);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  checkoutEl.value = y + '-' + m + '-' + day;
+}
+
 // 格式化洗碼量：保留小數點後兩位，去除不必要的尾零
 function fmtWash(val) {
   if (val == null || val === 0) return '-';
@@ -958,15 +975,9 @@ function editRecord(id) {
         document.getElementById('inDate').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
       }
     }
-    if (rec.checkout) {
-      const parts = rec.checkout.split('/');
-      if (parts.length === 2) {
-        document.getElementById('inCheckout').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
-      }
-    } else {
-      document.getElementById('inCheckout').value = '';
-    }
     document.getElementById('inNights').value = rec.nights || '';
+    // 自動計算退房日期
+    calcCheckout();
     document.getElementById('inType').value = 'room';
     toggleForm();
   }
@@ -1033,7 +1044,7 @@ function submitRecord() {
     const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
     const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
     const date = formatDate(document.getElementById('inDate').value);
-    const checkout = formatDate(document.getElementById('inCheckout').value);
+    const checkout = formatDate(document.getElementById('inCheckout').value);  // 自動計算
     const nights = parseInt(document.getElementById('inNights').value) || 1;
     if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
