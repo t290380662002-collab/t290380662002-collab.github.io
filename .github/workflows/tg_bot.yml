@@ -1,18 +1,16 @@
-name: Telegram Bot 即時輪詢
+name: Telegram Bot 定時檢查
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # 每6小時重啟一次（GitHub Actions 上限）
+    - cron: '*/5 * * * *'     # 每 5 分鐘檢查新訊息
   workflow_dispatch:
-
-concurrency:
-  group: tg-bot
-  cancel-in-progress: true
+  push:
+    branches: [main]          # 推送上線後立即檢查一次
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 360     # 6 小時上限
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -23,8 +21,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run Telegram Bot (Long Polling)
+      - name: Run Telegram Bot（單次檢查模式）
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
-          LONGPOLL: "1"
         run: python tg_bot.py
