@@ -21,7 +21,7 @@
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
-        "washed": 0
+        "washed": 239
       },
       "新濠天地": {
         "rolling": 0,
@@ -29,9 +29,9 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1080,
-        "rooms": 9,
-        "washed": 1199
+        "rolling": 1000,
+        "rooms": 8,
+        "washed": 1358
       }
     },
     "Ring": {
@@ -137,11 +137,12 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-09 10:45",
+  "last_update": "2026-06-09 18:33",
   "records": [
     {
       "agent": "Fifi",
       "area": "摩珀斯",
+      "checkout": "6/4",
       "code": "PT",
       "commission_taken": false,
       "date": "6/2",
@@ -158,6 +159,7 @@
     {
       "agent": "安",
       "area": "映星匯",
+      "checkout": "6/29",
       "code": "EDT",
       "commission_taken": false,
       "date": "6/28",
@@ -174,6 +176,7 @@
     {
       "agent": "安",
       "area": "映星匯",
+      "checkout": "6/16",
       "code": "EDT",
       "commission_taken": false,
       "date": "6/14",
@@ -190,6 +193,7 @@
     {
       "agent": "安",
       "area": "摩珀斯",
+      "checkout": "6/8",
       "code": "PK",
       "commission_taken": false,
       "date": "6/6",
@@ -206,6 +210,7 @@
     {
       "agent": "安",
       "area": "摩珀斯",
+      "checkout": "6/8",
       "code": "PK",
       "commission_taken": false,
       "date": "6/6",
@@ -579,6 +584,7 @@
     {
       "agent": "H",
       "area": "萬豪",
+      "checkout": "6/7",
       "code": "JW01T",
       "commission_taken": false,
       "date": "6/6",
@@ -595,6 +601,7 @@
     {
       "agent": "安",
       "area": "映星匯",
+      "checkout": "7/19",
       "code": "EDT",
       "commission_taken": false,
       "date": "7/17",
@@ -611,9 +618,10 @@
     {
       "agent": "H",
       "area": "萬豪",
+      "checkout": "6/9",
       "code": "JW06",
       "commission_taken": false,
-      "date": "6/5",
+      "date": "6/6",
       "hall": "",
       "hotel": "銀河",
       "id": "r1780648425747",
@@ -627,17 +635,18 @@
     {
       "agent": "H",
       "area": "萬豪",
+      "checkout": "6/10",
       "code": "JW01",
       "commission_taken": false,
-      "date": "6/5",
+      "date": "6/6",
       "hall": "",
       "hotel": "銀河",
       "id": "r1780648434546",
       "name": "萬豪大床",
-      "nights": 5,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 400,
+      "total_req": 320,
       "washed": 0
     },
     {
@@ -781,7 +790,7 @@
       "area": "(獨立洗碼)",
       "code": "-",
       "commission_taken": false,
-      "date": "6/9",
+      "date": "6/3",
       "hall": "勵盈1",
       "hotel": "新濠天地",
       "id": "w1780937905699",
@@ -792,6 +801,40 @@
       "status": "done",
       "total_req": 0,
       "washed": 10
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/6",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1781005820691",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 239
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/10",
+      "hall": "金門8",
+      "hotel": "銀河",
+      "id": "w1781024356247",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 159
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
