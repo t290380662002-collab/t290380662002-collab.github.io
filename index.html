@@ -1785,6 +1785,7 @@ function renderCommissionDetail(agentName, targetId) {
   var commHtml = '';
   var totalCommission = 0;
   var totalTaken = 0;
+  var totalWashedAll = 0;
   var showAgentCol = !agentName;
 
   if (agentRecords.length === 0) {
@@ -1808,6 +1809,8 @@ function renderCommissionDetail(agentName, targetId) {
       var hasWash = rec.washed && rec.washed > 0;
       var hallRate = rates.find(function(r) { return r.name === rec.hall; });
       var commissionVal = 0;
+
+      if (hasWash) totalWashedAll += parseFloat(rec.washed) || 0;
 
       if (hasWash && hallRate) {
         commissionVal = rec.washed * 10000 * (hallRate.rate / 100);
@@ -1851,6 +1854,7 @@ function renderCommissionDetail(agentName, targetId) {
       var formattedTotal = totalCommission.toLocaleString('en-US', {maximumFractionDigits:0});
       var formattedTaken = totalTaken.toLocaleString('en-US', {maximumFractionDigits:0});
       var formattedPending = (totalCommission - totalTaken).toLocaleString('en-US', {maximumFractionDigits:0});
+      var formattedWash = totalWashedAll.toLocaleString('en-US', {maximumFractionDigits:2});
       commHtml += '<div style="margin-top:8px;background:#f8f9fa;border-radius:8px;border:1px solid #dee2e6;overflow:hidden;">' +
         '<div style="display:flex;text-align:center;align-items:flex-end;">' +
         '<div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">' +
@@ -1859,9 +1863,12 @@ function renderCommissionDetail(agentName, targetId) {
         '<div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">' +
         '<div style="font-size:10px;color:#888;">已取碼糧</div>' +
         '<div style="font-size:15px;font-weight:bold;color:#155724;">' + formattedTaken + '</div></div>' +
-        '<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-        '<div><div style="font-size:10px;color:#888;">未取碼糧</div>' +
+        '<div style="flex:1;padding:8px 4px;border-right:1px solid #dee2e6;">' +
+        '<div style="font-size:10px;color:#888;">未取碼糧</div>' +
         '<div style="font-size:15px;font-weight:bold;color:#856404;">' + formattedPending + '</div></div>' +
+        '<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+        '<div><div style="font-size:10px;color:#888;">總洗碼數</div>' +
+        '<div style="font-size:15px;font-weight:bold;color:#6366f1;">' + formattedWash + '萬</div></div>' +
         (agentName && formattedPending !== '0' ? '<button onclick="takeAllComm(\'' + agentName + '\')" style="padding:3px 12px;background:#155724;color:#fff;border:none;border-radius:12px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;">全取 ✅</button>' : '') +
         '</div></div></div>';
     }
