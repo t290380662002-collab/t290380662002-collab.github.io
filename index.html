@@ -194,7 +194,8 @@
     <select id="inCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
       <option value="">房型</option>
     </select>
-    <input id="inDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="inDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="入住日期">
+    <input id="inCheckout" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="退房日期">
     <input id="inNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
   </div>
 
@@ -247,7 +248,7 @@
 <div class="table-section">
   <h3>🏨 拿房記錄</h3>
   <table id="roomTable">
-    <thead><tr><th>入住</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>轉碼需求</th><th>晚數</th><th>總需求</th><th>已洗碼</th><th>狀態</th><th>操作</th></tr></thead>
+    <thead><tr><th>入住</th><th>退房</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>轉碼需求</th><th>晚數</th><th>總需求</th><th>已洗碼</th><th>狀態</th><th>操作</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -957,6 +958,14 @@ function editRecord(id) {
         document.getElementById('inDate').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
       }
     }
+    if (rec.checkout) {
+      const parts = rec.checkout.split('/');
+      if (parts.length === 2) {
+        document.getElementById('inCheckout').value = '2026-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+      }
+    } else {
+      document.getElementById('inCheckout').value = '';
+    }
     document.getElementById('inNights').value = rec.nights || '';
     document.getElementById('inType').value = 'room';
     toggleForm();
@@ -977,6 +986,7 @@ function cancelEdit() {
   document.getElementById('inArea').innerHTML = '<option value="">區域</option>';
   document.getElementById('inCode').innerHTML = '<option value="">房型</option>';
   document.getElementById('inDate').value = '';
+  document.getElementById('inCheckout').value = '';
   document.getElementById('inNights').value = '';
   document.getElementById('inWashDate').value = '';
   document.getElementById('inWashAmt').value = '';
@@ -1023,6 +1033,7 @@ function submitRecord() {
     const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
     const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
     const date = formatDate(document.getElementById('inDate').value);
+    const checkout = formatDate(document.getElementById('inCheckout').value);
     const nights = parseInt(document.getElementById('inNights').value) || 1;
     if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
@@ -1031,6 +1042,7 @@ function submitRecord() {
       const rec = allData.records.find(r => r.id === editingId);
       if (rec) {
         rec.date = date;
+        rec.checkout = checkout;
         rec.agent = agent;
         rec.hotel = hotel;
         rec.area = area;
@@ -1048,7 +1060,7 @@ function submitRecord() {
       // 新增模式
       allData.records.push({
         id: 'r' + Date.now(),
-        date, agent, hotel, area, code, name,
+        date, checkout, agent, hotel, area, code, name,
         req, nights, total_req: req * nights,
         washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
       });
@@ -1213,7 +1225,7 @@ function renderRoomTable(agentName) {
     return am !== bm ? am - bm : ad - bd;
   });
   if (recs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:#999;">尚無拿房記錄</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="padding:16px;color:#999;">尚無拿房記錄</td></tr>';
     return;
   }
   for (const rec of recs) {
@@ -1221,7 +1233,7 @@ function renderRoomTable(agentName) {
       ? '<span class="status-done">✅</span>'
       : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal('${rec.id}')">⏳ 點我填洗碼</span>`;
     tbody.innerHTML += `<tr>
-      <td>${rec.date}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
+      <td>${rec.date}</td><td>${rec.checkout || ''}</td><td><b>${rec.agent}</b></td><td>${rec.hotel}</td><td>${rec.area}</td>
       <td>${rec.code}</td><td>${rec.name}</td><td>${rec.req}萬</td><td>${rec.nights}</td>
       <td>${rec.total_req}萬</td><td>${fmtWash(rec.washed)}</td><td>${statusHtml}</td>
       <td>
