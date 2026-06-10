@@ -31,7 +31,7 @@
       "銀河": {
         "rolling": 1000,
         "rooms": 8,
-        "washed": 1358
+        "washed": 1378
       }
     },
     "Ring": {
@@ -137,7 +137,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-10 12:40",
+  "last_update": "2026-06-10 21:28",
   "records": [
     {
       "agent": "Fifi",
@@ -654,23 +654,6 @@
       "area": "(獨立洗碼)",
       "code": "-",
       "commission_taken": false,
-      "date": "6/6",
-      "hall": "金門8",
-      "hotel": "銀河",
-      "id": "w1780764364114",
-      "isWashFree": true,
-      "name": "獨立洗碼",
-      "nights": 0,
-      "req": 0,
-      "status": "done",
-      "total_req": 0,
-      "washed": 956
-    },
-    {
-      "agent": "H",
-      "area": "(獨立洗碼)",
-      "code": "-",
-      "commission_taken": false,
       "date": "6/7",
       "hall": "金門8",
       "hotel": "銀河",
@@ -834,7 +817,7 @@
       "req": 0,
       "status": "done",
       "total_req": 0,
-      "washed": 159
+      "washed": 1135
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
