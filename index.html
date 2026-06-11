@@ -72,6 +72,7 @@
   .tab-btn { padding:10px 28px; border:2px solid #1F4E79; font-size:15px; font-weight:bold; cursor:pointer; background:#fff; color:#1F4E79; transition:all 0.2s; }
   .tab-btn:first-child { border-radius:10px 0 0 10px; }
   .tab-btn:last-child { border-radius:0 10px 10px 0; }
+  .tab-btn:not(:first-child):not(:last-child) { border-radius:0; }
   .tab-btn.active { background:#1F4E79; color:#fff; }
   .tab-btn:hover:not(.active) { background:#e8ecf1; }
   .tab-content { display:none; }
@@ -159,6 +160,7 @@
 <!-- Tab 導航 -->
 <div class="tab-nav">
   <button class="tab-btn active" id="tabBtnMain" onclick="switchTab('main')">📊 主畫面</button>
+  <button class="tab-btn" id="tabBtnWash" onclick="switchTab('wash')">💰 總洗碼</button>
   <button class="tab-btn" id="tabBtnCommission" onclick="switchTab('commission')">🏨 佣金明细</button>
 </div>
 
@@ -183,6 +185,8 @@
       <option value="銀河">銀河</option>
       <option value="倫敦人">倫敦人</option>
       <option value="新濠天地">新濠天地</option>
+      <option value="永利皇宮">永利皇宮</option>
+      <option value="上葡京">上葡京</option>
     </select>
   </div>
 
@@ -278,6 +282,50 @@
 
 </div>
 <!-- 主畫面分頁結束 -->
+
+<!-- 總洗碼分頁（永利皇宮 + 上葡京） -->
+<div class="tab-content" id="washTab">
+
+<div class="summary" id="washSummary"></div>
+
+<div class="table-section">
+  <h3>🏨 總洗碼記錄
+    <span style="font-size:12px;font-weight:normal;margin-left:8px;">
+      <select id="washHotelFilter" onchange="renderWashTab()" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
+        <option value="">全部酒店</option>
+        <option value="永利皇宮">永利皇宮</option>
+        <option value="上葡京">上葡京</option>
+      </select>
+    </span>
+  </h3>
+  <!-- 時間篩選 -->
+  <div class="comm-date-nav" style="display:flex;align-items:center;justify-content:center;gap:2px;margin-bottom:8px;user-select:none;">
+    <button class="comm-arrow" onclick="washNavMonth(-1)" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:8px 0 0 8px;cursor:pointer;font-size:14px;color:#555;">◀</button>
+    <button class="comm-month-label" id="washMonthLabel" onclick="toggleWashMonthMenu()" style="padding:6px 20px;border:1px solid #1F4E79;background:#1F4E79;color:#fff;border-radius:0;cursor:pointer;font-size:14px;font-weight:bold;min-width:120px;">本月</button>
+    <button class="comm-arrow" onclick="washNavMonth(1)" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:0 8px 8px 0;cursor:pointer;font-size:14px;color:#555;">▶</button>
+    <div class="comm-month-menu" id="washMonthMenu" style="display:none;position:absolute;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:100;min-width:160px;overflow:hidden;">
+      <div class="comm-menu-item" onclick="washPickQuick('lastmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 上月</div>
+      <div class="comm-menu-item" onclick="washPickQuick('month')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;background:#e8f0fe;font-weight:bold;">📅 本月</div>
+      <div class="comm-menu-item" onclick="washPickQuick('nextmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 下月</div>
+      <div class="comm-menu-item" onclick="washPickQuick('year')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📆 本年</div>
+      <div class="comm-menu-item" onclick="washPickQuick('all')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📋 全部</div>
+      <div class="comm-menu-item" onclick="washShowCustom()" style="padding:10px 16px;cursor:pointer;font-size:14px;color:#1F4E79;">📐 自訂日期範圍...</div>
+    </div>
+  </div>
+  <div id="washCustomRow" style="display:none;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <input id="washDateFrom" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+    <span style="font-size:12px;color:#888;">~</span>
+    <input id="washDateTo" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+    <button onclick="washApplyCustom()" style="padding:4px 12px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確定</button>
+  </div>
+  <table id="washTable">
+    <thead><tr><th>日期</th><th>退房</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>晚數</th><th>已洗碼</th><th>貴賓廳</th><th>狀態</th><th>操作</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+</div>
+<!-- 總洗碼分頁結束 -->
 
 <!-- 佣金明细分頁 -->
 <div class="tab-content" id="commissionTab">
@@ -399,6 +447,7 @@ let allData = null;
 let filteredRecords = [];
 let currentAgent = null;
 const HOTELS = ['銀河','倫敦人','新濠天地'];
+const WASH_HOTELS = ['永利皇宮','上葡京'];
 
 // ===== 主畫面時間篩選狀態 =====
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
@@ -580,14 +629,21 @@ let commissionTabRendered = false;
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('mainTab').classList.toggle('active', tab === 'main');
+  document.getElementById('washTab').classList.toggle('active', tab === 'wash');
   document.getElementById('commissionTab').classList.toggle('active', tab === 'commission');
   document.getElementById('tabBtnMain').classList.toggle('active', tab === 'main');
+  document.getElementById('tabBtnWash').classList.toggle('active', tab === 'wash');
   document.getElementById('tabBtnCommission').classList.toggle('active', tab === 'commission');
 
   if (tab === 'commission' && !commissionTabRendered) {
     commUpdateLabel();
     renderCommissionDetailMain();
     commissionTabRendered = true;
+  }
+  if (tab === 'wash' && !washTabRendered) {
+    washUpdateLabel();
+    renderWashTab();
+    washTabRendered = true;
   }
 }
 
@@ -597,6 +653,180 @@ let commYear = new Date().getFullYear();
 let commMonth = new Date().getMonth() + 1;
 let commDateFrom = '';
 let commDateTo = '';
+
+// ===== 總洗碼分頁狀態 =====
+let washMode = 'month';
+let washYear = new Date().getFullYear();
+let washMonth = new Date().getMonth() + 1;
+let washDateFrom = '';
+let washDateTo = '';
+let washTabRendered = false;
+
+function washUpdateLabel() {
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  const label = document.getElementById('washMonthLabel');
+  if (!label) return;
+  if (washMode === 'month') {
+    const prefix = (washYear === curY && washMonth === curM) ? '本月 ' : '';
+    label.textContent = prefix + washYear + '年' + COMM_MONTH_NAMES[washMonth - 1];
+  } else if (washMode === 'year') {
+    const prefix = (washYear === curY) ? '本年 ' : '';
+    label.textContent = prefix + washYear + '年';
+  } else if (washMode === 'all') {
+    label.textContent = '全部';
+  } else if (washMode === 'custom') {
+    label.textContent = '自訂日期';
+  }
+}
+
+function washNavMonth(dir) {
+  document.getElementById('washMonthMenu').style.display = 'none';
+  if (washMode === 'month') {
+    washMonth += dir;
+    if (washMonth < 1) { washMonth = 12; washYear--; }
+    if (washMonth > 12) { washMonth = 1; washYear++; }
+  } else if (washMode === 'year') {
+    washYear += dir;
+  }
+  washUpdateLabel();
+  renderWashTab();
+}
+
+function toggleWashMonthMenu() {
+  const menu = document.getElementById('washMonthMenu');
+  updateWashMenuItems();
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  const label = document.getElementById('washMonthLabel');
+  const rect = label.getBoundingClientRect();
+  menu.style.left = rect.left + 'px';
+  menu.style.top = (rect.bottom + 4) + 'px';
+}
+
+function updateWashMenuItems() {
+  const items = document.querySelectorAll('#washMonthMenu .comm-menu-item');
+  if (items.length < 6) return;
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  // Highlight current selection
+  items[0].style.background = (washMode === 'month' && washYear === curY && washMonth === (curM===1?12:curM-1) && (!(washMonth===curM && washYear===curY) || washMonth!==curM)) ? '#e8f0fe' : '';
+  items[1].style.background = (washMode === 'month' && washYear === curY && washMonth === curM) ? '#e8f0fe' : '';
+  items[2].style.background = (washMode === 'month' && washYear === curY && washMonth === (curM===12?1:curM+1)) ? '#e8f0fe' : '';
+  items[3].style.background = (washMode === 'year' && washYear === curY) ? '#e8f0fe' : '';
+  items[4].style.background = (washMode === 'all') ? '#e8f0fe' : '';
+}
+
+function washPickQuick(type) {
+  document.getElementById('washMonthMenu').style.display = 'none';
+  document.getElementById('washCustomRow').style.display = 'none';
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  if (type === 'month') { washMode = 'month'; washYear = curY; washMonth = curM; }
+  else if (type === 'lastmonth') { washMode = 'month'; const lm = new Date(curY, curM - 2, 1); washYear = lm.getFullYear(); washMonth = lm.getMonth() + 1; }
+  else if (type === 'nextmonth') { washMode = 'month'; const nm = new Date(curY, curM, 1); washYear = nm.getFullYear(); washMonth = nm.getMonth() + 1; }
+  else if (type === 'year') { washMode = 'year'; washYear = curY; }
+  else if (type === 'all') { washMode = 'all'; }
+  washUpdateLabel();
+  renderWashTab();
+}
+
+function washShowCustom() {
+  document.getElementById('washMonthMenu').style.display = 'none';
+  document.getElementById('washCustomRow').style.display = 'flex';
+}
+
+function washApplyCustom() {
+  const from = document.getElementById('washDateFrom').value;
+  const to = document.getElementById('washDateTo').value;
+  if (!from || !to) { alert('請選擇起迄日期'); return; }
+  washMode = 'custom';
+  washDateFrom = from;
+  washDateTo = to;
+  washUpdateLabel();
+  renderWashTab();
+}
+
+function washFilterByPeriod(records) {
+  if (washMode === 'all') return records;
+  const now = new Date();
+  return records.filter(r => {
+    try {
+      const parts = r.date.split('/');
+      if (parts.length < 2) return false;
+      const rd = new Date(now.getFullYear(), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      if (rd > now) rd.setFullYear(rd.getFullYear() - 1);
+      if (washMode === 'month') return rd.getFullYear() === washYear && rd.getMonth() + 1 === washMonth;
+      if (washMode === 'year') return rd.getFullYear() === washYear;
+      if (washMode === 'custom') {
+        const dFrom = new Date(washDateFrom + 'T00:00:00');
+        const dTo = new Date(washDateTo + 'T23:59:59');
+        return rd >= dFrom && rd <= dTo;
+      }
+    } catch(e) { return false; }
+    return true;
+  });
+}
+
+function renderWashTab() {
+  const tbody = document.querySelector('#washTable tbody');
+  tbody.innerHTML = '';
+  const hotelFilter = document.getElementById('washHotelFilter').value;
+  let recs = allData.records.filter(r => WASH_HOTELS.includes(r.hotel));
+  if (hotelFilter) recs = recs.filter(r => r.hotel === hotelFilter);
+  recs = washFilterByPeriod(recs);
+  recs = [...recs].sort((a, b) => {
+    const [am, ad] = (a.date||'').split('/').map(Number);
+    const [bm, bd] = (b.date||'').split('/').map(Number);
+    return (am||0) !== (bm||0) ? (am||0) - (bm||0) : (ad||0) - (bd||0);
+  });
+
+  if (recs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:#999;">尚無記錄</td></tr>';
+    document.getElementById('washSummary').innerHTML = '<div class="card" style="flex:1;min-width:100%;background:linear-gradient(135deg,#1a1a3e,#1F4E79);color:#fff;text-align:center;"><div>💰 永利皇宮 + 上葡京</div><div style="font-size:16px;margin-top:4px;">本期總洗碼 0 萬</div></div>';
+    return;
+  }
+
+  let totalWash = 0;
+  let wyWash = 0, spjWash = 0;
+  for (const rec of recs) {
+    const w = parseFloat(rec.washed) || 0;
+    totalWash += w;
+    if (rec.hotel === '永利皇宮') wyWash += w;
+    else if (rec.hotel === '上葡京') spjWash += w;
+
+    const statusHtml = rec.status === 'done'
+      ? '<span class="status-done">✅</span>'
+      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal('${rec.id}')">⏳ 填洗碼</span>`;
+    tbody.innerHTML += `<tr>
+      <td>${rec.date||''}</td><td>${rec.checkout||''}</td><td><b>${rec.agent||''}</b></td><td>${rec.hotel||''}</td><td>${rec.area||''}</td>
+      <td>${rec.code||''}</td><td>${rec.name||''}</td><td>${rec.nights||0}</td>
+      <td>${fmtWash(rec.washed)}</td><td>${rec.hall||''}</td><td>${statusHtml}</td>
+      <td>
+        <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
+        <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
+      </td>
+    </tr>`;
+  }
+
+  // 摘要卡片
+  document.getElementById('washSummary').innerHTML = `
+    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#1a1a3e,#1F4E79);color:#fff;text-align:center;">
+      <div style="font-size:13px;opacity:0.85;">💰 總洗碼</div>
+      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(totalWash)}萬</div>
+      <div style="font-size:11px;opacity:0.7;">${recs.length} 筆記錄</div>
+    </div>
+    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#5B2C6F,#8E44AD);color:#fff;text-align:center;">
+      <div style="font-size:13px;opacity:0.85;">🏰 永利皇宮</div>
+      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(wyWash)}萬</div>
+    </div>
+    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#1a5276,#2980B9);color:#fff;text-align:center;">
+      <div style="font-size:13px;opacity:0.85;">🏯 上葡京</div>
+      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(spjWash)}萬</div>
+    </div>`;
+}
 
 const COMM_MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
@@ -808,6 +1038,13 @@ const HOTEL_MAP = {
     "明星匯": [["CRK","明星匯經典(大床)",30],["CRT","明星匯經典雙床",30],["CDK","明星匯豪華(大床)",30]],
     "巨星匯": [["SDK","巨星匯尊貴(大床)",60],["SDT","巨星匯尊貴(雙床)",60],["SPS","巨星匯行政套房",200]],
     "映星匯": [["EDK","映星匯套房(大床)",60],["EDT","映星匯套房(雙床)",60],["EG1","映星匯悠然套房",100],["ES1","映星匯華麗套房",200]]
+  },
+  "永利皇宮": {
+    "永利皇宮": [["CRK","永利皇宮大床",0],["CRT","永利皇宮雙床",0]]
+  },
+  "上葡京": {
+    "老佛爺": [["LFK","上葡京老佛爺",0],["LFT","上葡京老佛爺雙床",0]],
+    "西塔": [["XTK","上葡京西塔大床",0],["XTT","上葡京西塔雙床",0]]
   }
 };
 
@@ -2273,6 +2510,8 @@ load();
           <option value="銀河">銀河</option>
           <option value="倫敦人">倫敦人</option>
           <option value="新濠天地">新濠天地</option>
+          <option value="永利皇宮">永利皇宮</option>
+          <option value="上葡京">上葡京</option>
         </select>
       </div>
       <div style="margin-bottom:8px;">
@@ -2359,7 +2598,7 @@ load();
     <input type="hidden" id="commEditId">
     <table style="width:100%;font-size:13px;">
       <tr><td style="padding:4px 4px;color:#888;white-space:nowrap;">日期</td><td><input id="commEditDate" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;" placeholder="M/D"></td></tr>
-      <tr><td style="padding:4px 4px;color:#888;">酒店</td><td><select id="commEditHotel" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="銀河">銀河</option><option value="倫敦人">倫敦人</option><option value="新濠天地">新濠天地</option></select></td></tr>
+      <tr><td style="padding:4px 4px;color:#888;">酒店</td><td><select id="commEditHotel" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="銀河">銀河</option><option value="倫敦人">倫敦人</option><option value="新濠天地">新濠天地</option><option value="永利皇宮">永利皇宮</option><option value="上葡京">上葡京</option></select></td></tr>
       <tr><td style="padding:4px 4px;color:#888;">區域</td><td><select id="commEditArea" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="(獨立洗碼)">(獨立洗碼)</option></select></td></tr>
       <tr><td style="padding:4px 4px;color:#888;">貴賓廳</td><td><select id="commEditHall" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;"></select></td></tr>
       <tr><td style="padding:4px 4px;color:#888;">Code</td><td><input id="commEditCode" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:13px;" placeholder="-"></td></tr>

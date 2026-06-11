@@ -12,7 +12,7 @@ TG_API = f"https://api.telegram.org/bot{TG_TOKEN}"
 FB_DB = "https://anget1-default-rtdb.asia-southeast1.firebasedatabase.app/agentWashData"
 FB_STATE = FB_DB.replace("agentWashData", "botState")
 
-HOTELS = ["銀河", "倫敦人", "新濠天地"]
+HOTELS = ["銀河", "倫敦人", "新濠天地", "永利皇宮", "上葡京"]
 AGENTS = ["安", "Fifi", "Yuka", "H", "Ring", "韓國"]
 
 # 場所 → 酒店對照
@@ -44,6 +44,13 @@ HOTEL_MAP = {
         "明星匯": [["CRK","明星匯經典(大床)",30],["CRT","明星匯經典雙床",30],["CDK","明星匯豪華(大床)",30]],
         "巨星匯": [["SDK","巨星匯尊貴(大床)",60],["SDT","巨星匯尊貴(雙床)",60],["SPS","巨星匯行政套房",200]],
         "映星匯": [["EDK","映星匯套房(大床)",60],["EDT","映星匯套房(雙床)",60],["EG1","映星匯悠然套房",100],["ES1","映星匯華麗套房",200]]
+    },
+    "永利皇宮": {
+        "永利皇宮": [["CRK","永利皇宮大床",0],["CRT","永利皇宮雙床",0]]
+    },
+    "上葡京": {
+        "老佛爺": [["LFK","上葡京老佛爺",0],["LFT","上葡京老佛爺雙床",0]],
+        "西塔": [["XTK","上葡京西塔大床",0],["XTT","上葡京西塔雙床",0]]
     },
 }
 
