@@ -2209,10 +2209,10 @@ function showPanel(agentName) {
 
 // 洗碼對話框
 let currentWashIdx = -1;
-let washMode = 'linked'; // 'linked' or 'free'
+let washModalMode = 'linked'; // 'linked' or 'free'
 
 function setWashMode(mode) {
-  washMode = mode;
+  washModalMode = mode;
   document.getElementById('washModeLinked').style.background = mode === 'linked' ? '#1F4E79' : '#f0f0f0';
   document.getElementById('washModeLinked').style.color = mode === 'linked' ? '#fff' : '#666';
   document.getElementById('washModeFree').style.background = mode === 'free' ? '#1F4E79' : '#f0f0f0';
@@ -2270,7 +2270,7 @@ function confirmWash() {
   if (!amt) { alert('請輸入洗碼量'); return; }
   const hall = document.getElementById('washModalHall').value;
 
-  if (washMode === 'linked' && currentWashIdx >= 0) {
+  if (washModalMode === 'linked' && currentWashIdx >= 0) {
     const rec = allData.records[currentWashIdx];
     if (rec) {
       rec.washed = amt;
