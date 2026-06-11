@@ -91,34 +91,11 @@
     .comm-grid { grid-template-columns:1fr; }
     .tab-btn { padding:8px 16px; font-size:13px; }
   }
-
-  /* PIN 碼登入鎖屏 */
-  .pin-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:flex; align-items:center; justify-content:center; }
-  .pin-overlay.hidden { display:none; }
-  .pin-box { background:#fff; border-radius:16px; padding:40px 32px; text-align:center; max-width:360px; width:90%; box-shadow:0 8px 40px rgba(0,0,0,0.3); }
-  .pin-box h2 { font-size:24px; margin-bottom:4px; color:#1a1a2e; }
-  .pin-box .pin-sub { font-size:13px; color:#999; margin-bottom:20px; }
-  .pin-input { width:100%; padding:14px; font-size:28px; text-align:center; letter-spacing:12px; border:2px solid #ddd; border-radius:10px; outline:none; transition:border 0.2s; }
-  .pin-input:focus { border-color:#1F4E79; }
-  .pin-msg { font-size:13px; color:#dc3545; margin-top:10px; min-height:20px; }
-  .pin-btn { margin-top:12px; width:100%; padding:12px; font-size:16px; font-weight:bold; background:#1F4E79; color:#fff; border:none; border-radius:10px; cursor:pointer; }
-  .pin-btn:hover { background:#163d5e; }
-  .pin-hint { margin-top:14px; font-size:12px; color:#aaa; cursor:pointer; text-decoration:underline; }
 </style>
 </head>
 <body>
 
-<!-- PIN 碼登入鎖屏 -->
-<div class="pin-overlay" id="pinOverlay">
-  <div class="pin-box">
-    <div style="font-size:48px;margin-bottom:8px;">🔐</div>
-    <h2>Agent 洗碼統計</h2>
-    <div class="pin-sub">請輸入 PIN 碼以解鎖</div>
-    <input type="password" class="pin-input" id="pinInput" maxlength="20" placeholder="PIN 碼" onkeydown="if(event.key==='Enter')verifyPin()" autofocus>
-    <div class="pin-msg" id="pinMsg"></div>
-    <button class="pin-btn" onclick="verifyPin()">解鎖</button>
-    <div class="pin-hint" onclick="resetPin()">忘記 PIN 碼？點此重置</div>
-  </div>
+</div>
 </div>
 
 <div class="header">
@@ -368,57 +345,6 @@
 <!-- 佣金明细分頁結束 -->
 
 <script>
-// ===== PIN 碼驗證 =====
-const PIN_STORAGE_KEY = 'agentPinCode';
-const PIN_VERIFIED_KEY = 'agentPinVerified';
-const DEFAULT_PIN = 'macau888';
-
-function getPinCode() {
-  return localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN;
-}
-
-function isPinVerified() {
-  return localStorage.getItem(PIN_VERIFIED_KEY) === 'true';
-}
-
-function verifyPin() {
-  const input = document.getElementById('pinInput').value.trim();
-  const msg = document.getElementById('pinMsg');
-  if (!input) { msg.textContent = '請輸入 PIN 碼'; return; }
-  // 萬能重置碼：輸入 reset888 可強制清除 PIN 回到預設
-  if (input === 'reset888') {
-    localStorage.removeItem(PIN_STORAGE_KEY);
-    localStorage.removeItem(PIN_VERIFIED_KEY);
-    document.getElementById('pinInput').value = '';
-    msg.textContent = '✅ 已強制重置！PIN 恢復為預設值 macau888';
-    return;
-  }
-  if (input === getPinCode()) {
-    localStorage.setItem(PIN_VERIFIED_KEY, 'true');
-    document.getElementById('pinOverlay').classList.add('hidden');
-    if (typeof load === 'function') load();
-  } else {
-    msg.textContent = '❌ PIN 碼錯誤，請重試';
-    document.getElementById('pinInput').value = '';
-    document.getElementById('pinInput').focus();
-  }
-}
-
-function resetPin() {
-  localStorage.removeItem(PIN_STORAGE_KEY);
-  localStorage.removeItem(PIN_VERIFIED_KEY);
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinMsg').textContent = '✅ 已重置！預設 PIN：macau888（輸入後即解鎖）';
-  document.getElementById('pinInput').focus();
-}
-
-// 頁面載入時檢查
-if (isPinVerified()) {
-  document.getElementById('pinOverlay').classList.add('hidden');
-} else {
-  document.getElementById('pinOverlay').classList.remove('hidden');
-}
-
 // ===== 預設 Firebase 設定 =====
 const DEFAULT_FB_CONFIG = {
   apiKey: "AIzaSyDH1sGsGWZXZfrDbQ7PNw6E7VksMW58MzE",
