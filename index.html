@@ -265,6 +265,48 @@
 
 <div class="summary" id="washSummary"></div>
 
+<!-- 總洗碼輸入表單 -->
+<div class="table-section" id="washInputSection">
+  <h3>📝 新增記錄（永利皇宮 / 上葡京）</h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+    <select id="washInputAgent" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">Agent</option>
+    </select>
+    <select id="washInputType" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="toggleWashInputForm()">
+      <option value="room">拿房</option>
+      <option value="wash">洗碼</option>
+    </select>
+    <select id="washInputHotel" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateWashInputAreas()">
+      <option value="">酒店</option>
+      <option value="永利皇宮">永利皇宮</option>
+      <option value="上葡京">上葡京</option>
+    </select>
+  </div>
+  <!-- 拿房表單 -->
+  <div id="washRoomForm" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+    <select id="washInputArea" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateWashInputCodes()">
+      <option value="">區域</option>
+    </select>
+    <select id="washInputCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">房型</option>
+    </select>
+    <input id="washInputDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="入住日期" onchange="calcWashInputCheckout()">
+    <input id="washInputCheckout" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#f5f5f5;color:#555;" placeholder="退房日期" readonly>
+    <input id="washInputNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="calcWashInputCheckout()">
+  </div>
+  <!-- 洗碼表單 -->
+  <div id="washWashForm" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;">
+    <input id="washInputWashDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <input id="washInputWashAmt" type="number" placeholder="洗碼量(萬)" min="0" step="0.01" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    <select id="washInputHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">貴賓廳</option>
+    </select>
+  </div>
+  <div style="margin-top:8px;text-align:right;">
+    <button onclick="submitWashRecord()" class="btn-submit" style="padding:8px 24px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">送出</button>
+  </div>
+</div>
+
 <div class="table-section">
   <h3>🏨 總洗碼記錄
     <span style="font-size:12px;font-weight:normal;margin-left:8px;">
@@ -274,27 +316,8 @@
         <option value="上葡京">上葡京</option>
       </select>
     </span>
+    <span style="font-size:12px;color:#888;margin-left:8px;font-weight:normal;" id="washDateLabel">（跟隨主畫面日期）</span>
   </h3>
-  <!-- 時間篩選 -->
-  <div class="comm-date-nav" style="display:flex;align-items:center;justify-content:center;gap:2px;margin-bottom:8px;user-select:none;">
-    <button class="comm-arrow" onclick="washNavMonth(-1)" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:8px 0 0 8px;cursor:pointer;font-size:14px;color:#555;">◀</button>
-    <button class="comm-month-label" id="washMonthLabel" onclick="toggleWashMonthMenu()" style="padding:6px 20px;border:1px solid #1F4E79;background:#1F4E79;color:#fff;border-radius:0;cursor:pointer;font-size:14px;font-weight:bold;min-width:120px;">本月</button>
-    <button class="comm-arrow" onclick="washNavMonth(1)" style="padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:0 8px 8px 0;cursor:pointer;font-size:14px;color:#555;">▶</button>
-    <div class="comm-month-menu" id="washMonthMenu" style="display:none;position:absolute;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:100;min-width:160px;overflow:hidden;">
-      <div class="comm-menu-item" onclick="washPickQuick('lastmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 上月</div>
-      <div class="comm-menu-item" onclick="washPickQuick('month')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;background:#e8f0fe;font-weight:bold;">📅 本月</div>
-      <div class="comm-menu-item" onclick="washPickQuick('nextmonth')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📅 下月</div>
-      <div class="comm-menu-item" onclick="washPickQuick('year')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📆 本年</div>
-      <div class="comm-menu-item" onclick="washPickQuick('all')" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:14px;">📋 全部</div>
-      <div class="comm-menu-item" onclick="washShowCustom()" style="padding:10px 16px;cursor:pointer;font-size:14px;color:#1F4E79;">📐 自訂日期範圍...</div>
-    </div>
-  </div>
-  <div id="washCustomRow" style="display:none;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
-    <input id="washDateFrom" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
-    <span style="font-size:12px;color:#888;">~</span>
-    <input id="washDateTo" type="date" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
-    <button onclick="washApplyCustom()" style="padding:4px 12px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確定</button>
-  </div>
   <table id="washTable">
     <thead><tr><th>日期</th><th>退房</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>晚數</th><th>已洗碼</th><th>貴賓廳</th><th>狀態</th><th>操作</th></tr></thead>
     <tbody></tbody>
@@ -560,7 +583,7 @@ function switchTab(tab) {
     commissionTabRendered = true;
   }
   if (tab === 'wash' && !washTabRendered) {
-    washUpdateLabel();
+    initWashInputForm();
     renderWashTab();
     washTabRendered = true;
   }
@@ -574,119 +597,114 @@ let commDateFrom = '';
 let commDateTo = '';
 
 // ===== 總洗碼分頁狀態 =====
-let washMode = 'month';
-let washYear = new Date().getFullYear();
-let washMonth = new Date().getMonth() + 1;
-let washDateFrom = '';
-let washDateTo = '';
 let washTabRendered = false;
 
-function washUpdateLabel() {
-  const now = new Date();
-  const curY = now.getFullYear();
-  const curM = now.getMonth() + 1;
-  const label = document.getElementById('washMonthLabel');
-  if (!label) return;
-  if (washMode === 'month') {
-    const prefix = (washYear === curY && washMonth === curM) ? '本月 ' : '';
-    label.textContent = prefix + washYear + '年' + COMM_MONTH_NAMES[washMonth - 1];
-  } else if (washMode === 'year') {
-    const prefix = (washYear === curY) ? '本年 ' : '';
-    label.textContent = prefix + washYear + '年';
-  } else if (washMode === 'all') {
-    label.textContent = '全部';
-  } else if (washMode === 'custom') {
-    label.textContent = '自訂日期';
+// ===== 總洗碼輸入表單 =====
+function initWashInputForm() {
+  // 填充 Agent 下拉
+  const agentSel = document.getElementById('washInputAgent');
+  agentSel.innerHTML = '<option value="">Agent</option>';
+  for (const name of Object.keys(allData.agents || {})) {
+    if (name !== '房間總計') {
+      agentSel.innerHTML += `<option value="${name}">${name}</option>`;
+    }
+  }
+  // 填充貴賓廳下拉
+  const hallSel = document.getElementById('washInputHall');
+  hallSel.innerHTML = '<option value="">貴賓廳</option>';
+  if (allData.commission_rates) {
+    for (const r of allData.commission_rates) {
+      hallSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    }
   }
 }
 
-function washNavMonth(dir) {
-  document.getElementById('washMonthMenu').style.display = 'none';
-  if (washMode === 'month') {
-    washMonth += dir;
-    if (washMonth < 1) { washMonth = 12; washYear--; }
-    if (washMonth > 12) { washMonth = 1; washYear++; }
-  } else if (washMode === 'year') {
-    washYear += dir;
+function toggleWashInputForm() {
+  const type = document.getElementById('washInputType').value;
+  document.getElementById('washRoomForm').style.display = type === 'room' ? 'flex' : 'none';
+  document.getElementById('washWashForm').style.display = type === 'wash' ? 'flex' : 'none';
+}
+
+function updateWashInputAreas() {
+  const hotel = document.getElementById('washInputHotel').value;
+  const areaSel = document.getElementById('washInputArea');
+  const codeSel = document.getElementById('washInputCode');
+  areaSel.innerHTML = '<option value="">區域</option>';
+  codeSel.innerHTML = '<option value="">房型</option>';
+  if (!hotel || !HOTEL_MAP[hotel]) return;
+  for (const [areaName] of Object.entries(HOTEL_MAP[hotel])) {
+    areaSel.innerHTML += `<option value="${areaName}">${areaName}</option>`;
   }
-  washUpdateLabel();
-  renderWashTab();
 }
 
-function toggleWashMonthMenu() {
-  const menu = document.getElementById('washMonthMenu');
-  updateWashMenuItems();
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-  const label = document.getElementById('washMonthLabel');
-  const rect = label.getBoundingClientRect();
-  menu.style.left = rect.left + 'px';
-  menu.style.top = (rect.bottom + 4) + 'px';
+function updateWashInputCodes() {
+  const hotel = document.getElementById('washInputHotel').value;
+  const area = document.getElementById('washInputArea').value;
+  const codeSel = document.getElementById('washInputCode');
+  codeSel.innerHTML = '<option value="">房型</option>';
+  if (!hotel || !area || !HOTEL_MAP[hotel] || !HOTEL_MAP[hotel][area]) return;
+  for (const [code, name, req] of HOTEL_MAP[hotel][area]) {
+    codeSel.innerHTML += `<option value="${code}" data-name="${name}" data-req="${req}">${code} - ${name}</option>`;
+  }
 }
 
-function updateWashMenuItems() {
-  const items = document.querySelectorAll('#washMonthMenu .comm-menu-item');
-  if (items.length < 6) return;
-  const now = new Date();
-  const curY = now.getFullYear();
-  const curM = now.getMonth() + 1;
-  // Highlight current selection
-  items[0].style.background = (washMode === 'month' && washYear === curY && washMonth === (curM===1?12:curM-1) && (!(washMonth===curM && washYear===curY) || washMonth!==curM)) ? '#e8f0fe' : '';
-  items[1].style.background = (washMode === 'month' && washYear === curY && washMonth === curM) ? '#e8f0fe' : '';
-  items[2].style.background = (washMode === 'month' && washYear === curY && washMonth === (curM===12?1:curM+1)) ? '#e8f0fe' : '';
-  items[3].style.background = (washMode === 'year' && washYear === curY) ? '#e8f0fe' : '';
-  items[4].style.background = (washMode === 'all') ? '#e8f0fe' : '';
+function calcWashInputCheckout() {
+  const dateVal = document.getElementById('washInputDate').value;
+  const nights = parseInt(document.getElementById('washInputNights').value) || 0;
+  const checkoutEl = document.getElementById('washInputCheckout');
+  if (!dateVal || nights <= 0) { checkoutEl.value = ''; return; }
+  const d = new Date(dateVal + 'T00:00:00');
+  d.setDate(d.getDate() + nights);
+  checkoutEl.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-function washPickQuick(type) {
-  document.getElementById('washMonthMenu').style.display = 'none';
-  document.getElementById('washCustomRow').style.display = 'none';
-  const now = new Date();
-  const curY = now.getFullYear();
-  const curM = now.getMonth() + 1;
-  if (type === 'month') { washMode = 'month'; washYear = curY; washMonth = curM; }
-  else if (type === 'lastmonth') { washMode = 'month'; const lm = new Date(curY, curM - 2, 1); washYear = lm.getFullYear(); washMonth = lm.getMonth() + 1; }
-  else if (type === 'nextmonth') { washMode = 'month'; const nm = new Date(curY, curM, 1); washYear = nm.getFullYear(); washMonth = nm.getMonth() + 1; }
-  else if (type === 'year') { washMode = 'year'; washYear = curY; }
-  else if (type === 'all') { washMode = 'all'; }
-  washUpdateLabel();
-  renderWashTab();
-}
+function submitWashRecord() {
+  const agent = document.getElementById('washInputAgent').value;
+  const type = document.getElementById('washInputType').value;
+  const hotel = document.getElementById('washInputHotel').value;
+  if (!agent || !hotel) { alert('請選擇 Agent 和酒店'); return; }
 
-function washShowCustom() {
-  document.getElementById('washMonthMenu').style.display = 'none';
-  document.getElementById('washCustomRow').style.display = 'flex';
-}
+  if (type === 'room') {
+    const area = document.getElementById('washInputArea').value;
+    const code = document.getElementById('washInputCode').value;
+    const codeEl = document.getElementById('washInputCode');
+    const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
+    const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
+    const date = formatDate(document.getElementById('washInputDate').value);
+    const checkout = formatDate(document.getElementById('washInputCheckout').value);
+    const nights = parseInt(document.getElementById('washInputNights').value) || 1;
+    if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
 
-function washApplyCustom() {
-  const from = document.getElementById('washDateFrom').value;
-  const to = document.getElementById('washDateTo').value;
-  if (!from || !to) { alert('請選擇起迄日期'); return; }
-  washMode = 'custom';
-  washDateFrom = from;
-  washDateTo = to;
-  washUpdateLabel();
-  renderWashTab();
-}
+    allData.records.push({
+      id: 'r' + Date.now(),
+      date, checkout, agent, hotel, area, code, name,
+      req, nights, total_req: req * nights,
+      washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
+    });
+  } else {
+    const amt = parseFloat(document.getElementById('washInputWashAmt').value) || 0;
+    const hall = document.getElementById('washInputHall').value;
+    const date = formatDate(document.getElementById('washInputWashDate').value) || '';
+    if (!amt) { alert('請輸入洗碼量'); return; }
 
-function washFilterByPeriod(records) {
-  if (washMode === 'all') return records;
-  const now = new Date();
-  return records.filter(r => {
-    try {
-      const parts = r.date.split('/');
-      if (parts.length < 2) return false;
-      const rd = new Date(now.getFullYear(), parseInt(parts[0]) - 1, parseInt(parts[1]));
-      if (rd > now) rd.setFullYear(rd.getFullYear() - 1);
-      if (washMode === 'month') return rd.getFullYear() === washYear && rd.getMonth() + 1 === washMonth;
-      if (washMode === 'year') return rd.getFullYear() === washYear;
-      if (washMode === 'custom') {
-        const dFrom = new Date(washDateFrom + 'T00:00:00');
-        const dTo = new Date(washDateTo + 'T23:59:59');
-        return rd >= dFrom && rd <= dTo;
-      }
-    } catch(e) { return false; }
-    return true;
-  });
+    allData.records.push({
+      id: 'w' + Date.now(),
+      date, agent, hotel,
+      area: '(獨立洗碼)', code: '-', name: '獨立洗碼',
+      req: 0, nights: 0, total_req: 0,
+      washed: amt, hall: hall || '', commission_taken: false, taken_amount: null,
+      status: 'done', isWashFree: true
+    });
+  }
+
+  // 清空表單
+  document.getElementById('washInputDate').value = '';
+  document.getElementById('washInputNights').value = '';
+  document.getElementById('washInputCheckout').value = '';
+  document.getElementById('washInputWashAmt').value = '';
+  document.getElementById('washInputWashDate').value = '';
+
+  saveAndReload();
 }
 
 function renderWashTab() {
@@ -695,12 +713,19 @@ function renderWashTab() {
   const hotelFilter = document.getElementById('washHotelFilter').value;
   let recs = allData.records.filter(r => WASH_HOTELS.includes(r.hotel));
   if (hotelFilter) recs = recs.filter(r => r.hotel === hotelFilter);
-  recs = washFilterByPeriod(recs);
+  recs = filterByPeriod(recs);  // 跟隨主畫面日期
   recs = [...recs].sort((a, b) => {
     const [am, ad] = (a.date||'').split('/').map(Number);
     const [bm, bd] = (b.date||'').split('/').map(Number);
     return (am||0) !== (bm||0) ? (am||0) - (bm||0) : (ad||0) - (bd||0);
   });
+
+  // 更新日期標籤
+  const washDateLabel = document.getElementById('washDateLabel');
+  if (washDateLabel) {
+    const mainLabel = document.getElementById('mainMonthLabel');
+    washDateLabel.textContent = mainLabel ? '（' + mainLabel.textContent + '）' : '（跟隨主畫面日期）';
+  }
 
   if (recs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:#999;">尚無記錄</td></tr>';
@@ -1490,6 +1515,11 @@ function renderDetailTable(agentName) {
   const grandClass = grandDiff > 0 ? 'val-green' : grandDiff < 0 ? 'val-red' : 'val-gray';
   totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + fmtWash(grandDiff) : fmtWash(grandDiff)}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
+
+  // 同步更新總洗碼分頁（日期跟隨主畫面）
+  if (washTabRendered) {
+    renderWashTab();
+  }
 }
 
 async function load() {
