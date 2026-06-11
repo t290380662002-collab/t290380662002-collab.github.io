@@ -80,8 +80,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 0,
-        "rooms": 0,
+        "rolling": 80,
+        "rooms": 1,
         "washed": 0
       }
     },
@@ -137,7 +137,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-11 12:33",
+  "last_update": "2026-06-11 21:31",
   "records": [
     {
       "agent": "Fifi",
@@ -830,6 +830,22 @@
       "hotel": "新濠天地",
       "id": "r1781157171719",
       "name": "摩珀斯豪華客房(大床)",
+      "nights": 1,
+      "req": 80,
+      "status": "pending",
+      "total_req": 80,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "6/13",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1781198270426",
+      "name": "萬豪大床",
       "nights": 1,
       "req": 80,
       "status": "pending",
