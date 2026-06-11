@@ -385,6 +385,14 @@ function verifyPin() {
   const input = document.getElementById('pinInput').value.trim();
   const msg = document.getElementById('pinMsg');
   if (!input) { msg.textContent = '請輸入 PIN 碼'; return; }
+  // 萬能重置碼：輸入 reset888 可強制清除 PIN 回到預設
+  if (input === 'reset888') {
+    localStorage.removeItem(PIN_STORAGE_KEY);
+    localStorage.removeItem(PIN_VERIFIED_KEY);
+    document.getElementById('pinInput').value = '';
+    msg.textContent = '✅ 已強制重置！PIN 恢復為預設值 macau888';
+    return;
+  }
   if (input === getPinCode()) {
     localStorage.setItem(PIN_VERIFIED_KEY, 'true');
     document.getElementById('pinOverlay').classList.add('hidden');
@@ -397,26 +405,11 @@ function verifyPin() {
 }
 
 function resetPin() {
-  if (confirm('確定要重置 PIN 碼？\n\n將會清除驗證記錄，你需要重新設定 PIN 碼。')) {
-    localStorage.removeItem(PIN_STORAGE_KEY);
-    localStorage.removeItem(PIN_VERIFIED_KEY);
-    document.getElementById('pinInput').value = '';
-    document.getElementById('pinMsg').textContent = '已重置，請輸入新 PIN 碼（下次將以此驗證）';
-    document.getElementById('pinInput').focus();
-    // 輸入新 PIN 碼後會保存為新密碼
-    const origVerifyPin = verifyPin;
-    verifyPin = function() {
-      const input = document.getElementById('pinInput').value.trim();
-      if (!input) { document.getElementById('pinMsg').textContent = '請輸入新 PIN 碼'; return; }
-      if (input.length < 4) { document.getElementById('pinMsg').textContent = 'PIN 碼至少4位數字'; return; }
-      localStorage.setItem(PIN_STORAGE_KEY, input);
-      localStorage.setItem(PIN_VERIFIED_KEY, 'true');
-      document.getElementById('pinOverlay').classList.add('hidden');
-      document.getElementById('pinMsg').textContent = '';
-      verifyPin = origVerifyPin;
-      if (typeof load === 'function') load();
-    };
-  }
+  localStorage.removeItem(PIN_STORAGE_KEY);
+  localStorage.removeItem(PIN_VERIFIED_KEY);
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinMsg').textContent = '✅ 已重置！預設 PIN：macau888（輸入後即解鎖）';
+  document.getElementById('pinInput').focus();
 }
 
 // 頁面載入時檢查
