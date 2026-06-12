@@ -36,7 +36,7 @@ HOTEL_MAP = {
     "倫敦人": {
         "名匯": [["RK","名匯普通房",60,60],["LS2","名匯一房一廳",150,150],["N2B","名匯兩房一廳",400,400]],
         "御園": [["CM1","御園一房一廳",150,150],["CK2","御園兩房一廳",400,400]],
-        "酒店": [["KC","路易套房",60,60],["KS","溫莎套房",120,120]],
+        "酒店": [["KC","路易套房",60,60],["KS","溫莎套房",120,120],["TC","雙床",60,60]],
         "御匯": [["TC2","御匯兩房一廳",60,60],["TPS","御匯兩房一廳(雙床)",60,60]]
     },
     "新濠天地": {
@@ -334,9 +334,8 @@ def auto_parse_room_booking(text, chat_id):
         tg_send(chat_id, f"❌ 無法識別酒店: {hotel_raw}")
         return False
 
-    # 在 HOTEL_MAP 中搜尋 code（支援別名 TC→TC2）
-    CODE_ALIAS = {"TC":"TC2"}
-    search_code = CODE_ALIAS.get(code_raw.upper(), code_raw.upper())
+    # 在 HOTEL_MAP 中搜尋 code
+    search_code = code_raw.upper()
     area = None; room_name = None; req_wd = 0; req_we = 0
     if hotel in HOTEL_MAP:
         for a_name, rooms in HOTEL_MAP[hotel].items():
