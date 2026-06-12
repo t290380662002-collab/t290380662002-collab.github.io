@@ -22,42 +22,70 @@ HALL_HOTEL_MAP = {
     "勵盈2": "新濠天地",
     "金門1": "新濠天地",
     "金門8": "新濠天地",
-    "永利會": "銀河",
-    "上葡京老佛爺": "新濠天地",
-    "上葡京西塔": "新濠天地",
+    "永利會": "永利皇宮",
+    "上葡京老佛爺": "上葡京",
+    "上葡京西塔": "上葡京",
 }
 
 HOTEL_MAP = {
     "銀河": {
-        "萬豪": [["JW01","萬豪大床",80],["JW01T","萬豪雙床",80],["JW06","萬豪一房一廳",200]],
-        "麗思": [["RC01","麗思一房一廳",200]]
+        "萬豪": [["JW01","萬豪大床",80,80],["JW01T","萬豪雙床",80,80],["JW06","萬豪一房一廳",200,200]],
+        "麗思": [["RC01","麗思一房一廳",200,200]]
     },
     "倫敦人": {
-        "名匯": [["RK","名匯普通房",60],["LS2","名匯一房一廳",120],["N2B","名匯兩房一廳",400]],
-        "御園": [["CM1","御園一房一廳",150],["CK2","御園兩房一廳",400]],
-        "倫敦人酒店": [["KC","倫敦人酒店小套",60],["KS","倫敦人酒店大套",120],["DBKD2","倫敦人酒店兩房一廳",400]]
+        "名匯": [["RK","名匯普通房",60,60],["LS2","名匯一房一廳",120,120],["N2B","名匯兩房一廳",400,400]],
+        "御園": [["CM1","御園一房一廳",150,150],["CK2","御園兩房一廳",400,400]],
+        "倫敦人酒店": [["KC","倫敦人酒店小套",60,60],["KS","倫敦人酒店大套",120,120],["DBKD2","倫敦人酒店兩房一廳",400,400]]
     },
     "新濠天地": {
-        "摩珀斯": [["PK","摩珀斯豪華客房(大床)",80],["PT","摩珀斯豪華客房(雙床)",80],["CPK","摩珀斯行政豪華(大床)",100],["CPT","摩珀斯行政豪華(雙床)",100],["PS","摩珀斯豪華套房",120],["ES","摩珀斯尊尚套房",200],["S1","摩珀斯尊致套房",1000]],
-        "頤居": [["PK_N","頤居尊尚客房(大床)",80],["PQ","頤居尊尚雙床",80],["DS","頤居豪華套房",120],["PS_N","頤居尊尚套房",200],["V1","頤居套房",1000]],
-        "君悅": [["DLXK","君悅豪華客房(大床)",30],["DLX1","君悅豪華客房(雙床)",30],["GRSK","君悅套房(大床)",50]],
-        "明星匯": [["CRK","明星匯經典(大床)",30],["CRT","明星匯經典雙床",30],["CDK","明星匯豪華(大床)",30]],
-        "巨星匯": [["SDK","巨星匯尊貴(大床)",60],["SDT","巨星匯尊貴(雙床)",60],["SPS","巨星匯行政套房",200]],
-        "映星匯": [["EDK","映星匯套房(大床)",60],["EDT","映星匯套房(雙床)",60],["EG1","映星匯悠然套房",100],["ES1","映星匯華麗套房",200]]
+        "摩珀斯": [["PK","摩珀斯豪華客房(大床)",80,80],["PT","摩珀斯豪華客房(雙床)",80,80],["CPK","摩珀斯行政豪華(大床)",100,100],["CPT","摩珀斯行政豪華(雙床)",100,100],["PS","摩珀斯豪華套房",120,120],["ES","摩珀斯尊尚套房",200,200],["S1","摩珀斯尊致套房",1000,1000]],
+        "頤居": [["PK_N","頤居尊尚客房(大床)",80,80],["PQ","頤居尊尚雙床",80,80],["DS","頤居豪華套房",120,120],["PS_N","頤居尊尚套房",200,200],["V1","頤居套房",1000,1000]],
+        "君悅": [["DLXK","君悅豪華客房(大床)",30,30],["DLX1","君悅豪華客房(雙床)",30,30],["GRSK","君悅套房(大床)",50,50]],
+        "明星匯": [["CRK","明星匯經典(大床)",30,30],["CRT","明星匯經典雙床",30,30],["CDK","明星匯豪華(大床)",30,30]],
+        "巨星匯": [["SDK","巨星匯尊貴(大床)",60,60],["SDT","巨星匯尊貴(雙床)",60,60],["SPS","巨星匯行政套房",200,200]],
+        "映星匯": [["EDK","映星匯套房(大床)",60,60],["EDT","映星匯套房(雙床)",60,60],["EG1","映星匯悠然套房",100,100],["ES1","映星匯華麗套房",200,200]]
     },
     "永利皇宮": {
-        "永利皇宮": [["CRK","永利皇宮大床",0],["CRT","永利皇宮雙床",0]]
+        "永利皇宮": [
+            ["CRK","大床",160,250],
+            ["CRT","雙床",180,270],
+            ["LCRK","湖景大床",220,320],
+            ["LCRT","湖景雙床",240,340],
+            ["EXEC","行政套房",190,280],
+            ["PRS","珀麗套",230,320],
+            ["PRD","珀麗雙套",230,320],
+            ["LPRS","湖景珀麗套",390,580],
+            ["LPRX","湖景尊貴珀麗套",390,580]
+        ]
     },
     "上葡京": {
-        "老佛爺": [["LFK","上葡京老佛爺",0],["LFT","上葡京老佛爺雙床",0]],
-        "西塔": [["XTK","上葡京西塔大床",0],["XTT","上葡京西塔雙床",0]]
+        "老佛爺": [["LFK","上葡京老佛爺",0,0],["LFT","上葡京老佛爺雙床",0,0]],
+        "西塔": [["XTK","上葡京西塔大床",0,0],["XTT","上葡京西塔雙床",0,0]]
     },
 }
 
 
+from datetime import datetime as dt_module
+
+def is_weekend(date_str):
+    """判斷是否週末（週五、週六）"""
+    if not date_str: return False
+    try:
+        parts = date_str.split('/')
+        m, d = int(parts[0]), int(parts[1])
+        ref = dt_module(dt_module.now().year, m, d)
+        return ref.weekday() in (4, 5)  # 週五=4, 週六=5
+    except:
+        return False
+
+
 def fmt_wash(val):
     if val is None or val == 0: return "-"
-    s = f"{float(val):.2f}"; return s.rstrip("0").rstrip(".")
+    n = float(val)
+    # 使用 round 避免浮點數精度問題，保留小數點後三位
+    rounded = round(n * 1000) / 1000
+    s = f"{rounded:.3f}"
+    return s.rstrip("0").rstrip(".")
 
 
 def fb_get(path):
@@ -472,13 +500,20 @@ def handle_callback(chat_id, data_str, cid):
         area = data_str[6:]; state = get_state(chat_id); state["step"]="room_code"; state["area"]=area
         set_state(chat_id, state)
         codes = HOTEL_MAP.get(state["hotel"],{}).get(area,[])
-        tg_send(chat_id, f"✅ 區域: {area}\n\n請選擇房型：", [[{"text":f"{c} {n} ({r}萬)","callback_data":f"rc:{c}:{n}:{r}"}] for c,n,r in codes])
+        kb = []
+        for c, n, rw, re in codes:
+            label = f"{c} {n} (平日{rw}萬{'/週末'+str(re)+'萬' if re!=rw else ''})"
+            kb.append([{"text": label, "callback_data": f"rc:{c}:{n}:{rw}:{re}"}])
+        tg_send(chat_id, f"✅ 區域: {area}\n\n請選擇房型：", kb)
 
     elif data_str.startswith("rc:"):
-        parts = data_str[3:].split(":"); code, name, req = parts[0], parts[1], int(parts[2])
-        state = get_state(chat_id); state.update(step="room_date",code=code,name=name,req=req)
+        parts = data_str[3:].split(":"); code, name, req_wd, req_we = parts[0], parts[1], int(parts[2]), int(parts[3])
+        state = get_state(chat_id); state.update(step="room_date",code=code,name=name,req_wd=req_wd,req_we=req_we)
         set_state(chat_id, state)
-        tg_send(chat_id, f"✅ 房型: {code} {name} ({req}萬)\n\n請輸入日期（M/D，例如 6/5）：")
+        if req_wd != req_we:
+            tg_send(chat_id, f"✅ 房型: {code} {name} (平日{req_wd}萬 / 週末{req_we}萬)\n\n請輸入日期（M/D，例如 6/5）：\n📅 週五/週六自動用週末需求")
+        else:
+            tg_send(chat_id, f"✅ 房型: {code} {name} ({req_wd}萬)\n\n請輸入日期（M/D，例如 6/5）：")
 
     elif data_str.startswith("wa:"):
         agent = data_str[3:]
@@ -549,9 +584,11 @@ def handle_text(chat_id, text):
         try: nights = int(text)
         except: return tg_send(chat_id, "❌ 請輸入數字")
         s = state
-        rec = {"id":f"r{int(datetime.now().timestamp()*1000)}","date":s["date"],"agent":s["agent"],"hotel":s["hotel"],"area":s["area"],"code":s["code"],"name":s["name"],"req":s["req"],"nights":nights,"total_req":s["req"]*nights,"washed":0,"hall":"","commission_taken":False,"taken_amount":None,"status":"pending"}
+        req = s["req_we"] if is_weekend(s["date"]) else s["req_wd"]
+        rec = {"id":f"r{int(datetime.now().timestamp()*1000)}","date":s["date"],"agent":s["agent"],"hotel":s["hotel"],"area":s["area"],"code":s["code"],"name":s["name"],"req":req,"nights":nights,"total_req":req*nights,"washed":0,"hall":"","commission_taken":False,"taken_amount":None,"status":"pending"}
         data = get_data(); data.setdefault("records",[]).append(rec); save_data(data); clear_state(chat_id)
-        tg_send(chat_id, f"✅ *拿房記錄已新增！*\n\n👤 {s['agent']} | 📅 {s['date']}\n🏨 {s['hotel']}·{s['area']} | {s['code']} {s['name']}\n轉碼需求 {s['req']*nights}萬 | {nights}晚\n\n🌐 網頁已即時同步", reply_kb=MAIN_KB)
+        week_label = "週末" if is_weekend(s["date"]) else "平日"
+        tg_send(chat_id, f"✅ *拿房記錄已新增！*\n\n👤 {s['agent']} | 📅 {s['date']} ({week_label})\n🏨 {s['hotel']}·{s['area']} | {s['code']} {s['name']}\n轉碼需求 {req}萬 × {nights}晚 = {req*nights}萬\n\n🌐 網頁已即時同步", reply_kb=MAIN_KB)
 
     elif state.get("step") == "wash_amt":
         try: amt = float(text)
