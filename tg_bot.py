@@ -360,8 +360,8 @@ def auto_parse_room_booking(text, chat_id):
         for i, l in enumerate(lines):
             if l.startswith("入住:") and i > 0:
                 split_points.append(i)
-        if split_points:
-            # 從第二個入住行開始拆分
+        if len(split_points) > 1:
+            # 同一個區塊內有多筆記錄（多個入住行），按入住行拆分
             prev = 0
             for sp in split_points:
                 final_blocks.append("\n".join(lines[prev:sp]))
