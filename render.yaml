@@ -10,4 +10,4 @@ services:
     startCommand: LONGPOLL=1 python tg_bot.py
     envVars:
       - key: TG_TOKEN
-        value: 8830172184:AAGrwoeS4OU9lhLzcqTqkG8ipDSfFOfZuwg
+        value: 8800485293:AAG_-ArhCRSEUsMmT4X_5gDLzxABVdQbx20
