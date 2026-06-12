@@ -1,15 +1,25 @@
 {
   "agents": {
     "Fifi": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 160,
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
+        "rolling": 320,
         "rooms": 2,
-        "washed": 2671.1
+        "washed": 504.9
       },
       "銀河": {
         "rolling": 0,
@@ -18,29 +28,49 @@
       }
     },
     "H": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
-        "washed": 239
+        "washed": 0
       },
       "新濠天地": {
-        "rolling": 80,
-        "rooms": 1,
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
+        "rolling": 0,
+        "rooms": 0,
         "washed": 0
       },
       "銀河": {
-        "rolling": 1000,
-        "rooms": 8,
-        "washed": 1378
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
       }
     },
     "Ring": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
       },
       "新濠天地": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
@@ -52,12 +82,22 @@
       }
     },
     "Yuka": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
       },
       "新濠天地": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
@@ -69,29 +109,49 @@
       }
     },
     "安": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
-        "washed": 2
+        "washed": 0
       },
       "新濠天地": {
-        "rolling": 500,
-        "rooms": 7,
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
+        "rolling": 0,
+        "rooms": 0,
         "washed": 0
       },
       "銀河": {
-        "rolling": 80,
-        "rooms": 1,
+        "rolling": 0,
+        "rooms": 0,
         "washed": 0
       }
     },
     "韓國": {
+      "上葡京": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
       "倫敦人": {
         "rolling": 0,
         "rooms": 0,
-        "washed": 1895.3
+        "washed": 0
       },
       "新濠天地": {
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
+      },
+      "永利皇宮": {
         "rolling": 0,
         "rooms": 0,
         "washed": 0
@@ -137,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-11 21:31",
+  "last_update": "2026-06-12 11:55",
   "records": [
     {
       "agent": "Fifi",
@@ -822,7 +882,7 @@
     {
       "agent": "H",
       "area": "摩珀斯",
-      "checkout": "6/12",
+      "checkout": "6/16",
       "code": "PK",
       "commission_taken": false,
       "date": "6/11",
@@ -830,15 +890,16 @@
       "hotel": "新濠天地",
       "id": "r1781157171719",
       "name": "摩珀斯豪華客房(大床)",
-      "nights": 1,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 80,
+      "total_req": 400,
       "washed": 0
     },
     {
       "agent": "安",
       "area": "萬豪",
+      "checkout": "6/14",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/13",
@@ -851,6 +912,91 @@
       "status": "pending",
       "total_req": 80,
       "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "6/15",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "6/12",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1781246151570",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/7",
+      "hall": "永利會",
+      "hotel": "永利皇宮",
+      "id": "w1781256066858",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 296.3
+    },
+    {
+      "agent": "Fifi",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/7",
+      "hall": "永利會",
+      "hotel": "永利皇宮",
+      "id": "w1781256090308",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 208.6
+    },
+    {
+      "agent": "Fifi",
+      "area": "永利皇宮",
+      "checkout": "6/18",
+      "code": "CRK",
+      "commission_taken": false,
+      "date": "6/16",
+      "hall": "",
+      "hotel": "永利皇宮",
+      "id": "r1781256511592",
+      "name": "永利皇宮大床",
+      "nights": 2,
+      "req": 160,
+      "status": "pending",
+      "total_req": 320,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/12",
+      "hall": "勵盈1",
+      "hotel": "新濠天地",
+      "id": "w1781262830181",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 137.3
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
