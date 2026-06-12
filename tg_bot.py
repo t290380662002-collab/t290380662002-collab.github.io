@@ -320,22 +320,28 @@ def auto_parse_room_booking(text, chat_id):
         tg_send(chat_id, f"❌ 日期解析錯誤: {e}")
         return False
 
-    # 匹配酒店
+    # 匹配酒店（支援區域名 → 酒店映射）
     hotel = None
     for h_name in ["倫敦人","銀河","新濠天地","永利皇宮","上葡京"]:
         if h_name in hotel_raw:
             hotel = h_name
             break
     if not hotel:
+        # 區域名映射
+        AREA_TO_HOTEL = {"御園":"倫敦人","名匯":"倫敦人","御匯":"倫敦人","酒店":"倫敦人"}
+        hotel = AREA_TO_HOTEL.get(hotel_raw)
+    if not hotel:
         tg_send(chat_id, f"❌ 無法識別酒店: {hotel_raw}")
         return False
 
-    # 在 HOTEL_MAP 中搜尋 code
+    # 在 HOTEL_MAP 中搜尋 code（支援別名 TC→TC2）
+    CODE_ALIAS = {"TC":"TC2"}
+    search_code = CODE_ALIAS.get(code_raw.upper(), code_raw.upper())
     area = None; room_name = None; req_wd = 0; req_we = 0
     if hotel in HOTEL_MAP:
         for a_name, rooms in HOTEL_MAP[hotel].items():
             for r in rooms:
-                if r[0].upper() == code_raw.upper():
+                if r[0].upper() == search_code:
                     area = a_name; room_name = r[1]; req_wd = r[2]; req_we = r[3]
                     break
             if area: break
@@ -358,7 +364,7 @@ def auto_parse_room_booking(text, chat_id):
         "agent": "韓國",
         "hotel": hotel,
         "area": area,
-        "code": code_raw.upper(),
+        "code": search_code,
         "name": room_name,
         "req": req,
         "nights": nights,
