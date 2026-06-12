@@ -262,7 +262,7 @@
 <div class="table-section">
   <h3>💰 詳細彙總</h3>
   <table id="detailTable">
-    <thead><tr><th>Agent</th><th>銀河晚數</th><th>銀河轉碼</th><th>銀河洗碼</th><th>銀河差額</th><th>倫敦人晚數</th><th>倫敦人轉碼</th><th>倫敦人洗碼</th><th>倫敦人差額</th><th>新濠晚數</th><th>新濠轉碼</th><th>新濠洗碼</th><th>新濠差額</th><th>總差額</th></tr></thead>
+    <thead id="detailTableHead"></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -370,7 +370,7 @@ function toggleHotel(hotel) {
 
 let filteredRecords = [];
 let currentAgent = null;
-const HOTELS = ['銀河','倫敦人','新濠天地'];
+const HOTELS = ['銀河','倫敦人','新濠天地','永利皇宮','上葡京'];
 
 // ===== 主畫面時間篩選狀態 =====
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
@@ -1275,18 +1275,30 @@ function renderStandaloneTable(agentName) {
 
 // 渲染詳細彙總表格（可過濾 Agent）
 function renderDetailTable(agentName) {
-  const dtbody = document.querySelector('#detailTable tbody');
+  const dtable = document.querySelector('#detailTable');
+  const dhead = document.getElementById('detailTableHead');
+  const dtbody = dtable.querySelector('tbody');
   dtbody.innerHTML = '';
+
+  // 動態生成表頭
+  let hdrHTML = '<tr><th>Agent</th>';
+  for (const h of HOTELS) {
+    hdrHTML += `<th>${h}晚數</th><th>${h}轉碼</th><th>${h}洗碼</th><th>${h}差額</th>`;
+  }
+  hdrHTML += '<th>總差額</th></tr>';
+  dhead.innerHTML = hdrHTML;
+
   const agents = allData.agents;
-  const grand = { rooms: [0,0,0], rolling: [0,0,0], washed: [0,0,0] };
-  const agentNames = agentName ? [agentName] : Object.keys(agents).filter(n => n !== '房間總計');
+  const n = HOTELS.length;
+  const grand = { rooms: new Array(n).fill(0), rolling: new Array(n).fill(0), washed: new Array(n).fill(0) };
+  const agentNames = agentName ? [agentName] : Object.keys(agents).filter(nm => nm !== '房間總計');
 
   for (const name of agentNames) {
     if (!agents[name]) continue;
     const data = agents[name];
     let row = `<td style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="showPanel('${name}')">${name}</td>`;
     let totalRoll = 0, totalWash = 0;
-    for (let i = 0; i < HOTELS.length; i++) {
+    for (let i = 0; i < n; i++) {
       const h = HOTELS[i];
       const dH = data[h];
       const dDiff = dH.washed - dH.rolling;
@@ -1306,7 +1318,7 @@ function renderDetailTable(agentName) {
   // 房間總計行
   let totalRow = '<td style="font-weight:bold;background:#1F4E79;color:#fff;">房間總計</td>';
   let grandTotalRoll = 0, grandTotalWash = 0;
-  for (let i = 0; i < HOTELS.length; i++) {
+  for (let i = 0; i < n; i++) {
     const gDiff = grand.washed[i] - grand.rolling[i];
     const gClass = gDiff > 0 ? 'val-green' : gDiff < 0 ? 'val-red' : 'val-gray';
     totalRow += `<td style="font-weight:bold;">${grand.rooms[i] || '-'}</td>`;
@@ -1662,7 +1674,8 @@ function renderUI() {
   renderRoomTable();
   renderStandaloneTable();
   renderDetailTable();
-  const grand = { rooms: [0,0,0], rolling: [0,0,0], washed: [0,0,0] };
+  const nH = HOTELS.length;
+  const grand = { rooms: new Array(nH).fill(0), rolling: new Array(nH).fill(0), washed: new Array(nH).fill(0) };
   for (const [name, data] of Object.entries(agents)) {
     if (name === '房間總計') continue;
     for (let i = 0; i < HOTELS.length; i++) {
