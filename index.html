@@ -915,9 +915,11 @@ function fmtWash(val) {
   if (val == null || val === 0) return '-';
   const n = Number(val);
   if (isNaN(n)) return '-';
-  const s = n.toFixed(2);
-  // 去除尾零（保留到小數點後兩位但去除多餘的 .00）
-  return s.replace(/\.?0+$/, '');
+  // 使用 Math.round 避免浮點數精度問題，保留小數點後三位
+  const rounded = Math.round(n * 1000) / 1000;
+  const s = rounded.toFixed(3);
+  // 去除尾零
+  return parseFloat(s).toString();
 }
 
 // ===== 修改記錄：回填表單 =====
@@ -1690,7 +1692,7 @@ function renderUI() {
     let html = `<div class="card" onclick="showPanel('${name}')"><div class="name">${name}</div>`;
     html += `<div class="hotel">${lines.length ? lines.join('<br>') : '尚無記錄'}</div>`;
     html += `<div class="nums"><span>轉碼 ${totalRoll}萬</span><span>洗碼 ${totalWash}萬</span></div>`;
-    html += `<div class="diff ${diffClass}">${diff > 0 ? '+' + diff : diff}萬</div>`;
+    html += `<div class="diff ${diffClass}">${diff > 0 ? '+' + fmtWash(diff) : fmtWash(diff)}萬</div>`;
     html += `<div style="margin-top:6px;font-size:11px;color:#999;">👆 點擊查看詳細</div></div>`;
     sumDiv.innerHTML += html;
   }
