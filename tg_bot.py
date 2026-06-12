@@ -254,37 +254,26 @@ def auto_parse(text, chat_id):
     return True
 
 
-def auto_parse_room_booking(text, chat_id):
-    """自動解析房間訂單格式：
-    {住客名}
-    入住：X/X
-    退房：X/X
-    酒店：XXX
-    房型：CODE🚬
-    件數：N
-    確認號：XXX
-    未指定代理 → 歸入「韓國」
-    """
-    text = text.replace("：", ":").replace("（", "(").replace("）", ")")
-    lines = text.strip().split("\n")
+def parse_one_room_block(block):
+    """解析單筆房間訂單區塊，成功回傳 record dict 否則回傳 error str"""
+    text = block.replace("：", ":").replace("（", "(").replace("）", ")")
+    lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
     if len(lines) < 4:
-        return False
+        return "格式不完整（至少需 4 行）"
 
-    # 必須有「入住」「退房」「酒店」「房型」關鍵字
-    full = text
-    has_checkin = "入住:" in full or "入住：" in full
-    has_checkout = "退房:" in full or "退房：" in full
-    has_hotel = "酒店:" in full or "酒店：" in full
-    has_room = "房型:" in full or "房型：" in full
+    # 必須有四關鍵字
+    has_checkin = any("入住:" in l for l in lines)
+    has_checkout = any("退房:" in l for l in lines)
+    has_hotel = any("酒店:" in l for l in lines)
+    has_room = any("房型:" in l for l in lines)
     if not (has_checkin and has_checkout and has_hotel and has_room):
-        return False
+        return "缺少 入住/退房/酒店/房型 關鍵字"
 
     guest = lines[0].strip()
     checkin = ""; checkout = ""; hotel_raw = ""; code_raw = ""
     rooms_count = 1; confirmation = ""
 
     for line in lines:
-        line = line.strip()
         if line.startswith("入住:"):
             checkin = line.split(":",1)[-1].strip().rstrip("(").strip()
         elif line.startswith("退房:"):
@@ -293,7 +282,6 @@ def auto_parse_room_booking(text, chat_id):
             hotel_raw = line.split(":",1)[-1].strip()
         elif line.startswith("房型:"):
             raw = line.split(":",1)[-1].strip()
-            # 移除 🚬 和 🚭 emoji
             code_raw = raw.replace("🚬","").replace("🚭","").strip()
         elif line.startswith("件數:"):
             try: rooms_count = int(line.split(":",1)[-1].strip())
@@ -302,7 +290,7 @@ def auto_parse_room_booking(text, chat_id):
             confirmation = line.split(":",1)[-1].strip()
 
     if not checkin or not checkout or not hotel_raw or not code_raw:
-        return False
+        return "入住/退房/酒店/房型 不可為空"
 
     # 計算晚數
     try:
@@ -314,27 +302,23 @@ def auto_parse_room_booking(text, chat_id):
         co = date(2026, co_m, co_d)
         nights = (co - ci).days
         if nights <= 0 or nights > 31:
-            tg_send(chat_id, f"❌ 晚數計算異常: {checkin} → {checkout} = {nights}晚")
-            return False
-    except Exception as e:
-        tg_send(chat_id, f"❌ 日期解析錯誤: {e}")
-        return False
+            return f"晚數異常: {nights}晚"
+    except:
+        return f"日期格式錯誤: {checkin}→{checkout}"
 
-    # 匹配酒店（支援區域名 → 酒店映射）
+    # 匹配酒店
     hotel = None
     for h_name in ["倫敦人","銀河","新濠天地","永利皇宮","上葡京"]:
         if h_name in hotel_raw:
             hotel = h_name
             break
     if not hotel:
-        # 區域名映射
         AREA_TO_HOTEL = {"御園":"倫敦人","名匯":"倫敦人","御匯":"倫敦人","酒店":"倫敦人"}
         hotel = AREA_TO_HOTEL.get(hotel_raw)
     if not hotel:
-        tg_send(chat_id, f"❌ 無法識別酒店: {hotel_raw}")
-        return False
+        return f"無法識別酒店: {hotel_raw}"
 
-    # 在 HOTEL_MAP 中搜尋 code
+    # 搜尋 code
     search_code = code_raw.upper()
     area = None; room_name = None; req_wd = 0; req_we = 0
     if hotel in HOTEL_MAP:
@@ -345,54 +329,113 @@ def auto_parse_room_booking(text, chat_id):
                     break
             if area: break
     if not area:
-        tg_send(chat_id, f"❌ 找不到房型 {code_raw}（酒店: {hotel}）")
-        return False
+        return f"找不到房型 {code_raw}（酒店: {hotel}）"
 
-    # 判斷平日/週末
     req = req_we if is_weekend(checkin) else req_wd
     total_req = req * nights
-    week_label = "週末" if is_weekend(checkin) else "平日"
+
+    return {
+        "guest": guest, "checkin": checkin, "checkout": checkout,
+        "hotel": hotel, "area": area, "code": search_code, "name": room_name,
+        "req": req, "nights": nights, "total_req": total_req,
+        "rooms": rooms_count, "confirmation": confirmation,
+        "is_weekend": is_weekend(checkin)
+    }
+
+
+def auto_parse_room_booking(text, chat_id):
+    """自動解析房間訂單（支援多筆，以空行分隔）
+    未指定代理 → 歸入「韓國」
+    """
+    text = text.replace("：", ":").replace("（", "(").replace("）", ")")
+
+    # 拆分成多個區塊（以空行分隔）
+    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+    # 如果單一區塊內有明顯的兩個住客名（兩個連續的姓名行），再拆分
+    final_blocks = []
+    for b in blocks:
+        lines = [l for l in b.split("\n") if l.strip()]
+        # 找第一個「入住:」的位置
+        split_points = []
+        for i, l in enumerate(lines):
+            if l.startswith("入住:") and i > 0:
+                split_points.append(i)
+        if split_points:
+            # 從第二個入住行開始拆分
+            prev = 0
+            for sp in split_points:
+                final_blocks.append("\n".join(lines[prev:sp]))
+                prev = sp
+            final_blocks.append("\n".join(lines[prev:]))
+        else:
+            final_blocks.append(b)
+
+    if not final_blocks:
+        return False
+
+    # 檢查第一個區塊格式
+    first = final_blocks[0].replace("：",":")
+    has_keys = all(k in first for k in ["入住:","退房:","酒店:","房型:"])
+    if not has_keys:
+        return False
+
+    results = []
+    errors = []
+    for block in final_blocks:
+        r = parse_one_room_block(block)
+        if isinstance(r, str):
+            errors.append(f"❌ {block.split(chr(10))[0][:20]}... — {r}")
+        else:
+            results.append(r)
+
+    if not results:
+        if errors:
+            tg_send(chat_id, "❌ 解析失敗：\n" + "\n".join(errors[:5]))
+        return False
 
     # 寫入 Firebase
     data = get_data()
-    new_id = f"r{int(datetime.now().timestamp()*1000)}"
-    rec = {
-        "id": new_id,
-        "date": checkin,
-        "checkout": checkout,
-        "agent": "韓國",
-        "hotel": hotel,
-        "area": area,
-        "code": search_code,
-        "name": room_name,
-        "req": req,
-        "nights": nights,
-        "total_req": total_req,
-        "washed": 0,
-        "hall": "",
-        "commission_taken": False,
-        "taken_amount": None,
-        "status": "pending",
-        "guest": guest,
-        "rooms": rooms_count
-    }
-    if confirmation:
-        rec["confirmation"] = confirmation
+    for rec in results:
+        new_id = f"r{int(datetime.now().timestamp()*1000)}_{results.index(rec)}"
+        obj = {
+            "id": new_id,
+            "date": rec["checkin"],
+            "checkout": rec["checkout"],
+            "agent": "韓國",
+            "hotel": rec["hotel"],
+            "area": rec["area"],
+            "code": rec["code"],
+            "name": rec["name"],
+            "req": rec["req"],
+            "nights": rec["nights"],
+            "total_req": rec["total_req"],
+            "washed": 0,
+            "hall": "",
+            "commission_taken": False,
+            "taken_amount": None,
+            "status": "pending",
+            "guest": rec["guest"],
+            "rooms": rec["rooms"]
+        }
+        if rec.get("confirmation"):
+            obj["confirmation"] = rec["confirmation"]
+        data.setdefault("records", []).append(obj)
 
-    data.setdefault("records", []).append(rec)
     data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     save_data(data)
 
     # 回報
-    tg_send(chat_id, (
-        f"✅ *訂房自動解析完成！*\n\n"
-        f"👤 {guest} → 韓國\n"
-        f"🏨 {hotel}·{area} | {code_raw.upper()} {room_name}\n"
-        f"📅 {checkin} → {checkout}（{nights}晚）| {week_label}\n"
-        f"💰 轉碼 {req}萬 × {nights}晚 = *{total_req}萬*\n"
-        f"📦 {rooms_count}間 | 確認號 {confirmation or '—'}\n\n"
-        f"🌐 網頁已即時同步"
-    ), reply_kb=MAIN_KB)
+    total_nights = sum(r["nights"] for r in results)
+    total_req = sum(r["total_req"] for r in results)
+    lines = [f"✅ *批量訂房解析完成！*\n📊 {len(results)} 筆 | {total_nights} 晚 | *{total_req} 萬*\n"]
+    for i, rec in enumerate(results):
+        wl = "週末" if rec["is_weekend"] else "平日"
+        lines.append(f"{i+1}. {rec['guest']} | {rec['checkin']}→{rec['checkout']} {rec['nights']}晚 | {rec['hotel']}·{rec['area']} {rec['code']} | {wl} {rec['total_req']}萬")
+    if errors:
+        lines.append(f"\n⚠️ {len(errors)} 筆錯誤：")
+        lines.extend(errors[:5])
+    lines.append("\n🌐 網頁已即時同步")
+    tg_send(chat_id, "\n".join(lines), reply_kb=MAIN_KB)
     return True
 
 
