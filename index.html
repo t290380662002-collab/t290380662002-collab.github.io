@@ -155,12 +155,12 @@
 <!-- 賭場篩選 -->
 <div class="hotel-filter-bar" id="hotelFilterBar">
   <span style="font-size:12px;color:#888;line-height:30px;margin-right:4px;">🏨</span>
-  <span class="hotel-chip on" onclick="toggleHotel('all')">全部</span>
+  <span class="hotel-chip" onclick="toggleHotel('all')">全部</span>
   <span class="hotel-chip on" onclick="toggleHotel('銀河')">銀河</span>
   <span class="hotel-chip on" onclick="toggleHotel('倫敦人')">倫敦人</span>
   <span class="hotel-chip on" onclick="toggleHotel('新濠天地')">新濠天地</span>
-  <span class="hotel-chip on" onclick="toggleHotel('永利皇宮')">永利皇宮</span>
-  <span class="hotel-chip on" onclick="toggleHotel('上葡京')">上葡京</span>
+  <span class="hotel-chip" onclick="toggleHotel('永利皇宮')">永利皇宮</span>
+  <span class="hotel-chip" onclick="toggleHotel('上葡京')">上葡京</span>
 </div>
 
 <!-- 輸入表單 -->
@@ -337,7 +337,7 @@ let editingId = null;
 
 let allData = null;
 const ALL_HOTELS = ['銀河','倫敦人','新濠天地','永利皇宮','上葡京'];
-let activeHotels = new Set(ALL_HOTELS);
+let activeHotels = new Set(['銀河','倫敦人','新濠天地']);
 
 function toggleHotel(hotel) {
   if (hotel === 'all') {
