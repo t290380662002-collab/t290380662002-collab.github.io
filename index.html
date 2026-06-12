@@ -132,6 +132,13 @@
   .period-btn.active { background:#1F4E79;color:#fff;border-color:#1F4E79; }
   .period-btn:hover { background:#e8ecf1; }
   .period-btn.active:hover { background:#16375a; }
+
+  /* 賭場篩選 */
+  .hotel-filter-bar { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px; }
+  .hotel-chip { padding:5px 14px;border:2px solid #d0d0d0;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;background:#fff;color:#888;transition:all 0.15s;user-select:none; }
+  .hotel-chip:hover { border-color:#1F4E79;color:#1F4E79; }
+  .hotel-chip.on { background:#1F4E79;color:#fff;border-color:#1F4E79; }
+  .hotel-chip.on:hover { background:#16375a; }
 </style>
 
 <!-- Tab 導航 -->
@@ -144,6 +151,17 @@
 <div class="tab-content active" id="mainTab">
 
 <div class="summary" id="summary"></div>
+
+<!-- 賭場篩選 -->
+<div class="hotel-filter-bar" id="hotelFilterBar">
+  <span style="font-size:12px;color:#888;line-height:30px;margin-right:4px;">🏨</span>
+  <span class="hotel-chip on" onclick="toggleHotel('all')">全部</span>
+  <span class="hotel-chip on" onclick="toggleHotel('銀河')">銀河</span>
+  <span class="hotel-chip on" onclick="toggleHotel('倫敦人')">倫敦人</span>
+  <span class="hotel-chip on" onclick="toggleHotel('新濠天地')">新濠天地</span>
+  <span class="hotel-chip on" onclick="toggleHotel('永利皇宮')">永利皇宮</span>
+  <span class="hotel-chip on" onclick="toggleHotel('上葡京')">上葡京</span>
+</div>
 
 <!-- 輸入表單 -->
 <div class="table-section" id="inputSection">
@@ -318,6 +336,38 @@ const FB_CONFIG_KEY = 'firebaseConfig';
 let editingId = null;
 
 let allData = null;
+const ALL_HOTELS = ['銀河','倫敦人','新濠天地','永利皇宮','上葡京'];
+let activeHotels = new Set(ALL_HOTELS);
+
+function toggleHotel(hotel) {
+  if (hotel === 'all') {
+    // 全部：如果已全選則全關，否則全開
+    if (activeHotels.size === ALL_HOTELS.length) {
+      activeHotels.clear();
+    } else {
+      activeHotels = new Set(ALL_HOTELS);
+    }
+  } else {
+    if (activeHotels.has(hotel)) {
+      activeHotels.delete(hotel);
+    } else {
+      activeHotels.add(hotel);
+    }
+  }
+  // 更新 chip 樣式
+  const chips = document.querySelectorAll('#hotelFilterBar .hotel-chip');
+  const allChip = chips[0];
+  if (activeHotels.size === ALL_HOTELS.length) {
+    allChip.classList.add('on');
+  } else {
+    allChip.classList.remove('on');
+  }
+  for (let i = 1; i < chips.length; i++) {
+    chips[i].classList.toggle('on', activeHotels.has(chips[i].textContent));
+  }
+  recalcAndRender();
+}
+
 let filteredRecords = [];
 let currentAgent = null;
 const HOTELS = ['銀河','倫敦人','新濠天地'];
@@ -1111,6 +1161,12 @@ function saveAndReload() {
 
 function recalcAndRender() {
   filteredRecords = filterByPeriod(allData.records);
+  // 賭場篩選
+  if (activeHotels.size < ALL_HOTELS.length && activeHotels.size > 0) {
+    filteredRecords = filteredRecords.filter(r => activeHotels.has(r.hotel));
+  } else if (activeHotels.size === 0) {
+    filteredRecords = [];
+  }
 
   // 重新計算各 Agent 匯總
   for (const name of Object.keys(allData.agents)) {
