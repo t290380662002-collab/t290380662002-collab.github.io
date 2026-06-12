@@ -137,7 +137,6 @@
 <!-- Tab 導航 -->
 <div class="tab-nav">
   <button class="tab-btn active" id="tabBtnMain" onclick="switchTab('main')">📊 主畫面</button>
-  <button class="tab-btn" id="tabBtnWash" onclick="switchTab('wash')">💰 總洗碼</button>
   <button class="tab-btn" id="tabBtnCommission" onclick="switchTab('commission')">🏨 佣金明细</button>
 </div>
 
@@ -260,73 +259,6 @@
 </div>
 <!-- 主畫面分頁結束 -->
 
-<!-- 總洗碼分頁（永利皇宮 + 上葡京） -->
-<div class="tab-content" id="washTab">
-
-<div class="summary" id="washSummary"></div>
-
-<!-- 總洗碼輸入表單 -->
-<div class="table-section" id="washInputSection">
-  <h3>📝 新增記錄（永利皇宮 / 上葡京）</h3>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-    <select id="washInputAgent" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-      <option value="">Agent</option>
-    </select>
-    <select id="washInputType" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="toggleWashInputForm()">
-      <option value="room">拿房</option>
-      <option value="wash">洗碼</option>
-    </select>
-    <select id="washInputHotel" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateWashInputAreas()">
-      <option value="">酒店</option>
-      <option value="永利皇宮">永利皇宮</option>
-      <option value="上葡京">上葡京</option>
-    </select>
-  </div>
-  <!-- 拿房表單 -->
-  <div id="washRoomForm" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-    <select id="washInputArea" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="updateWashInputCodes()">
-      <option value="">區域</option>
-    </select>
-    <select id="washInputCode" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-      <option value="">房型</option>
-    </select>
-    <input id="washInputDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" placeholder="入住日期" onchange="calcWashInputCheckout()">
-    <input id="washInputCheckout" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#f5f5f5;color:#555;" placeholder="退房日期" readonly>
-    <input id="washInputNights" type="number" placeholder="晚數" min="1" style="flex:1;min-width:60px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;" onchange="calcWashInputCheckout()">
-  </div>
-  <!-- 洗碼表單 -->
-  <div id="washWashForm" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;">
-    <input id="washInputWashDate" type="date" style="flex:1;min-width:120px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-    <input id="washInputWashAmt" type="number" placeholder="洗碼量(萬)" min="0" step="0.01" style="flex:1;min-width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-    <select id="washInputHall" style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
-      <option value="">貴賓廳</option>
-    </select>
-  </div>
-  <div style="margin-top:8px;text-align:right;">
-    <button onclick="submitWashRecord()" class="btn-submit" style="padding:8px 24px;background:#1F4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">送出</button>
-  </div>
-</div>
-
-<div class="table-section">
-  <h3>🏨 總洗碼記錄
-    <span style="font-size:12px;font-weight:normal;margin-left:8px;">
-      <select id="washHotelFilter" onchange="renderWashTab()" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
-        <option value="">全部酒店</option>
-        <option value="永利皇宮">永利皇宮</option>
-        <option value="上葡京">上葡京</option>
-      </select>
-    </span>
-    <span style="font-size:12px;color:#888;margin-left:8px;font-weight:normal;" id="washDateLabel">（跟隨主畫面日期）</span>
-  </h3>
-  <table id="washTable">
-    <thead><tr><th>日期</th><th>退房</th><th>Agent</th><th>酒店</th><th>區域</th><th>Code</th><th>房型</th><th>晚數</th><th>已洗碼</th><th>貴賓廳</th><th>狀態</th><th>操作</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-</div>
-<!-- 總洗碼分頁結束 -->
-
 <!-- 佣金明细分頁 -->
 <div class="tab-content" id="commissionTab">
 
@@ -389,7 +321,6 @@ let allData = null;
 let filteredRecords = [];
 let currentAgent = null;
 const HOTELS = ['銀河','倫敦人','新濠天地'];
-const WASH_HOTELS = ['永利皇宮','上葡京'];
 
 // ===== 主畫面時間篩選狀態 =====
 let currentPeriod = localStorage.getItem('currentPeriod') || 'month';
@@ -571,21 +502,14 @@ let commissionTabRendered = false;
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('mainTab').classList.toggle('active', tab === 'main');
-  document.getElementById('washTab').classList.toggle('active', tab === 'wash');
   document.getElementById('commissionTab').classList.toggle('active', tab === 'commission');
   document.getElementById('tabBtnMain').classList.toggle('active', tab === 'main');
-  document.getElementById('tabBtnWash').classList.toggle('active', tab === 'wash');
   document.getElementById('tabBtnCommission').classList.toggle('active', tab === 'commission');
 
   if (tab === 'commission' && !commissionTabRendered) {
     commUpdateLabel();
     renderCommissionDetailMain();
     commissionTabRendered = true;
-  }
-  if (tab === 'wash' && !washTabRendered) {
-    initWashInputForm();
-    renderWashTab();
-    washTabRendered = true;
   }
 }
 
@@ -595,182 +519,6 @@ let commYear = new Date().getFullYear();
 let commMonth = new Date().getMonth() + 1;
 let commDateFrom = '';
 let commDateTo = '';
-
-// ===== 總洗碼分頁狀態 =====
-let washTabRendered = false;
-
-// ===== 總洗碼輸入表單 =====
-function initWashInputForm() {
-  // 填充 Agent 下拉
-  const agentSel = document.getElementById('washInputAgent');
-  agentSel.innerHTML = '<option value="">Agent</option>';
-  for (const name of Object.keys(allData.agents || {})) {
-    if (name !== '房間總計') {
-      agentSel.innerHTML += `<option value="${name}">${name}</option>`;
-    }
-  }
-  // 填充貴賓廳下拉
-  const hallSel = document.getElementById('washInputHall');
-  hallSel.innerHTML = '<option value="">貴賓廳</option>';
-  if (allData.commission_rates) {
-    for (const r of allData.commission_rates) {
-      hallSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
-    }
-  }
-}
-
-function toggleWashInputForm() {
-  const type = document.getElementById('washInputType').value;
-  document.getElementById('washRoomForm').style.display = type === 'room' ? 'flex' : 'none';
-  document.getElementById('washWashForm').style.display = type === 'wash' ? 'flex' : 'none';
-}
-
-function updateWashInputAreas() {
-  const hotel = document.getElementById('washInputHotel').value;
-  const areaSel = document.getElementById('washInputArea');
-  const codeSel = document.getElementById('washInputCode');
-  areaSel.innerHTML = '<option value="">區域</option>';
-  codeSel.innerHTML = '<option value="">房型</option>';
-  if (!hotel || !HOTEL_MAP[hotel]) return;
-  for (const [areaName] of Object.entries(HOTEL_MAP[hotel])) {
-    areaSel.innerHTML += `<option value="${areaName}">${areaName}</option>`;
-  }
-}
-
-function updateWashInputCodes() {
-  const hotel = document.getElementById('washInputHotel').value;
-  const area = document.getElementById('washInputArea').value;
-  const codeSel = document.getElementById('washInputCode');
-  codeSel.innerHTML = '<option value="">房型</option>';
-  if (!hotel || !area || !HOTEL_MAP[hotel] || !HOTEL_MAP[hotel][area]) return;
-  for (const [code, name, req] of HOTEL_MAP[hotel][area]) {
-    codeSel.innerHTML += `<option value="${code}" data-name="${name}" data-req="${req}">${code} - ${name}</option>`;
-  }
-}
-
-function calcWashInputCheckout() {
-  const dateVal = document.getElementById('washInputDate').value;
-  const nights = parseInt(document.getElementById('washInputNights').value) || 0;
-  const checkoutEl = document.getElementById('washInputCheckout');
-  if (!dateVal || nights <= 0) { checkoutEl.value = ''; return; }
-  const d = new Date(dateVal + 'T00:00:00');
-  d.setDate(d.getDate() + nights);
-  checkoutEl.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-
-function submitWashRecord() {
-  const agent = document.getElementById('washInputAgent').value;
-  const type = document.getElementById('washInputType').value;
-  const hotel = document.getElementById('washInputHotel').value;
-  if (!agent || !hotel) { alert('請選擇 Agent 和酒店'); return; }
-
-  if (type === 'room') {
-    const area = document.getElementById('washInputArea').value;
-    const code = document.getElementById('washInputCode').value;
-    const codeEl = document.getElementById('washInputCode');
-    const name = codeEl.options[codeEl.selectedIndex]?.dataset?.name || '';
-    const req = parseInt(codeEl.options[codeEl.selectedIndex]?.dataset?.req) || 0;
-    const date = formatDate(document.getElementById('washInputDate').value);
-    const checkout = formatDate(document.getElementById('washInputCheckout').value);
-    const nights = parseInt(document.getElementById('washInputNights').value) || 1;
-    if (!area || !code || !date) { alert('請選擇區域、房型和日期'); return; }
-
-    allData.records.push({
-      id: 'r' + Date.now(),
-      date, checkout, agent, hotel, area, code, name,
-      req, nights, total_req: req * nights,
-      washed: 0, hall: '', commission_taken: false, taken_amount: null, status: 'pending'
-    });
-  } else {
-    const amt = parseFloat(document.getElementById('washInputWashAmt').value) || 0;
-    const hall = document.getElementById('washInputHall').value;
-    const date = formatDate(document.getElementById('washInputWashDate').value) || '';
-    if (!amt) { alert('請輸入洗碼量'); return; }
-
-    allData.records.push({
-      id: 'w' + Date.now(),
-      date, agent, hotel,
-      area: '(獨立洗碼)', code: '-', name: '獨立洗碼',
-      req: 0, nights: 0, total_req: 0,
-      washed: amt, hall: hall || '', commission_taken: false, taken_amount: null,
-      status: 'done', isWashFree: true
-    });
-  }
-
-  // 清空表單
-  document.getElementById('washInputDate').value = '';
-  document.getElementById('washInputNights').value = '';
-  document.getElementById('washInputCheckout').value = '';
-  document.getElementById('washInputWashAmt').value = '';
-  document.getElementById('washInputWashDate').value = '';
-
-  saveAndReload();
-}
-
-function renderWashTab() {
-  const tbody = document.querySelector('#washTable tbody');
-  tbody.innerHTML = '';
-  const hotelFilter = document.getElementById('washHotelFilter').value;
-  let recs = allData.records.filter(r => WASH_HOTELS.includes(r.hotel));
-  if (hotelFilter) recs = recs.filter(r => r.hotel === hotelFilter);
-  recs = filterByPeriod(recs);  // 跟隨主畫面日期
-  recs = [...recs].sort((a, b) => {
-    const [am, ad] = (a.date||'').split('/').map(Number);
-    const [bm, bd] = (b.date||'').split('/').map(Number);
-    return (am||0) !== (bm||0) ? (am||0) - (bm||0) : (ad||0) - (bd||0);
-  });
-
-  // 更新日期標籤
-  const washDateLabel = document.getElementById('washDateLabel');
-  if (washDateLabel) {
-    const mainLabel = document.getElementById('mainMonthLabel');
-    washDateLabel.textContent = mainLabel ? '（' + mainLabel.textContent + '）' : '（跟隨主畫面日期）';
-  }
-
-  if (recs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:#999;">尚無記錄</td></tr>';
-    document.getElementById('washSummary').innerHTML = '<div class="card" style="flex:1;min-width:100%;background:linear-gradient(135deg,#1a1a3e,#1F4E79);color:#fff;text-align:center;"><div>💰 永利皇宮 + 上葡京</div><div style="font-size:16px;margin-top:4px;">本期總洗碼 0 萬</div></div>';
-    return;
-  }
-
-  let totalWash = 0;
-  let wyWash = 0, spjWash = 0;
-  for (const rec of recs) {
-    const w = parseFloat(rec.washed) || 0;
-    totalWash += w;
-    if (rec.hotel === '永利皇宮') wyWash += w;
-    else if (rec.hotel === '上葡京') spjWash += w;
-
-    const statusHtml = rec.status === 'done'
-      ? '<span class="status-done">✅</span>'
-      : `<span class="cval-pending" style="cursor:pointer;text-decoration:underline;" onclick="openWashModal('${rec.id}')">⏳ 填洗碼</span>`;
-    tbody.innerHTML += `<tr>
-      <td>${rec.date||''}</td><td>${rec.checkout||''}</td><td><b>${rec.agent||''}</b></td><td>${rec.hotel||''}</td><td>${rec.area||''}</td>
-      <td>${rec.code||''}</td><td>${rec.name||''}</td><td>${rec.nights||0}</td>
-      <td>${fmtWash(rec.washed)}</td><td>${rec.hall||''}</td><td>${statusHtml}</td>
-      <td>
-        <span style="cursor:pointer;color:#007bff;font-size:13px;margin-right:6px;" onclick="editRecord('${rec.id}')">✏️</span>
-        <span style="cursor:pointer;color:#dc3545;font-size:13px;" onclick="deleteRecord('${rec.id}')">🗑️</span>
-      </td>
-    </tr>`;
-  }
-
-  // 摘要卡片
-  document.getElementById('washSummary').innerHTML = `
-    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#1a1a3e,#1F4E79);color:#fff;text-align:center;">
-      <div style="font-size:13px;opacity:0.85;">💰 總洗碼</div>
-      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(totalWash)}萬</div>
-      <div style="font-size:11px;opacity:0.7;">${recs.length} 筆記錄</div>
-    </div>
-    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#5B2C6F,#8E44AD);color:#fff;text-align:center;">
-      <div style="font-size:13px;opacity:0.85;">🏰 永利皇宮</div>
-      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(wyWash)}萬</div>
-    </div>
-    <div class="card" style="flex:1;min-width:30%;background:linear-gradient(135deg,#1a5276,#2980B9);color:#fff;text-align:center;">
-      <div style="font-size:13px;opacity:0.85;">🏯 上葡京</div>
-      <div style="font-size:28px;font-weight:bold;margin:6px 0;">${fmtWash(spjWash)}萬</div>
-    </div>`;
-}
 
 const COMM_MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
@@ -1515,11 +1263,6 @@ function renderDetailTable(agentName) {
   const grandClass = grandDiff > 0 ? 'val-green' : grandDiff < 0 ? 'val-red' : 'val-gray';
   totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + fmtWash(grandDiff) : fmtWash(grandDiff)}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
-
-  // 同步更新總洗碼分頁（日期跟隨主畫面）
-  if (washTabRendered) {
-    renderWashTab();
-  }
 }
 
 async function load() {
