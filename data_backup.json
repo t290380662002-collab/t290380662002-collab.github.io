@@ -12,8 +12,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 400,
-        "rooms": 5,
+        "rolling": 240,
+        "rooms": 3,
         "washed": 2671.1
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-13 00:05",
+  "last_update": "2026-06-13 10:17",
   "records": [
     {
       "agent": "Fifi",
@@ -916,7 +916,7 @@
     {
       "agent": "Fifi",
       "area": "摩珀斯",
-      "checkout": "6/15",
+      "checkout": "6/13",
       "code": "PK",
       "commission_taken": false,
       "date": "6/12",
@@ -924,10 +924,10 @@
       "hotel": "新濠天地",
       "id": "r1781246151570",
       "name": "摩珀斯豪華客房(大床)",
-      "nights": 3,
+      "nights": 1,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 80,
       "washed": 0
     },
     {
