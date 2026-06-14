@@ -142,9 +142,9 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1020,
-        "rooms": 17,
-        "washed": 1895.3
+        "rolling": 1140,
+        "rooms": 19,
+        "washed": 2595.8
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-13 20:56",
+  "last_update": "2026-06-14 08:56",
   "records": [
     {
       "agent": "Fifi",
@@ -1041,7 +1041,7 @@
     {
       "agent": "韓國",
       "area": "酒店",
-      "checkout": "6/14",
+      "checkout": "6/16",
       "code": "TC",
       "commission_taken": false,
       "confirmation": "4488131",
@@ -1051,11 +1051,11 @@
       "hotel": "倫敦人",
       "id": "r1781307727051_2",
       "name": "雙床",
-      "nights": 3,
+      "nights": 5,
       "req": 60,
       "rooms": 1,
       "status": "pending",
-      "total_req": 180,
+      "total_req": 300,
       "washed": 0
     },
     {
@@ -1117,6 +1117,57 @@
       "status": "pending",
       "total_req": 60,
       "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/12",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1781405874637_0",
+      "isWashFree": true,
+      "name": "JUNG JAEUK:7649698",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 260.5
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/12",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1781405874637_1",
+      "isWashFree": true,
+      "name": "YOO HOJUN 4565543",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 154
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/14",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1781405874637_2",
+      "isWashFree": true,
+      "name": "YOO HOJUN 4565543",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 286
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
