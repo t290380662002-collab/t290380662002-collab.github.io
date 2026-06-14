@@ -1307,16 +1307,23 @@ function renderDetailTable(agentName) {
   const dtbody = dtable.querySelector('tbody');
   dtbody.innerHTML = '';
 
-  // 動態生成表頭
+  // 根據 activeHotels 過濾要顯示的酒店（排序與 HOTELS 一致）
+  const hotels = HOTELS.filter(h => activeHotels.has(h));
+  const n = hotels.length;
+  const fullN = HOTELS.length;
+  // 建立 hotel → index 映射（用於從 agent data 取值）
+  const hIdx = {};
+  for (let i = 0; i < fullN; i++) { hIdx[HOTELS[i]] = i; }
+
+  // 動態生成表頭（僅顯示已選中賭場）
   let hdrHTML = '<tr><th>Agent</th>';
-  for (const h of HOTELS) {
+  for (const h of hotels) {
     hdrHTML += `<th>${h}晚數</th><th>${h}轉碼</th><th>${h}洗碼</th><th>${h}差額</th>`;
   }
   hdrHTML += '<th>總差額</th></tr>';
   dhead.innerHTML = hdrHTML;
 
   const agents = allData.agents;
-  const n = HOTELS.length;
   const grand = { rooms: new Array(n).fill(0), rolling: new Array(n).fill(0), washed: new Array(n).fill(0) };
   const agentNames = agentName ? [agentName] : Object.keys(agents).filter(nm => nm !== '房間總計');
 
@@ -1326,17 +1333,18 @@ function renderDetailTable(agentName) {
     let row = `<td style="cursor:pointer;color:#1F4E79;text-decoration:underline;" onclick="showPanel('${name}')">${name}</td>`;
     let totalRoll = 0, totalWash = 0;
     for (let i = 0; i < n; i++) {
-      const h = HOTELS[i];
+      const h = hotels[i];
       const dH = data[h];
+      if (!dH) { row += '<td>-</td><td>-</td><td>-</td><td class="val-gray">-</td>'; continue; }
       const dDiff = dH.washed - dH.rolling;
       const dClass = dDiff > 0 ? 'val-green' : dDiff < 0 ? 'val-red' : 'val-gray';
       row += `<td>${dH.rooms || '-'}</td><td>${dH.rolling ? dH.rolling+'萬' : '-'}</td><td>${dH.washed ? fmtWash(dH.washed)+'萬' : '-'}</td><td class="${dClass}">${dDiff ? (dDiff>0?'+':'')+fmtWash(dDiff)+'萬' : '-'}</td>`;
-      totalRoll += dH.rolling; totalWash += dH.washed;
+      totalRoll += dH.rolling; totalWash = Math.round((totalWash + dH.washed) * 1000) / 1000;
       grand.rooms[i] += dH.rooms;
       grand.rolling[i] += dH.rolling;
-      grand.washed[i] = Math.round((grand.washed[i] + dH.washed) * 100) / 100;
+      grand.washed[i] = Math.round((grand.washed[i] + dH.washed) * 1000) / 1000;
     }
-    const total = totalWash - totalRoll;
+    const total = Math.round((totalWash - totalRoll) * 1000) / 1000;
     const tClass = total > 0 ? 'val-green' : total < 0 ? 'val-red' : 'val-gray';
     row += `<td class="${tClass}">${total > 0 ? '+' + fmtWash(total) : fmtWash(total)}萬</td>`;
     dtbody.innerHTML += `<tr>${row}</tr>`;
@@ -1346,15 +1354,16 @@ function renderDetailTable(agentName) {
   let totalRow = '<td style="font-weight:bold;background:#1F4E79;color:#fff;">房間總計</td>';
   let grandTotalRoll = 0, grandTotalWash = 0;
   for (let i = 0; i < n; i++) {
-    const gDiff = grand.washed[i] - grand.rolling[i];
+    const gDiff = Math.round((grand.washed[i] - grand.rolling[i]) * 1000) / 1000;
     const gClass = gDiff > 0 ? 'val-green' : gDiff < 0 ? 'val-red' : 'val-gray';
     totalRow += `<td style="font-weight:bold;">${grand.rooms[i] || '-'}</td>`;
     totalRow += `<td style="font-weight:bold;">${grand.rolling[i] ? grand.rolling[i]+'萬' : '-'}</td>`;
     totalRow += `<td style="font-weight:bold;">${grand.washed[i] ? fmtWash(grand.washed[i])+'萬' : '-'}</td>`;
-    totalRow += `<td class="${gClass}" style="font-weight:bold;">${gDiff ? (gDiff>0?'+':'')+gDiff+'萬' : '-'}</td>`;
-    grandTotalRoll += grand.rolling[i]; grandTotalWash = Math.round((grandTotalWash + grand.washed[i]) * 100) / 100;
+    totalRow += `<td class="${gClass}" style="font-weight:bold;">${gDiff ? (gDiff>0?'+':'')+fmtWash(gDiff)+'萬' : '-'}</td>`;
+    grandTotalRoll += grand.rolling[i];
+    grandTotalWash = Math.round((grandTotalWash + grand.washed[i]) * 1000) / 1000;
   }
-  const grandDiff = Math.round((grandTotalWash - grandTotalRoll) * 100) / 100;
+  const grandDiff = Math.round((grandTotalWash - grandTotalRoll) * 1000) / 1000;
   const grandClass = grandDiff > 0 ? 'val-green' : grandDiff < 0 ? 'val-red' : 'val-gray';
   totalRow += `<td class="${grandClass}" style="font-weight:bold;font-size:14px;">${grandDiff > 0 ? '+' + fmtWash(grandDiff) : fmtWash(grandDiff)}萬</td>`;
   dtbody.innerHTML += `<tr style="background:#e8ecf1;">${totalRow}</tr>`;
@@ -2023,8 +2032,9 @@ function showPanel(agentName) {
   let totalRoll=0,totalWash=0,totalNights=0;
   let gridHtml = '';
 
-  // 各酒店小卡片
-  for (const h of HOTELS) {
+  // 各酒店小卡片（跟隨 activeHotels 過濾）
+  const panelHotels = HOTELS.filter(h => activeHotels.has(h));
+  for (const h of panelHotels) {
     const dH = data[h];
     const dDiff = dH.washed - dH.rolling;
     const borderClass = dDiff > 0 ? 'green-border' : dDiff < 0 ? 'red-border' : '';
