@@ -12,8 +12,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 240,
-        "rooms": 3,
+        "rolling": 400,
+        "rooms": 5,
         "washed": 2671.1
       },
       "永利皇宮": {
@@ -105,7 +105,7 @@
       "銀河": {
         "rolling": 0,
         "rooms": 0,
-        "washed": 0
+        "washed": 131.3
       }
     },
     "安": {
@@ -120,8 +120,8 @@
         "washed": 2
       },
       "新濠天地": {
-        "rolling": 500,
-        "rooms": 7,
+        "rolling": 980,
+        "rooms": 13,
         "washed": 0
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-14 20:48",
+  "last_update": "2026-06-15 16:25",
   "records": [
     {
       "agent": "Fifi",
@@ -1168,6 +1168,74 @@
       "status": "done",
       "total_req": 0,
       "washed": 286
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "6/21",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "6/19",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1781505307674",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 2,
+      "req": 80,
+      "status": "pending",
+      "total_req": 160,
+      "washed": 0
+    },
+    {
+      "agent": "Yuka",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/15",
+      "hall": "金門8",
+      "hotel": "銀河",
+      "id": "w1781509069842",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 131.3
+    },
+    {
+      "agent": "安",
+      "area": "摩珀斯",
+      "checkout": "6/22",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "6/19",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1781536911383",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "摩珀斯",
+      "checkout": "6/22",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "6/19",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1781536933465",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
