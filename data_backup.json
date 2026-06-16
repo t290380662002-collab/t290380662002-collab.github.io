@@ -120,8 +120,8 @@
         "washed": 2
       },
       "新濠天地": {
-        "rolling": 980,
-        "rooms": 13,
+        "rolling": 1220,
+        "rooms": 16,
         "washed": 0
       },
       "永利皇宮": {
@@ -142,8 +142,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1140,
-        "rooms": 19,
+        "rolling": 1320,
+        "rooms": 22,
         "washed": 2595.8
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-15 23:23",
+  "last_update": "2026-06-16 18:19",
   "records": [
     {
       "agent": "Fifi",
@@ -1231,6 +1231,43 @@
       "hotel": "新濠天地",
       "id": "r1781536933465",
       "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "6/19",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4505917",
+      "date": "6/16",
+      "guest": "JEONG WOOWON",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1781597618100_0",
+      "name": "雙床",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "摩珀斯",
+      "checkout": "6/19",
+      "code": "PT",
+      "commission_taken": false,
+      "date": "6/16",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1781608031516",
+      "name": "摩珀斯豪華客房(雙床)",
       "nights": 3,
       "req": 80,
       "status": "pending",
