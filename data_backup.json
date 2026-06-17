@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-17 14:24",
+  "last_update": "2026-06-17 22:16",
   "records": [
     {
       "agent": "Fifi",
@@ -613,6 +613,7 @@
       "code": "-",
       "commission_taken": false,
       "date": "6/3",
+      "fund_taken": true,
       "hall": "勵盈1",
       "hotel": "新濠天地",
       "id": "w1780479755933_0",
@@ -630,6 +631,7 @@
       "code": "-",
       "commission_taken": false,
       "date": "6/3",
+      "fund_taken": true,
       "hall": "勵盈1",
       "hotel": "新濠天地",
       "id": "w1780479886942_0",
@@ -834,6 +836,7 @@
       "code": "-",
       "commission_taken": false,
       "date": "6/3",
+      "fund_taken": true,
       "hall": "勵盈1",
       "hotel": "新濠天地",
       "id": "w1780937905699",
@@ -987,6 +990,7 @@
       "code": "-",
       "commission_taken": false,
       "date": "6/12",
+      "fund_taken": true,
       "hall": "勵盈1",
       "hotel": "新濠天地",
       "id": "w1781262830181",
