@@ -103,8 +103,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1440,
-        "rooms": 18,
+        "rolling": 1680,
+        "rooms": 21,
         "washed": 131.3
       }
     },
@@ -120,8 +120,8 @@
         "washed": 2
       },
       "新濠天地": {
-        "rolling": 1220,
-        "rooms": 16,
+        "rolling": 1300,
+        "rooms": 17,
         "washed": 498.5
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-18 21:30",
+  "last_update": "2026-06-19 12:37",
   "records": [
     {
       "agent": "Fifi",
@@ -1264,7 +1264,7 @@
     {
       "agent": "安",
       "area": "摩珀斯",
-      "checkout": "6/19",
+      "checkout": "6/20",
       "code": "PT",
       "commission_taken": false,
       "date": "6/16",
@@ -1272,10 +1272,10 @@
       "hotel": "新濠天地",
       "id": "r1781608031516",
       "name": "摩珀斯豪華客房(雙床)",
-      "nights": 3,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 320,
       "washed": 0
     },
     {
@@ -1482,6 +1482,23 @@
       "taken_amount": 58823,
       "total_req": 0,
       "washed": 498.5
+    },
+    {
+      "agent": "Yuka",
+      "area": "萬豪",
+      "checkout": "6/22",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "6/19",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1781837992938",
+      "name": "萬豪大床",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
