@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-20 10:19",
+  "last_update": "2026-06-20 16:06",
   "records": [
     {
       "agent": "Fifi",
@@ -715,7 +715,7 @@
       "agent": "H",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/7",
       "hall": "金門8",
       "hotel": "銀河",
@@ -852,7 +852,7 @@
       "agent": "H",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/6",
       "hall": "御匾會",
       "hotel": "倫敦人",
@@ -869,7 +869,7 @@
       "agent": "H",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/10",
       "hall": "金門8",
       "hotel": "銀河",
@@ -988,7 +988,7 @@
       "agent": "H",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/12",
       "fund_taken": true,
       "hall": "勵盈1",
@@ -1194,7 +1194,7 @@
       "agent": "Yuka",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/15",
       "hall": "金門8",
       "hotel": "銀河",
@@ -1204,6 +1204,7 @@
       "nights": 0,
       "req": 0,
       "status": "done",
+      "taken_amount": 11817,
       "total_req": 0,
       "washed": 131.3
     },
