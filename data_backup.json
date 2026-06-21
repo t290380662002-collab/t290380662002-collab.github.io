@@ -103,8 +103,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1680,
-        "rooms": 21,
+        "rolling": 1760,
+        "rooms": 22,
         "washed": 2011.3
       }
     },
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-20 20:58",
+  "last_update": "2026-06-21 10:48",
   "records": [
     {
       "agent": "Fifi",
@@ -1367,7 +1367,7 @@
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/22",
+      "checkout": "6/21",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/19",
@@ -1375,16 +1375,16 @@
       "hotel": "銀河",
       "id": "r1781689313268",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 2,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 160,
       "washed": 0
     },
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/22",
+      "checkout": "6/21",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/19",
@@ -1392,16 +1392,16 @@
       "hotel": "銀河",
       "id": "r1781689334985",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 2,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 160,
       "washed": 0
     },
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/22",
+      "checkout": "6/21",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/19",
@@ -1409,16 +1409,16 @@
       "hotel": "銀河",
       "id": "r1781689341091",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 2,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 160,
       "washed": 0
     },
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/23",
+      "checkout": "6/24",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/20",
@@ -1426,16 +1426,16 @@
       "hotel": "銀河",
       "id": "r1781689349412",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 320,
       "washed": 0
     },
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/23",
+      "checkout": "6/24",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/20",
@@ -1443,10 +1443,10 @@
       "hotel": "銀河",
       "id": "r1781689361943",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 320,
       "washed": 0
     },
     {
@@ -1487,7 +1487,7 @@
     {
       "agent": "Yuka",
       "area": "萬豪",
-      "checkout": "6/22",
+      "checkout": "6/24",
       "code": "JW01",
       "commission_taken": false,
       "date": "6/19",
@@ -1495,10 +1495,10 @@
       "hotel": "銀河",
       "id": "r1781837992938",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 400,
       "washed": 0
     },
     {
