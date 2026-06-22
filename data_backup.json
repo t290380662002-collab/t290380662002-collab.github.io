@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-21 21:59",
+  "last_update": "2026-06-22 16:14",
   "records": [
     {
       "agent": "Fifi",
@@ -1516,7 +1516,7 @@
       "req": 0,
       "status": "done",
       "total_req": 0,
-      "washed": 2363
+      "washed": 2520
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
