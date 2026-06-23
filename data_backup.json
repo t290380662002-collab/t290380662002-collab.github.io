@@ -14,12 +14,12 @@
       "新濠天地": {
         "rolling": 400,
         "rooms": 5,
-        "washed": 2671.1
+        "washed": 3445.1
       },
       "永利皇宮": {
-        "rolling": 480,
-        "rooms": 3,
-        "washed": 504.9
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
       },
       "銀河": {
         "rolling": 0,
@@ -105,7 +105,7 @@
       "銀河": {
         "rolling": 1760,
         "rooms": 22,
-        "washed": 2651.3
+        "washed": 2621.3
       }
     },
     "安": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-23 10:49",
+  "last_update": "2026-06-23 17:30",
   "records": [
     {
       "agent": "Fifi",
@@ -1516,7 +1516,7 @@
       "req": 0,
       "status": "done",
       "total_req": 0,
-      "washed": 2520
+      "washed": 2490
     },
     {
       "agent": "Fifi",
@@ -1534,6 +1534,23 @@
       "status": "pending",
       "total_req": 160,
       "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/24",
+      "hall": "勵盈1",
+      "hotel": "新濠天地",
+      "id": "w1782230736500",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 774
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
