@@ -17,9 +17,9 @@
         "washed": 2671.1
       },
       "永利皇宮": {
-        "rolling": 0,
-        "rooms": 0,
-        "washed": 0
+        "rolling": 480,
+        "rooms": 3,
+        "washed": 504.9
       },
       "銀河": {
         "rolling": 0,
@@ -105,7 +105,7 @@
       "銀河": {
         "rolling": 1760,
         "rooms": 22,
-        "washed": 2494.3
+        "washed": 2651.3
       }
     },
     "安": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-22 22:57",
+  "last_update": "2026-06-23 10:49",
   "records": [
     {
       "agent": "Fifi",
@@ -1517,6 +1517,23 @@
       "status": "done",
       "total_req": 0,
       "washed": 2520
+    },
+    {
+      "agent": "Fifi",
+      "area": "永利皇宮",
+      "checkout": "7/1",
+      "code": "CRK",
+      "commission_taken": false,
+      "date": "6/30",
+      "hall": "",
+      "hotel": "永利皇宮",
+      "id": "r1782202260309",
+      "name": "大床",
+      "nights": 1,
+      "req": 160,
+      "status": "pending",
+      "total_req": 160,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
