@@ -721,45 +721,94 @@ function filterCommByPeriod(records) {
 function filterByPeriod(records) {
   const now = new Date();
   const y = mainYear || now.getFullYear();
-  const m = (mainMonth || (now.getMonth() + 1)) - 1; // 0-based
+  const m = (mainMonth || (now.getMonth() + 1)) - 1; // 0-based, 目標月份
 
   if (currentPeriod === 'all' || !records) return records;
 
-  return records.filter(r => {
-    if (!r.date) return true;
+  // 使用 flatMap 支援跨月拆分（一條記錄可能拆成兩條）
+  const result = [];
+  for (const r of records) {
+    if (!r.date) { result.push(r); continue; }
     const parts = r.date.split('/');
-    if (parts.length < 2) return true;
+    if (parts.length < 2) { result.push(r); continue; }
 
-    let recYear, recMonth, recDay;
+    let recYear, recMonth;
     if (parts.length === 2) {
       recYear = now.getFullYear();
       recMonth = parseInt(parts[0]);
-      recDay = parseInt(parts[1]);
     } else if (parts.length === 3) {
       recYear = parseInt(parts[0]);
       recMonth = parseInt(parts[1]);
-      recDay = parseInt(parts[2]);
     }
 
-    if (currentPeriod === 'month') {
-      return recYear === y && recMonth === (m + 1);
-    } else if (currentPeriod === 'year') {
-      return recYear === y;
-    } else if (currentPeriod === 'custom') {
-      // 自訂日期篩選
-      const recDate = new Date(recYear, recMonth - 1, recDay);
-      if (customDateFrom) {
-        const fd = new Date(customDateFrom);
-        if (recDate < fd) return false;
-      }
-      if (customDateTo) {
-        const td = new Date(customDateTo);
-        if (recDate > td) return false;
-      }
-      return true;
+    if (currentPeriod === 'year') {
+      if (recYear === y) result.push(r);
+      continue;
     }
-    return true; // 'all'
-  });
+
+    if (currentPeriod === 'custom') {
+      const recDate = new Date(recYear, recMonth - 1, parseInt(parts[parts.length - 1]));
+      if (customDateFrom) { if (recDate < new Date(customDateFrom)) continue; }
+      if (customDateTo)   { if (recDate > new Date(customDateTo)) continue; }
+      result.push(r);
+      continue;
+    }
+
+    // === month 模式 ===
+    const targetMonth = m + 1; // 1-based 目標月份
+
+    // 沒有 checkout 或獨立洗碼 → 直接按入住月比對
+    if (!r.checkout || r.isWashFree) {
+      if (recYear === y && recMonth === targetMonth) result.push(r);
+      continue;
+    }
+
+    const coParts = r.checkout.split('/');
+    if (coParts.length < 2) {
+      if (recYear === y && recMonth === targetMonth) result.push(r);
+      continue;
+    }
+    const coM = parseInt(coParts[0]);
+    const coD = parseInt(coParts[1]);
+    let coYear = recYear;
+    if (coParts.length === 3) coYear = parseInt(coParts[0]);
+    else if (coM < recMonth) coYear++; // 跨年（12月→1月）
+
+    // 不跨月 → 直接比對
+    if (recMonth === coM) {
+      if (recYear === y && recMonth === targetMonth) result.push(r);
+      continue;
+    }
+
+    // === 跨月：拆分記錄 ===
+    const ci = new Date(recYear, recMonth - 1, parseInt(parts[parts.length - 1]));
+    const co = new Date(coYear, coM - 1, coD);
+    const nextMonthStart = new Date(recYear, recMonth, 1); // 入住月下月第一天
+    const nights1 = Math.round((nextMonthStart - ci) / 86400000); // 本月晚數
+    const nights2 = Math.round((co - nextMonthStart) / 86400000); // 下月晚數
+
+    // 入住月部分
+    if (recMonth === targetMonth && nights1 > 0) {
+      const r1 = Object.assign({}, r);
+      r1.nights = nights1;
+      r1.total_req = (r.req || 0) * nights1;
+      r1.id = (r.id || '') + '_s1';
+      result.push(r1);
+    }
+
+    // 下月部分
+    const nextM = recMonth === 12 ? 1 : recMonth + 1;
+    if (nextM === targetMonth && nights2 > 0) {
+      const r2 = Object.assign({}, r);
+      r2.date = nextM + '/1';
+      r2.nights = nights2;
+      r2.total_req = (r.req || 0) * nights2;
+      r2.washed = 0; // 洗碼保留在入住月
+      r2.id = (r.id || '') + '_s2';
+      result.push(r2);
+    }
+  }
+  return result;
 }
 
 // 房型對照表: [code, 名稱, 平日需求, 週末需求]
