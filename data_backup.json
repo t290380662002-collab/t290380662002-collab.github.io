@@ -12,9 +12,9 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 640,
-        "rooms": 8,
-        "washed": 3445.1
+        "rolling": 720,
+        "rooms": 9,
+        "washed": 4087.1
       },
       "永利皇宮": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-25 10:24",
+  "last_update": "2026-06-25 18:34",
   "records": [
     {
       "agent": "Fifi",
@@ -817,7 +817,7 @@
       "agent": "安",
       "area": "(獨立洗碼)",
       "code": "-",
-      "commission_taken": false,
+      "commission_taken": true,
       "date": "6/8",
       "hall": "御匾會",
       "hotel": "倫敦人",
@@ -1480,7 +1480,7 @@
       "nights": 0,
       "req": 0,
       "status": "done",
-      "taken_amount": 58823,
+      "taken_amount": 61315.5,
       "total_req": 0,
       "washed": 498.5
     },
@@ -1550,7 +1550,7 @@
       "req": 0,
       "status": "done",
       "total_req": 0,
-      "washed": 774
+      "washed": 1416
     },
     {
       "agent": "韓國",
@@ -1607,6 +1607,40 @@
       "req": 80,
       "status": "pending",
       "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "6/26",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "6/25",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782384001100",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 1,
+      "req": 80,
+      "status": "pending",
+      "total_req": 80,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "映星匯",
+      "checkout": "7/5",
+      "code": "EDK",
+      "commission_taken": false,
+      "date": "7/3",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782398358688",
+      "name": "映星匯套房(大床)",
+      "nights": 2,
+      "req": 60,
+      "status": "pending",
+      "total_req": 120,
       "washed": 0
     }
   ],
