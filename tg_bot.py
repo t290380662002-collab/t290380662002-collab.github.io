@@ -254,6 +254,95 @@ def auto_parse(text, chat_id):
     return True
 
 
+def auto_parse_short(text, chat_id):
+    """自動解析短格式：Agent Code 確認號 客人名 （日期-日期）
+    例：Fifi MPK 31071362 司徒巧凤 （6/27-28）→ 6/27→6/28
+    """
+    text = text.replace("（", "(").replace("）", ")").replace("：", ":").strip()
+    # 正則匹配: Agent Code 確認號(數字) 客人 (日期-日期)
+    # 退房日期支援 "6/28" 或僅 "28"（自動補同月）
+    m = re.match(r'^(\S+)\s+(\S+)\s+(\d{5,12})\s+(.+?)\s*[\(（]\s*(\d{1,2}/\d{1,2})\s*[-~]\s*(\d{1,2}(?:/\d{1,2})?)\s*[\)）]\s*$', text)
+    if not m:
+        return False
+
+    agent_raw = m.group(1)
+    code_raw = m.group(2).upper().replace("🚬","").replace("🚭","")
+    confirm = m.group(3)
+    guest = m.group(4).strip()
+    checkin = m.group(5)
+    checkout_raw = m.group(6)
+    # 退房僅寫日數時自動補月份
+    if '/' not in checkout_raw:
+        checkout_raw = checkin.split('/')[0] + '/' + checkout_raw
+
+    # 匹配 agent
+    agent_lower = agent_raw.lower()
+    agent = next((a for a in AGENTS if a.lower() == agent_lower), "韓國")
+
+    # 計算晚數
+    try:
+        ci_parts = checkin.split("/"); co_parts = checkout_raw.split("/")
+        ci_m, ci_d = int(ci_parts[0]), int(ci_parts[1])
+        co_m, co_d = int(co_parts[0]), int(co_parts[1])
+        co_year = 2026
+        if co_m < ci_m: co_year += 1
+        from datetime import date
+        ci = date(2026, ci_m, ci_d)
+        co = date(co_year, co_m, co_d)
+        nights = (co - ci).days
+        if nights <= 0 or nights > 31:
+            tg_send(chat_id, f"❌ 晚數異常: {checkin}→{checkout_raw} = {nights}晚")
+            return False
+    except Exception as e:
+        tg_send(chat_id, f"❌ 日期解析錯誤: {e}")
+        return False
+
+    # 在 HOTEL_MAP 搜尋 code
+    hotel = None; area = None; room_name = code_raw; req_wd = 0; req_we = 0
+    for h_name, areas in HOTEL_MAP.items():
+        for a_name, rooms in areas.items():
+            for r in rooms:
+                if r[0].upper() == code_raw:
+                    hotel = h_name; area = a_name; room_name = r[1]; req_wd = r[2]; req_we = r[3]
+                    break
+            if hotel: break
+        if hotel: break
+
+    if not hotel:
+        tg_send(chat_id, f"⚠️ 房型 {code_raw} 未在對照表中！\n已寫入空白記錄，請手動補充酒店/轉碼。\n\n👤 {guest} → {agent}\n📅 {checkin}→{checkout_raw}（{nights}晚）\n🔢 確認號 {confirm}")
+        # 仍寫入空白記錄
+        data = get_data()
+        new_id = f"r{int(datetime.now().timestamp()*1000)}"
+        rec = {"id":new_id,"date":checkin,"checkout":checkout_raw,"agent":agent,"hotel":"","area":"","code":code_raw,"name":code_raw,"req":0,"nights":nights,"total_req":0,"washed":0,"hall":"","commission_taken":False,"taken_amount":None,"status":"pending","guest":guest,"rooms":1,"confirmation":confirm}
+        data.setdefault("records",[]).append(rec)
+        data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        save_data(data)
+        return True
+
+    req = req_we if is_weekend(checkin) else req_wd
+    total_req = req * nights
+    week_label = "週末" if is_weekend(checkin) else "平日"
+
+    # 寫入 Firebase
+    data = get_data()
+    new_id = f"r{int(datetime.now().timestamp()*1000)}"
+    rec = {"id":new_id,"date":checkin,"checkout":checkout_raw,"agent":agent,"hotel":hotel,"area":area,"code":code_raw,"name":room_name,"req":req,"nights":nights,"total_req":total_req,"washed":0,"hall":"","commission_taken":False,"taken_amount":None,"status":"pending","guest":guest,"rooms":1,"confirmation":confirm}
+    data.setdefault("records",[]).append(rec)
+    data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    save_data(data)
+
+    tg_send(chat_id, (
+        f"✅ *短格式自動解析完成！*\n\n"
+        f"👤 {guest} → {agent}\n"
+        f"🏨 {hotel}·{area} | {code_raw} {room_name}\n"
+        f"📅 {checkin}→{checkout_raw}（{nights}晚）| {week_label}\n"
+        f"💰 轉碼 {req}萬 × {nights}晚 = *{total_req}萬*\n"
+        f"🔢 確認號 {confirm}\n\n"
+        f"🌐 網頁已即時同步"
+    ), reply_kb=MAIN_KB)
+    return True
+
+
 def parse_one_room_block(block):
     """解析單筆房間訂單區塊，成功回傳 record dict 否則回傳 error str"""
     text = block.replace("：", ":").replace("（", "(").replace("）", ")")
@@ -969,8 +1058,9 @@ if __name__ == "__main__":
                         elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
                         else: 
                             if not auto_parse(text, chat_id):
-                                if not auto_parse_room_booking(text, chat_id):
-                                    handle_text(chat_id, text)
+                                if not auto_parse_short(text, chat_id):
+                                    if not auto_parse_room_booking(text, chat_id):
+                                        handle_text(chat_id, text)
                     elif cb:
                         chat_id = cb["message"]["chat"]["id"]
                         data_str = cb["data"]
