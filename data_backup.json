@@ -120,8 +120,8 @@
         "washed": 2
       },
       "新濠天地": {
-        "rolling": 1520,
-        "rooms": 20,
+        "rolling": 1640,
+        "rooms": 22,
         "washed": 498.5
       },
       "永利皇宮": {
@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 1440,
         "rooms": 24,
-        "washed": 2819.7
+        "washed": 3217.1
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-26 10:48",
+  "last_update": "2026-06-26 13:09",
   "records": [
     {
       "agent": "Fifi",
@@ -1659,6 +1659,57 @@
       "status": "pending",
       "total_req": 180,
       "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "映星匯",
+      "checkout": "7/3",
+      "code": "EDK",
+      "commission_taken": false,
+      "date": "6/30",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782475623765",
+      "name": "映星匯套房(大床)",
+      "nights": 3,
+      "req": 60,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "映星匯",
+      "checkout": "7/3",
+      "code": "EDT",
+      "commission_taken": false,
+      "date": "6/30",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782475633755",
+      "name": "映星匯套房(雙床)",
+      "nights": 3,
+      "req": 60,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": true,
+      "date": "6/17",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1782478755279_0",
+      "isWashFree": true,
+      "name": "CHO JIHOON 7596369",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 397.4
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
