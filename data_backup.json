@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-26 18:49",
+  "last_update": "2026-06-26 20:45",
   "records": [
     {
       "agent": "Fifi",
@@ -1710,6 +1710,46 @@
       "status": "done",
       "total_req": 0,
       "washed": 397.4
+    },
+    {
+      "agent": "Fifi",
+      "area": "",
+      "checkout": "6/28",
+      "code": "MPK",
+      "commission_taken": false,
+      "confirmation": "31071362",
+      "date": "6/27",
+      "guest": "司徒巧凤",
+      "hall": "",
+      "hotel": "",
+      "id": "r1782502214579",
+      "name": "MPK",
+      "nights": 1,
+      "req": 0,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 0,
+      "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "6/28",
+      "code": "PK",
+      "commission_taken": false,
+      "confirmation": "31071362",
+      "date": "6/27",
+      "guest": "司徒巧凤",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782502364546",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 1,
+      "req": 80,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 80,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
