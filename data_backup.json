@@ -12,8 +12,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 720,
-        "rooms": 9,
+        "rolling": 800,
+        "rooms": 10,
         "washed": 4087.1
       },
       "永利皇宮": {
@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 1440,
         "rooms": 24,
-        "washed": 3217.1
+        "washed": 3239.8
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-28 11:05",
+  "last_update": "2026-06-28 13:40",
   "records": [
     {
       "agent": "Fifi",
@@ -1750,6 +1750,40 @@
       "status": "pending",
       "total_req": 80,
       "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/26",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1782645338604_0",
+      "isWashFree": true,
+      "name": "Lee jahang7443213",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 13.7
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "6/27",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1782648469465_1",
+      "isWashFree": true,
+      "name": "Lee jahang7443213",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 9
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
