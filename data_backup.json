@@ -120,8 +120,8 @@
         "washed": 2
       },
       "新濠天地": {
-        "rolling": 1640,
-        "rooms": 22,
+        "rolling": 1700,
+        "rooms": 23,
         "washed": 498.5
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-28 13:40",
+  "last_update": "2026-06-28 15:16",
   "records": [
     {
       "agent": "Fifi",
@@ -1784,6 +1784,23 @@
       "status": "done",
       "total_req": 0,
       "washed": 9
+    },
+    {
+      "agent": "安",
+      "area": "映星匯",
+      "checkout": "7/2",
+      "code": "EDK",
+      "commission_taken": false,
+      "date": "6/30",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1782656849167",
+      "name": "映星匯套房(大床)",
+      "nights": 2,
+      "req": 60,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
