@@ -14,7 +14,7 @@
       "新濠天地": {
         "rolling": 800,
         "rooms": 10,
-        "washed": 4087.1
+        "washed": 2671.1
       },
       "永利皇宮": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-06-29 10:52",
+  "last_update": "2026-06-29 14:46",
   "records": [
     {
       "agent": "Fifi",
@@ -1534,23 +1534,6 @@
       "status": "pending",
       "total_req": 160,
       "washed": 0
-    },
-    {
-      "agent": "Fifi",
-      "area": "(獨立洗碼)",
-      "code": "-",
-      "commission_taken": false,
-      "date": "6/24",
-      "hall": "勵盈1",
-      "hotel": "新濠天地",
-      "id": "w1782230736500",
-      "isWashFree": true,
-      "name": "獨立洗碼",
-      "nights": 0,
-      "req": 0,
-      "status": "done",
-      "total_req": 0,
-      "washed": 1416
     },
     {
       "agent": "韓國",
