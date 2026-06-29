@@ -408,20 +408,28 @@ def auto_parse_agent_booking(text, chat_id):
             errors.append(f"❌ 解析失敗: {block[:40]}...")
             continue
 
-        # 找 hotel/area/code
+        # 找 hotel/area/code（先精準匹配 code，再模糊匹配區域）
         hotel = None; area_found = None; room_name = code_raw; req_wd = 0; req_we = 0
+        # 1st pass: 直接在 HOTEL_MAP 找 code
         for h_name, areas in HOTEL_MAP.items():
             for a_name, rooms in areas.items():
-                # area 模糊匹配
-                if area_raw and (a_name in area_raw or area_raw in a_name or a_name.replace("匯","滙") == area_raw):
-                    area_found = a_name
-                    hotel = h_name
-                    break
-                for r in rooms:
-                    if r[0].upper() == code_raw:
-                        area_found = a_name; hotel = h_name
-                        room_name = r[1]; req_wd = r[2]; req_we = r[3]
+                for r_item in rooms:
+                    if r_item[0].upper() == code_raw:
+                        hotel = h_name; area_found = a_name
+                        room_name = r_item[1]; req_wd = r_item[2]; req_we = r_item[3]
                         break
+                if hotel: break
+            if hotel: break
+        # 2nd pass: code 沒找到但區域名匹配 → 模糊搜
+        if not hotel and area_raw:
+            for h_name, areas in HOTEL_MAP.items():
+                for a_name, rooms in areas.items():
+                    if a_name in area_raw or area_raw in a_name or a_name.replace("匯","滙") == area_raw:
+                        for r_item in rooms:
+                            if r_item[0].upper() == code_raw:
+                                hotel = h_name; area_found = a_name
+                                room_name = r_item[1]; req_wd = r_item[2]; req_we = r_item[3]
+                                break
                 if hotel: break
             if hotel: break
 
