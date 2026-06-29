@@ -343,6 +343,154 @@ def auto_parse_short(text, chat_id):
     return True
 
 
+def auto_parse_agent_booking(text, chat_id):
+    """自動解析代理多行訂房格式（支援批量）：
+    安哥
+
+    7/9-7/11
+    映星滙 EDK
+    確認號：E00015056
+    入住人：毛亮軒
+    是否吸菸：🚭
+    
+    預設 agent 取自第一行，未匹配→韓國
+    """
+    text = text.replace("：", ":").replace("（", "(").replace("）", ")").replace("滙", "匯")
+    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+
+    # 第一行若是純 agent 名（無日期關鍵字）
+    first_line = blocks[0].split("\n")[0].strip() if blocks else ""
+    agent_raw = first_line if first_line and not any(k in first_line for k in ["入住","退房","酒店","房型","確認號","日期","/"]) else "韓國"
+    agent_lower = agent_raw.lower()
+    agent = next((a for a in AGENTS if a.lower() == agent_lower), "韓國")
+
+    if agent == "韓國" and first_line and first_line not in ["韓國"]:
+        # 嘗試模糊匹配
+        for a in AGENTS:
+            if a in first_line or first_line in a:
+                agent = a
+                break
+
+    results = []
+    errors = []
+
+    # 跳過第一行（agent 名），處理後續區塊
+    start_idx = 1 if agent != "韓國" or first_line == "韓國" else 0
+    for bi in range(start_idx, len(blocks)):
+        block = blocks[bi]
+        lines = [l.strip() for l in block.split("\n") if l.strip()]
+        if len(lines) < 3: continue
+
+        checkin = ""; checkout = ""; code_raw = ""; area_raw = ""
+        confirm = ""; guest = ""
+
+        for line in lines:
+            # 日期行: "7/9-7/11"
+            dm = re.match(r'^(\d{1,2})/(\d{1,2})\s*[-~]\s*(\d{1,2})(?:/(\d{1,2}))?$', line)
+            if dm:
+                checkin = dm.group(1) + "/" + dm.group(2)
+                co_m = dm.group(1) if not dm.group(4) else dm.group(3)
+                co_d = dm.group(4) if dm.group(4) else dm.group(3)
+                checkout = co_m + "/" + co_d
+                continue
+            # 區域+代號: "映星匯 EDK"
+            am = re.match(r'^(\S+)\s+(\S+)$', line)
+            if am and not line.startswith("確認") and not line.startswith("入住") and not line.startswith("是否"):
+                area_raw = am.group(1)
+                code_raw = am.group(2).upper().replace("🚬","").replace("🚭","")
+                continue
+            if line.startswith("確認號:"):
+                confirm = line.split(":",1)[-1].strip()
+            elif line.startswith("入住人:"):
+                guest = line.split(":",1)[-1].strip()
+
+        if not checkin or not code_raw:
+            errors.append(f"❌ 解析失敗: {block[:40]}...")
+            continue
+
+        # 找 hotel/area/code
+        hotel = None; area_found = None; room_name = code_raw; req_wd = 0; req_we = 0
+        for h_name, areas in HOTEL_MAP.items():
+            for a_name, rooms in areas.items():
+                # area 模糊匹配
+                if area_raw and (a_name in area_raw or area_raw in a_name or a_name.replace("匯","滙") == area_raw):
+                    area_found = a_name
+                    hotel = h_name
+                    break
+                for r in rooms:
+                    if r[0].upper() == code_raw:
+                        area_found = a_name; hotel = h_name
+                        room_name = r[1]; req_wd = r[2]; req_we = r[3]
+                        break
+                if hotel: break
+            if hotel: break
+
+        if not hotel:
+            errors.append(f"❌ 找不到 {code_raw}（區域:{area_raw}）")
+            continue
+
+        # 計算晚數
+        try:
+            ci_parts = checkin.split("/"); co_parts = checkout.split("/")
+            co_year = 2026
+            if int(co_parts[0]) < int(ci_parts[0]): co_year += 1
+            from datetime import date
+            ci = date(2026, int(ci_parts[0]), int(ci_parts[1]))
+            co = date(co_year, int(co_parts[0]), int(co_parts[1]))
+            nights = (co - ci).days
+            if nights <= 0 or nights > 31: raise ValueError("nights")
+        except:
+            errors.append(f"❌ 日期錯誤: {checkin}→{checkout}")
+            continue
+
+        req = req_we if is_weekend(checkin) else req_wd
+        total_req = req * nights
+        results.append({
+            "guest": guest, "agent": agent, "hotel": hotel, "area": area_found,
+            "code": code_raw, "name": room_name, "checkin": checkin, "checkout": checkout,
+            "nights": nights, "req": req, "total_req": total_req, "confirm": confirm,
+            "is_weekend": is_weekend(checkin), "req_wd": req_wd, "req_we": req_we
+        })
+
+    if not results:
+        if errors:
+            tg_send(chat_id, "❌ 解析失敗：\n" + "\n".join(errors[:5]))
+        return bool(errors)  # True if we handled it (even with errors)
+
+    # 寫入 Firebase
+    data = get_data()
+    for i, rec in enumerate(results):
+        new_id = f"r{int(datetime.now().timestamp()*1000)}_{i}"
+        obj = {
+            "id": new_id, "date": rec["checkin"], "checkout": rec["checkout"],
+            "agent": rec["agent"], "hotel": rec["hotel"], "area": rec["area"],
+            "code": rec["code"], "name": rec["name"], "req": rec["req"],
+            "nights": rec["nights"], "total_req": rec["total_req"], "washed": 0,
+            "hall": "", "commission_taken": False, "taken_amount": None,
+            "status": "pending", "guest": rec["guest"], "rooms": 1
+        }
+        if rec.get("confirm"):
+            obj["confirmation"] = rec["confirm"]
+        data.setdefault("records", []).append(obj)
+
+    data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    save_data(data)
+
+    # 回報
+    total_nights = sum(r["nights"] for r in results)
+    total_req = sum(r["total_req"] for r in results)
+    lines = [f"✅ *代理訂房自動解析完成！*\n👤 {agent} | 📊 {len(results)} 筆 | {total_nights} 晚 | *{total_req} 萬*\n"]
+    for i, rec in enumerate(results):
+        wl = "週末" if rec["is_weekend"] else "平日"
+        lines.append(f"{i+1}. {rec['guest']} | {rec['checkin']}→{rec['checkout']} {rec['nights']}晚 | {rec['hotel']}·{rec['area']} {rec['code']} | {wl} {rec['total_req']}萬 | #{rec['confirm']}")
+    if errors:
+        lines.append(f"\n⚠️ {len(errors)} 筆失敗：")
+        lines.extend(errors[:5])
+    lines.append("\n🌐 網頁已即時同步")
+    tg_send(chat_id, "\n".join(lines), reply_kb=MAIN_KB)
+    return True
+
+
 def parse_one_room_block(block):
     """解析單筆房間訂單區塊，成功回傳 record dict 否則回傳 error str"""
     text = block.replace("：", ":").replace("（", "(").replace("）", ")")
@@ -1058,9 +1206,10 @@ if __name__ == "__main__":
                         elif text.startswith("/"): tg_send(chat_id, "❓ 未知指令，/start 查看可用指令")
                         else: 
                             if not auto_parse(text, chat_id):
-                                if not auto_parse_short(text, chat_id):
-                                    if not auto_parse_room_booking(text, chat_id):
-                                        handle_text(chat_id, text)
+                                if not auto_parse_agent_booking(text, chat_id):
+                                    if not auto_parse_short(text, chat_id):
+                                        if not auto_parse_room_booking(text, chat_id):
+                                            handle_text(chat_id, text)
                     elif cb:
                         chat_id = cb["message"]["chat"]["id"]
                         data_str = cb["data"]
