@@ -343,127 +343,144 @@ def auto_parse_short(text, chat_id):
     return True
 
 
-def auto_parse_agent_booking(text, chat_id):
-    """自動解析代理多行訂房格式（支援批量）：
-    安哥
+def _lookup_room(code_raw, area_raw="", area_hint=""):
+    """在 HOTEL_MAP 搜尋房型，回傳 (hotel, area, name, req_wd, req_we) 或 None"""
+    # 1st pass: 直接找 code
+    for h_name, areas in HOTEL_MAP.items():
+        for a_name, rooms in areas.items():
+            for r_item in rooms:
+                if r_item[0].upper() == code_raw.upper():
+                    return (h_name, a_name, r_item[1], r_item[2], r_item[3])
+    # 2nd pass: 用 area hint / area_raw 模糊搜
+    hint = (area_hint or area_raw).replace("匯","滙")
+    if hint:
+        for h_name, areas in HOTEL_MAP.items():
+            for a_name, rooms in areas.items():
+                if a_name in hint or hint in a_name or a_name.replace("匯","滙") in hint or hint in a_name.replace("匯","滙"):
+                    for r_item in rooms:
+                        if r_item[0].upper() == code_raw.upper():
+                            return (h_name, a_name, r_item[1], r_item[2], r_item[3])
+        # 用 hint 搜酒店名
+        for h_name, areas in HOTEL_MAP.items():
+            if h_name in hint:
+                for a_name, rooms in areas.items():
+                    for r_item in rooms:
+                        if r_item[0].upper() == code_raw.upper():
+                            return (h_name, a_name, r_item[1], r_item[2], r_item[3])
+    return None
 
-    7/9-7/11
-    映星滙 EDK
-    確認號：E00015056
-    入住人：毛亮軒
-    是否吸菸：🚭
-    
-    預設 agent 取自第一行，未匹配→韓國
-    """
+def _make_room_record(checkin, checkout, code_raw, agent, hotel, area, name, req_wd, req_we):
+    """根據解析結果建立 record dict 或回傳 error str"""
+    try:
+        ci_parts = checkin.split("/"); co_parts = checkout.split("/")
+        co_year = 2026
+        if int(co_parts[0]) < int(ci_parts[0]): co_year += 1
+        from datetime import date
+        ci = date(2026, int(ci_parts[0]), int(ci_parts[1]))
+        co = date(co_year, int(co_parts[0]), int(co_parts[1]))
+        nights = (co - ci).days
+        if nights <= 0 or nights > 31: return f"❌ 晚數異常: {nights}晚"
+    except Exception as e:
+        return f"❌ 日期錯誤: {checkin}→{checkout} ({e})"
+
+    req = req_we if is_weekend(checkin) else req_wd
+    total_req = req * nights
+    return {
+        "checkin": checkin, "checkout": checkout, "code": code_raw, "agent": agent,
+        "hotel": hotel, "area": area, "name": name, "req": req,
+        "nights": nights, "total_req": total_req,
+        "is_weekend": is_weekend(checkin)
+    }
+
+
+def auto_parse_agent_booking(text, chat_id):
+    """解析代理訂房（支援兩變體 + 批量）"""
     text = text.replace("：", ":").replace("（", "(").replace("）", ")").replace("滙", "匯")
     blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+    if not blocks: return False
 
-    # 第一行若是純 agent 名（無日期關鍵字）
-    first_line = blocks[0].split("\n")[0].strip() if blocks else ""
-    agent_raw = first_line if first_line and not any(k in first_line for k in ["入住","退房","酒店","房型","確認號","日期","/"]) else "韓國"
-    agent_lower = agent_raw.lower()
-    agent = next((a for a in AGENTS if a.lower() == agent_lower), "韓國")
+    # Agent 識別
+    first_line = blocks[0].split("\n")[0].strip()
+    agent = "韓國"
+    for a in AGENTS:
+        if a in first_line:
+            agent = a
+            break
 
-    if agent == "韓國" and first_line and first_line not in ["韓國"]:
-        # 嘗試模糊匹配
-        for a in AGENTS:
-            if a in first_line or first_line in a:
-                agent = a
-                break
+    results = []; errors = []; guests = []; confirms = []
 
-    results = []
-    errors = []
-
-    # 跳過第一行（agent 名），處理後續區塊
-    start_idx = 1 if agent != "韓國" or first_line == "韓國" else 0
-    for bi in range(start_idx, len(blocks)):
+    for bi in range(len(blocks)):
         block = blocks[bi]
         lines = [l.strip() for l in block.split("\n") if l.strip()]
-        if len(lines) < 3: continue
+        if len(lines) < 2: continue
 
-        checkin = ""; checkout = ""; code_raw = ""; area_raw = ""
-        confirm = ""; guest = ""
+        checkin = ""; checkout = ""; area_raw = ""; area_hint = ""; code_raw = ""
 
         for line in lines:
-            # 日期行: "7/9-7/11"
-            dm = re.match(r'^(\d{1,2})/(\d{1,2})\s*[-~]\s*(\d{1,2})(?:/(\d{1,2}))?$', line)
+            # 日期行（含可選區域提示）
+            dm = re.match(r'^(\d{1,2})/(\d{1,2})\s*[-~]\s*(\d{1,2})(?:/(\d{1,2}))?(?:\s+(.+))?$', line)
             if dm:
                 checkin = dm.group(1) + "/" + dm.group(2)
                 co_m = dm.group(1) if not dm.group(4) else dm.group(3)
                 co_d = dm.group(4) if dm.group(4) else dm.group(3)
                 checkout = co_m + "/" + co_d
+                area_hint = (dm.group(5) or "").strip()
                 continue
-            # 區域+代號: "映星匯 EDK"
-            am = re.match(r'^(\S+)\s+(\S+)$', line)
-            if am and not line.startswith("確認") and not line.startswith("入住") and not line.startswith("是否"):
-                area_raw = am.group(1)
-                code_raw = am.group(2).upper().replace("🚬","").replace("🚭","")
+
+            # 變體B 房間行: "TC 🚬 4487809 羅傑文"
+            room_m = re.match(r'^(\S+)\s+(?:[🚬🚭]\s*)?(\d{4,12})\s+(.+)$', line)
+            if room_m:
+                code_raw = room_m.group(1).upper().replace("🚬","").replace("🚭","")
+                confirm = room_m.group(2)
+                guest = room_m.group(3).strip()
+                if checkin and code_raw:
+                    lu = _lookup_room(code_raw, "", area_hint)
+                    if not lu:
+                        errors.append(f"❌ 找不到 {code_raw}（hint:{area_hint}）")
+                        continue
+                    hotel, area, name, req_wd, req_we = lu
+                    rec = _make_room_record(checkin, checkout, code_raw, agent, hotel, area, name, req_wd, req_we)
+                    if isinstance(rec, str):
+                        errors.append(rec)
+                    else:
+                        rec["guest"] = guest; rec["confirm"] = confirm
+                        results.append(rec)
                 continue
+
+            # 變體A 區域+代號: "映星匯 EDK"
+            am = re.match(r'^(\S{2,})\s+(\S{2,})$', line)
+            if am and not any(line.startswith(k) for k in ["確認","入住","是否"]):
+                c_raw = am.group(2).upper().replace("🚬","").replace("🚭","")
+                if not c_raw.isdigit() and not re.match(r'^[\u4e00-\u9fff]+$', c_raw):
+                    area_raw = am.group(1)
+                    code_raw = c_raw
+                    continue
+
+            # 確認號/入住人
             if line.startswith("確認號:"):
-                confirm = line.split(":",1)[-1].strip()
+                confirms.append(line.split(":",1)[-1].strip())
             elif line.startswith("入住人:"):
-                guest = line.split(":",1)[-1].strip()
+                guests.append(line.split(":",1)[-1].strip())
 
-        if not checkin or not code_raw:
-            errors.append(f"❌ 解析失敗: {block[:40]}...")
-            continue
-
-        # 找 hotel/area/code（先精準匹配 code，再模糊匹配區域）
-        hotel = None; area_found = None; room_name = code_raw; req_wd = 0; req_we = 0
-        # 1st pass: 直接在 HOTEL_MAP 找 code
-        for h_name, areas in HOTEL_MAP.items():
-            for a_name, rooms in areas.items():
-                for r_item in rooms:
-                    if r_item[0].upper() == code_raw:
-                        hotel = h_name; area_found = a_name
-                        room_name = r_item[1]; req_wd = r_item[2]; req_we = r_item[3]
-                        break
-                if hotel: break
-            if hotel: break
-        # 2nd pass: code 沒找到但區域名匹配 → 模糊搜
-        if not hotel and area_raw:
-            for h_name, areas in HOTEL_MAP.items():
-                for a_name, rooms in areas.items():
-                    if a_name in area_raw or area_raw in a_name or a_name.replace("匯","滙") == area_raw:
-                        for r_item in rooms:
-                            if r_item[0].upper() == code_raw:
-                                hotel = h_name; area_found = a_name
-                                room_name = r_item[1]; req_wd = r_item[2]; req_we = r_item[3]
-                                break
-                if hotel: break
-            if hotel: break
-
-        if not hotel:
-            errors.append(f"❌ 找不到 {code_raw}（區域:{area_raw}）")
-            continue
-
-        # 計算晚數
-        try:
-            ci_parts = checkin.split("/"); co_parts = checkout.split("/")
-            co_year = 2026
-            if int(co_parts[0]) < int(ci_parts[0]): co_year += 1
-            from datetime import date
-            ci = date(2026, int(ci_parts[0]), int(ci_parts[1]))
-            co = date(co_year, int(co_parts[0]), int(co_parts[1]))
-            nights = (co - ci).days
-            if nights <= 0 or nights > 31: raise ValueError("nights")
-        except:
-            errors.append(f"❌ 日期錯誤: {checkin}→{checkout}")
-            continue
-
-        req = req_we if is_weekend(checkin) else req_wd
-        total_req = req * nights
-        results.append({
-            "guest": guest, "agent": agent, "hotel": hotel, "area": area_found,
-            "code": code_raw, "name": room_name, "checkin": checkin, "checkout": checkout,
-            "nights": nights, "req": req, "total_req": total_req, "confirm": confirm,
-            "is_weekend": is_weekend(checkin), "req_wd": req_wd, "req_we": req_we
-        })
+        # 變體A 累積處理
+        if checkin and code_raw and not results and (guests or confirms):
+            lu = _lookup_room(code_raw, area_raw, area_hint)
+            if not lu:
+                errors.append(f"❌ 找不到 {code_raw}（area:{area_raw} hint:{area_hint}）")
+                continue
+            hotel, area, name, req_wd, req_we = lu
+            rec = _make_room_record(checkin, checkout, code_raw, agent, hotel, area, name, req_wd, req_we)
+            if isinstance(rec, str):
+                errors.append(rec)
+            else:
+                rec["guest"] = guests[0] if guests else ""
+                rec["confirm"] = confirms[0] if confirms else ""
+                results.append(rec)
 
     if not results:
         if errors:
             tg_send(chat_id, "❌ 解析失敗：\n" + "\n".join(errors[:5]))
-        return bool(errors)  # True if we handled it (even with errors)
+        return bool(errors)
 
     # 寫入 Firebase
     data = get_data()
@@ -475,7 +492,7 @@ def auto_parse_agent_booking(text, chat_id):
             "code": rec["code"], "name": rec["name"], "req": rec["req"],
             "nights": rec["nights"], "total_req": rec["total_req"], "washed": 0,
             "hall": "", "commission_taken": False, "taken_amount": None,
-            "status": "pending", "guest": rec["guest"], "rooms": 1
+            "status": "pending", "guest": rec.get("guest",""), "rooms": 1
         }
         if rec.get("confirm"):
             obj["confirmation"] = rec["confirm"]
@@ -484,13 +501,12 @@ def auto_parse_agent_booking(text, chat_id):
     data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     save_data(data)
 
-    # 回報
     total_nights = sum(r["nights"] for r in results)
     total_req = sum(r["total_req"] for r in results)
     lines = [f"✅ *代理訂房自動解析完成！*\n👤 {agent} | 📊 {len(results)} 筆 | {total_nights} 晚 | *{total_req} 萬*\n"]
     for i, rec in enumerate(results):
         wl = "週末" if rec["is_weekend"] else "平日"
-        lines.append(f"{i+1}. {rec['guest']} | {rec['checkin']}→{rec['checkout']} {rec['nights']}晚 | {rec['hotel']}·{rec['area']} {rec['code']} | {wl} {rec['total_req']}萬 | #{rec['confirm']}")
+        lines.append(f"{i+1}. {rec.get('guest','?')} | {rec['checkin']}→{rec['checkout']} {rec['nights']}晚 | {rec['hotel']}·{rec['area']} {rec['code']} | {wl} {rec['total_req']}萬 | #{rec.get('confirm','-')}")
     if errors:
         lines.append(f"\n⚠️ {len(errors)} 筆失敗：")
         lines.extend(errors[:5])
