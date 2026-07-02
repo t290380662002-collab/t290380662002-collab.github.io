@@ -9,7 +9,7 @@ from datetime import datetime
 
 TG_TOKEN = os.environ.get("TG_TOKEN", "8800485293:AAG_-ArhCRSEUsMmT4X_5gDLzxABVdQbx20")
 TG_API = f"https://api.telegram.org/bot{TG_TOKEN}"
-FB_DB = "https://anget01-default-rtdb.asia-southeast1.firebasedatabase.app/agentWashData"
+FB_DB = "https://anget1-default-rtdb.asia-southeast1.firebasedatabase.app/agentWashData"
 FB_STATE = FB_DB.replace("agentWashData", "botState")
 
 HOTELS = ["銀河", "倫敦人", "新濠天地", "永利皇宮", "上葡京"]
