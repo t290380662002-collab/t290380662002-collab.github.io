@@ -115,8 +115,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 540,
-        "rooms": 9,
+        "rolling": 840,
+        "rooms": 11,
         "washed": 0
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-03 06:29",
+  "last_update": "2026-07-03 09:55",
   "records": [
     {
       "agent": "Fifi",
@@ -1957,6 +1957,23 @@
       "req": 60,
       "status": "pending",
       "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "御園",
+      "checkout": "7/5",
+      "code": "CM1",
+      "commission_taken": false,
+      "date": "7/3",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1783061711858",
+      "name": "御園一房一廳",
+      "nights": 2,
+      "req": 150,
+      "status": "pending",
+      "total_req": 300,
       "washed": 0
     }
   ],
