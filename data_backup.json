@@ -12,8 +12,8 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 0,
-        "rooms": 0,
+        "rolling": 480,
+        "rooms": 6,
         "washed": 0
       },
       "永利皇宮": {
@@ -115,8 +115,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 840,
-        "rooms": 11,
+        "rolling": 960,
+        "rooms": 13,
         "washed": 171.9
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-07 04:49",
+  "last_update": "2026-07-07 08:20",
   "records": [
     {
       "agent": "Fifi",
@@ -1992,6 +1992,57 @@
       "status": "done",
       "total_req": 0,
       "washed": 171.9
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "7/10",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "7/7",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1783408576831",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "摩珀斯",
+      "checkout": "7/10",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "7/7",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1783408587973",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "名匯",
+      "checkout": "7/9",
+      "code": "RK",
+      "commission_taken": false,
+      "date": "7/7",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1783408622416",
+      "name": "名匯普通房",
+      "nights": 2,
+      "req": 60,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
