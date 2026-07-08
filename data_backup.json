@@ -130,8 +130,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 0,
-        "rooms": 0,
+        "rolling": 1280,
+        "rooms": 16,
         "washed": 0
       }
     },
@@ -142,8 +142,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 240,
-        "rooms": 4,
+        "rolling": 780,
+        "rooms": 13,
         "washed": 0
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-08 00:04",
+  "last_update": "2026-07-08 04:12",
   "records": [
     {
       "agent": "Fifi",
@@ -2082,6 +2082,74 @@
       "rooms": 1,
       "status": "pending",
       "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/14",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783483886433",
+      "name": "萬豪大床",
+      "nights": 4,
+      "req": 80,
+      "status": "pending",
+      "total_req": 320,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/14",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783483893678",
+      "name": "萬豪大床",
+      "nights": 4,
+      "req": 80,
+      "status": "pending",
+      "total_req": 320,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/14",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783483898614",
+      "name": "萬豪大床",
+      "nights": 4,
+      "req": 80,
+      "status": "pending",
+      "total_req": 320,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/14",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783483904731",
+      "name": "萬豪大床",
+      "nights": 4,
+      "req": 80,
+      "status": "pending",
+      "total_req": 320,
       "washed": 0
     }
   ],
