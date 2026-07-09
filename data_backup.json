@@ -49,8 +49,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 0,
-        "rooms": 0,
+        "rolling": 720,
+        "rooms": 9,
         "washed": 0
       }
     },
@@ -115,13 +115,13 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 960,
-        "rooms": 13,
+        "rolling": 1020,
+        "rooms": 14,
         "washed": 171.9
       },
       "新濠天地": {
-        "rolling": 900,
-        "rooms": 15,
+        "rolling": 1080,
+        "rooms": 18,
         "washed": 0
       },
       "永利皇宮": {
@@ -130,8 +130,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1280,
-        "rooms": 16,
+        "rolling": 1440,
+        "rooms": 18,
         "washed": 0
       }
     },
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-09 20:44",
+  "last_update": "2026-07-09 22:19",
   "records": [
     {
       "agent": "Fifi",
@@ -1788,7 +1788,7 @@
     {
       "agent": "安",
       "area": "映星匯",
-      "checkout": "7/11",
+      "checkout": "7/12",
       "code": "EDK",
       "commission_taken": false,
       "confirmation": "E00015056",
@@ -1798,17 +1798,17 @@
       "hotel": "新濠天地",
       "id": "r1782754593312_0",
       "name": "映星匯套房(大床)",
-      "nights": 2,
+      "nights": 3,
       "req": 60,
       "rooms": 1,
       "status": "pending",
-      "total_req": 120,
+      "total_req": 180,
       "washed": 0
     },
     {
       "agent": "安",
       "area": "映星匯",
-      "checkout": "7/11",
+      "checkout": "7/12",
       "code": "EDK",
       "commission_taken": false,
       "confirmation": "E00015058",
@@ -1818,17 +1818,17 @@
       "hotel": "新濠天地",
       "id": "r1782754593312_1",
       "name": "映星匯套房(大床)",
-      "nights": 2,
+      "nights": 3,
       "req": 60,
       "rooms": 1,
       "status": "pending",
-      "total_req": 120,
+      "total_req": 180,
       "washed": 0
     },
     {
       "agent": "安",
       "area": "映星匯",
-      "checkout": "7/11",
+      "checkout": "7/12",
       "code": "EDT",
       "commission_taken": false,
       "confirmation": "E00015059",
@@ -1838,11 +1838,11 @@
       "hotel": "新濠天地",
       "id": "r1782754593312_2",
       "name": "映星匯套房(雙床)",
-      "nights": 2,
+      "nights": 3,
       "req": 60,
       "rooms": 1,
       "status": "pending",
-      "total_req": 120,
+      "total_req": 180,
       "washed": 0
     },
     {
@@ -2030,7 +2030,7 @@
     {
       "agent": "安",
       "area": "名匯",
-      "checkout": "7/9",
+      "checkout": "7/10",
       "code": "RK",
       "commission_taken": false,
       "date": "7/7",
@@ -2038,10 +2038,10 @@
       "hotel": "倫敦人",
       "id": "r1783408622416",
       "name": "名匯普通房",
-      "nights": 2,
+      "nights": 3,
       "req": 60,
       "status": "pending",
-      "total_req": 120,
+      "total_req": 180,
       "washed": 0
     },
     {
@@ -2184,6 +2184,74 @@
       "req": 150,
       "status": "pending",
       "total_req": 300,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/12",
+      "code": "JW01T",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783631643893",
+      "name": "萬豪雙床",
+      "nights": 2,
+      "req": 80,
+      "status": "pending",
+      "total_req": 160,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "萬豪",
+      "checkout": "7/13",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783631953040",
+      "name": "萬豪大床",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "萬豪",
+      "checkout": "7/13",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783631961076",
+      "name": "萬豪大床",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "萬豪",
+      "checkout": "7/13",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1783631970319",
+      "name": "萬豪大床",
+      "nights": 3,
+      "req": 80,
+      "status": "pending",
+      "total_req": 240,
       "washed": 0
     }
   ],
