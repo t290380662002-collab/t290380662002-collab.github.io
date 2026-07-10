@@ -12,9 +12,9 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 640,
-        "rooms": 8,
-        "washed": 0
+        "rolling": 800,
+        "rooms": 10,
+        "washed": 585.9
       },
       "永利皇宮": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-10 04:48",
+  "last_update": "2026-07-10 08:19",
   "records": [
     {
       "agent": "Fifi",
@@ -2013,7 +2013,7 @@
     {
       "agent": "Fifi",
       "area": "摩珀斯",
-      "checkout": "7/10",
+      "checkout": "7/12",
       "code": "PK",
       "commission_taken": false,
       "date": "7/7",
@@ -2021,10 +2021,10 @@
       "hotel": "新濠天地",
       "id": "r1783408587973",
       "name": "摩珀斯豪華客房(大床)",
-      "nights": 3,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 400,
       "washed": 0
     },
     {
@@ -2253,6 +2253,23 @@
       "status": "pending",
       "total_req": 240,
       "washed": 0
+    },
+    {
+      "agent": "Fifi",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "勵盈1",
+      "hotel": "新濠天地",
+      "id": "w1783664969015",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 585.9
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
