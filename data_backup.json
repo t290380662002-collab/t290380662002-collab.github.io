@@ -49,8 +49,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 720,
-        "rooms": 9,
+        "rolling": 1040,
+        "rooms": 13,
         "washed": 0
       }
     },
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-11 13:12",
+  "last_update": "2026-07-11 14:50",
   "records": [
     {
       "agent": "Fifi",
@@ -2206,7 +2206,7 @@
     {
       "agent": "H",
       "area": "萬豪",
-      "checkout": "7/13",
+      "checkout": "7/15",
       "code": "JW01",
       "commission_taken": false,
       "date": "7/10",
@@ -2214,16 +2214,16 @@
       "hotel": "銀河",
       "id": "r1783631953040",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 400,
       "washed": 0
     },
     {
       "agent": "H",
       "area": "萬豪",
-      "checkout": "7/13",
+      "checkout": "7/15",
       "code": "JW01",
       "commission_taken": false,
       "date": "7/10",
@@ -2231,10 +2231,10 @@
       "hotel": "銀河",
       "id": "r1783631961076",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 400,
       "washed": 0
     },
     {
@@ -2270,6 +2270,40 @@
       "status": "done",
       "total_req": 0,
       "washed": 585.9
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/9",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1783780248150_0",
+      "isWashFree": true,
+      "name": "Kim siwoong 4797176",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 7.6
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/10",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1783780248150_1",
+      "isWashFree": true,
+      "name": "KIM  SUNGKUK  746777",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 90.5
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
