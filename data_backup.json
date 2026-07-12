@@ -49,8 +49,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1040,
-        "rooms": 13,
+        "rolling": 1200,
+        "rooms": 15,
         "washed": 0
       }
     },
@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 780,
         "rooms": 13,
-        "washed": 0
+        "washed": 98.1
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-12 02:30",
+  "last_update": "2026-07-12 05:54",
   "records": [
     {
       "agent": "Fifi",
@@ -2240,7 +2240,7 @@
     {
       "agent": "H",
       "area": "萬豪",
-      "checkout": "7/13",
+      "checkout": "7/15",
       "code": "JW01",
       "commission_taken": false,
       "date": "7/10",
@@ -2248,10 +2248,10 @@
       "hotel": "銀河",
       "id": "r1783631970319",
       "name": "萬豪大床",
-      "nights": 3,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 240,
+      "total_req": 400,
       "washed": 0
     },
     {
