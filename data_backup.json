@@ -115,8 +115,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1020,
-        "rooms": 14,
+        "rolling": 1470,
+        "rooms": 17,
         "washed": 171.9
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-12 08:12",
+  "last_update": "2026-07-12 10:24",
   "records": [
     {
       "agent": "Fifi",
@@ -2304,6 +2304,23 @@
       "status": "done",
       "total_req": 0,
       "washed": 90.5
+    },
+    {
+      "agent": "安",
+      "area": "御園",
+      "checkout": "7/16",
+      "code": "CM1",
+      "commission_taken": false,
+      "date": "7/13",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1783846470389",
+      "name": "御園一房一廳",
+      "nights": 3,
+      "req": 150,
+      "status": "pending",
+      "total_req": 450,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
