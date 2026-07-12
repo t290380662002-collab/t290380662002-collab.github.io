@@ -34,8 +34,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 0,
-        "rooms": 0,
+        "rolling": 60,
+        "rooms": 1,
         "washed": 0
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-12 10:24",
+  "last_update": "2026-07-12 11:56",
   "records": [
     {
       "agent": "Fifi",
@@ -2320,6 +2320,23 @@
       "req": 150,
       "status": "pending",
       "total_req": 450,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "名匯",
+      "checkout": "7/13",
+      "code": "RK",
+      "commission_taken": false,
+      "date": "7/12",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1783853248889",
+      "name": "名匯普通房",
+      "nights": 1,
+      "req": 60,
+      "status": "pending",
+      "total_req": 60,
       "washed": 0
     }
   ],
