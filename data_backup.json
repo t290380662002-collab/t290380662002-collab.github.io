@@ -49,8 +49,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1200,
-        "rooms": 15,
+        "rolling": 1040,
+        "rooms": 13,
         "washed": 0
       }
     },
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-12 05:54",
+  "last_update": "2026-07-12 08:12",
   "records": [
     {
       "agent": "Fifi",
@@ -2223,7 +2223,7 @@
     {
       "agent": "H",
       "area": "萬豪",
-      "checkout": "7/15",
+      "checkout": "7/14",
       "code": "JW01",
       "commission_taken": false,
       "date": "7/10",
@@ -2231,16 +2231,16 @@
       "hotel": "銀河",
       "id": "r1783631961076",
       "name": "萬豪大床",
-      "nights": 5,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 400,
+      "total_req": 320,
       "washed": 0
     },
     {
       "agent": "H",
       "area": "萬豪",
-      "checkout": "7/15",
+      "checkout": "7/14",
       "code": "JW01",
       "commission_taken": false,
       "date": "7/10",
@@ -2248,10 +2248,10 @@
       "hotel": "銀河",
       "id": "r1783631970319",
       "name": "萬豪大床",
-      "nights": 5,
+      "nights": 4,
       "req": 80,
       "status": "pending",
-      "total_req": 400,
+      "total_req": 320,
       "washed": 0
     },
     {
