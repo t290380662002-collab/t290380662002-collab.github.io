@@ -332,6 +332,7 @@ const DEFAULT_FB_CONFIG = {
 
 // ===== 本地存儲 + Firebase 同步 =====
 const STORAGE_KEY = 'agentWashData';
+let lastRecordsSig = '';
 const FB_CONFIG_KEY = 'firebaseConfig';
 let editingId = null;
 
@@ -1555,9 +1556,12 @@ function setupFirebaseListeners() {
   // 即時監聽資料變更（核心！零延遲同步）
   fbListener = fbRef.on('value', (snapshot) => {
     const d = snapshot.val();
-    if (d && d.last_update) {
-      if (!allData || d.last_update !== allData.last_update) {
-        console.log('🔄 Firebase 偵測到更新:', d.last_update);
+    if (d && d.records) {
+      // 以 records 實際內容（id/req/total_req/washed）判斷變動，不再依賴 last_update
+      const newSig = (d.records || []).map(r => (r.id||'')+'|'+(r.req??'')+'|'+(r.total_req??'')+'|'+(r.washed??'')).join(',');
+      if (!allData || !allData.records || newSig !== lastRecordsSig) {
+        lastRecordsSig = newSig;
+        console.log('🔄 Firebase 資料同步');
         allData = d;
         for (const rec of (allData.records || [])) {
           if (!rec.id) rec.id = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
