@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-13 22:53",
+  "last_update": "2026-07-13 23:52",
   "records": [
     {
       "agent": "Fifi",
@@ -2097,9 +2097,9 @@
       "id": "r1783483886433",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2114,9 +2114,9 @@
       "id": "r1783483893678",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2131,9 +2131,9 @@
       "id": "r1783483898614",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2148,9 +2148,9 @@
       "id": "r1783483904731",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2199,9 +2199,9 @@
       "id": "r1783631643893",
       "name": "萬豪雙床",
       "nights": 2,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 160,
+      "total_req": 120,
       "washed": 0
     },
     {
@@ -2216,9 +2216,9 @@
       "id": "r1783631961076",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2233,9 +2233,9 @@
       "id": "r1783631970319",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2355,9 +2355,9 @@
       "id": "r1783946125394",
       "name": "萬豪大床",
       "nights": 4,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 240,
       "washed": 0
     },
     {
@@ -2408,9 +2408,9 @@
       "id": "r1783954471585",
       "name": "萬豪雙床",
       "nights": 5,
-      "req": 80,
+      "req": 60,
       "status": "pending",
-      "total_req": 400,
+      "total_req": 300,
       "washed": 0
     },
     {
