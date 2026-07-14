@@ -49,7 +49,7 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 960,
+        "rolling": 720,
         "rooms": 12,
         "washed": 0
       }
@@ -130,7 +130,7 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1840,
+        "rolling": 1380,
         "rooms": 23,
         "washed": 2194.6
       }
@@ -142,8 +142,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 840,
-        "rooms": 14,
+        "rolling": 1020,
+        "rooms": 17,
         "washed": 98.1
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-14 10:05",
+  "last_update": "2026-07-14 12:08",
   "records": [
     {
       "agent": "Fifi",
@@ -2402,15 +2402,15 @@
       "checkout": "7/20",
       "code": "JW01T",
       "commission_taken": false,
-      "date": "7/15",
+      "date": "7/17",
       "hall": "",
       "hotel": "銀河",
       "id": "r1783954471585",
       "name": "萬豪雙床",
-      "nights": 5,
+      "nights": 3,
       "req": 60,
       "status": "pending",
-      "total_req": 300,
+      "total_req": 180,
       "washed": 0
     },
     {
@@ -2448,6 +2448,23 @@
       "rooms": 1,
       "status": "pending",
       "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "萬豪",
+      "checkout": "7/19",
+      "code": "JW01T",
+      "commission_taken": false,
+      "date": "7/17",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1784028626704",
+      "name": "萬豪雙床",
+      "nights": 2,
+      "req": 60,
+      "status": "pending",
+      "total_req": 120,
       "washed": 0
     }
   ],
