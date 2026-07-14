@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-14 05:26",
+  "last_update": "2026-07-14 07:58",
   "records": [
     {
       "agent": "Fifi",
@@ -2428,6 +2428,26 @@
       "req": 80,
       "status": "pending",
       "total_req": 80,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "名匯",
+      "checkout": "7/17",
+      "code": "RK",
+      "commission_taken": false,
+      "confirmation": "73414967",
+      "date": "7/14",
+      "guest": "KWON KINAM",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784012958392_0",
+      "name": "名匯普通房",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
       "washed": 0
     }
   ],
