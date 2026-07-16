@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 1020,
         "rooms": 17,
-        "washed": 98.1
+        "washed": 1608.1
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-16 06:26",
+  "last_update": "2026-07-16 09:11",
   "records": [
     {
       "agent": "Fifi",
@@ -2465,6 +2465,94 @@
       "req": 60,
       "status": "pending",
       "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/13",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784186845889_0",
+      "isWashFree": true,
+      "name": "KIM SANG YOUN 761196",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 116
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/14",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784186845889_1",
+      "isWashFree": true,
+      "name": "KIM SANG YOUN 761196",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 237.4
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/15",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784186845889_2",
+      "isWashFree": true,
+      "name": "KIM SANG YOUN 761196",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 124.6
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/15",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784186845889_3",
+      "isWashFree": true,
+      "name": "BAE SUNG SOO 676206",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 1032
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "7/19",
+      "code": "KC",
+      "commission_taken": false,
+      "confirmation": "4543647",
+      "date": "7/16",
+      "guest": "KWON KINAM",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784189034545_0",
+      "name": "路易套房",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
       "washed": 0
     }
   ],
