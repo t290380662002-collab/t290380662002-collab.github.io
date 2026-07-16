@@ -120,8 +120,8 @@
         "washed": 171.9
       },
       "新濠天地": {
-        "rolling": 1080,
-        "rooms": 18,
+        "rolling": 1140,
+        "rooms": 20,
         "washed": 0
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-16 13:44",
+  "last_update": "2026-07-16 15:37",
   "records": [
     {
       "agent": "Fifi",
@@ -2570,6 +2570,40 @@
       "req": 80,
       "status": "pending",
       "total_req": 320,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "明星匯",
+      "checkout": "7/18",
+      "code": "CRK",
+      "commission_taken": false,
+      "date": "7/17",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784209536007",
+      "name": "明星匯經典(大床)",
+      "nights": 1,
+      "req": 30,
+      "status": "pending",
+      "total_req": 30,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "明星匯",
+      "checkout": "7/18",
+      "code": "CRK",
+      "commission_taken": false,
+      "date": "7/17",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784209544416",
+      "name": "明星匯經典(大床)",
+      "nights": 1,
+      "req": 30,
+      "status": "pending",
+      "total_req": 30,
       "washed": 0
     }
   ],
