@@ -117,7 +117,7 @@
       "倫敦人": {
         "rolling": 1470,
         "rooms": 17,
-        "washed": 438.9
+        "washed": 462.9
       },
       "新濠天地": {
         "rolling": 1140,
@@ -142,8 +142,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1320,
-        "rooms": 22,
+        "rolling": 1680,
+        "rooms": 28,
         "washed": 2378.1
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-18 05:22",
+  "last_update": "2026-07-18 07:44",
   "records": [
     {
       "agent": "Fifi",
@@ -2709,6 +2709,64 @@
       "taken_amount": 31506,
       "total_req": 0,
       "washed": 267
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/1",
+      "code": "KC",
+      "commission_taken": false,
+      "confirmation": "4549625",
+      "date": "7/29",
+      "guest": "Park changhyun",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784353644091_0",
+      "name": "路易套房",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/1",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4549200",
+      "date": "7/29",
+      "guest": "Park minjun",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784353671049_0",
+      "name": "雙床",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": true,
+      "date": "7/18",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784358299569",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "taken_amount": 2880,
+      "total_req": 0,
+      "washed": 24
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
