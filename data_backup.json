@@ -117,7 +117,7 @@
       "倫敦人": {
         "rolling": 1470,
         "rooms": 17,
-        "washed": 171.9
+        "washed": 438.9
       },
       "新濠天地": {
         "rolling": 1140,
@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 1320,
         "rooms": 22,
-        "washed": 1608.1
+        "washed": 2378.1
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-18 02:10",
+  "last_update": "2026-07-18 05:22",
   "records": [
     {
       "agent": "Fifi",
@@ -2657,6 +2657,58 @@
       "taken_amount": 18256,
       "total_req": 0,
       "washed": 163
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/16",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784350996469_0",
+      "isWashFree": true,
+      "name": "KIM SANG YOUN 761196",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 366.5
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/17",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784350996469_1",
+      "isWashFree": true,
+      "name": "KIM SANG YOUN 761196",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 403.5
+    },
+    {
+      "agent": "安",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": true,
+      "date": "7/18",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784351999085",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "taken_amount": 31506,
+      "total_req": 0,
+      "washed": 267
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
