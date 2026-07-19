@@ -36,7 +36,7 @@
       "倫敦人": {
         "rolling": 60,
         "rooms": 1,
-        "washed": 0
+        "washed": 155
       },
       "新濠天地": {
         "rolling": 440,
@@ -51,7 +51,7 @@
       "銀河": {
         "rolling": 720,
         "rooms": 12,
-        "washed": 0
+        "washed": 346
       }
     },
     "Ring": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-19 14:52",
+  "last_update": "2026-07-19 15:54",
   "records": [
     {
       "agent": "Fifi",
@@ -2803,6 +2803,40 @@
       "taken_amount": 6840,
       "total_req": 0,
       "washed": 57
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/19",
+      "hall": "金門8",
+      "hotel": "銀河",
+      "id": "w1784473320873",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 346
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "7/19",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784473338417",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 155
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
