@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-20 12:19",
+  "last_update": "2026-07-20 15:09",
   "records": [
     {
       "agent": "Fifi",
@@ -2888,6 +2888,46 @@
       "req": 60,
       "status": "pending",
       "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/15",
+      "code": "KC",
+      "commission_taken": false,
+      "confirmation": "4555133",
+      "date": "8/12",
+      "guest": "JEONG WOOWON",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784551354216_0",
+      "name": "路易套房",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "御園",
+      "checkout": "8/15",
+      "code": "CM1",
+      "commission_taken": false,
+      "confirmation": "4543647",
+      "date": "8/12",
+      "guest": "KIM SANGYOUG",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784551501113_0",
+      "name": "御園一房一廳",
+      "nights": 3,
+      "req": 150,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 450,
       "washed": 0
     }
   ],
