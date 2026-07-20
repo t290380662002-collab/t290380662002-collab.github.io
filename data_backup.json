@@ -117,11 +117,11 @@
       "倫敦人": {
         "rolling": 1470,
         "rooms": 17,
-        "washed": 534.9
+        "washed": 1002.9
       },
       "新濠天地": {
-        "rolling": 1140,
-        "rooms": 20,
+        "rolling": 1620,
+        "rooms": 28,
         "washed": 0
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-19 23:54",
+  "last_update": "2026-07-20 02:42",
   "records": [
     {
       "agent": "Fifi",
@@ -2837,6 +2837,58 @@
       "status": "done",
       "total_req": 0,
       "washed": 155
+    },
+    {
+      "agent": "安",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": true,
+      "date": "7/20",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784509007458",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "taken_amount": 55224,
+      "total_req": 0,
+      "washed": 468
+    },
+    {
+      "agent": "安",
+      "area": "映星匯",
+      "checkout": "7/31",
+      "code": "EDK",
+      "commission_taken": false,
+      "date": "7/27",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784513367268",
+      "name": "映星匯套房(大床)",
+      "nights": 4,
+      "req": 60,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "映星匯",
+      "checkout": "7/31",
+      "code": "EDK",
+      "commission_taken": false,
+      "date": "7/27",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784513377349",
+      "name": "映星匯套房(大床)",
+      "nights": 4,
+      "req": 60,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
