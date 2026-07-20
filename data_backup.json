@@ -39,8 +39,8 @@
         "washed": 155
       },
       "新濠天地": {
-        "rolling": 440,
-        "rooms": 6,
+        "rolling": 520,
+        "rooms": 7,
         "washed": 0
       },
       "永利皇宮": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-20 06:15",
+  "last_update": "2026-07-20 09:57",
   "records": [
     {
       "agent": "Fifi",
@@ -2558,7 +2558,7 @@
     {
       "agent": "H",
       "area": "頤居",
-      "checkout": "7/20",
+      "checkout": "7/21",
       "code": "PQ",
       "commission_taken": false,
       "date": "7/16",
@@ -2566,10 +2566,10 @@
       "hotel": "新濠天地",
       "id": "r1784199319519",
       "name": "頤居尊尚雙床",
-      "nights": 4,
+      "nights": 5,
       "req": 80,
       "status": "pending",
-      "total_req": 320,
+      "total_req": 400,
       "washed": 0
     },
     {
