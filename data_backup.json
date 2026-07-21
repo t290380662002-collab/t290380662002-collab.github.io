@@ -115,8 +115,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1470,
-        "rooms": 17,
+        "rolling": 1710,
+        "rooms": 21,
         "washed": 1002.9
       },
       "新濠天地": {
@@ -144,7 +144,7 @@
       "倫敦人": {
         "rolling": 1680,
         "rooms": 28,
-        "washed": 2378.1
+        "washed": 2518.1
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-21 11:44",
+  "last_update": "2026-07-21 13:42",
   "records": [
     {
       "agent": "Fifi",
@@ -2979,7 +2979,24 @@
       "req": 0,
       "status": "done",
       "total_req": 0,
-      "washed": 140.0
+      "washed": 140
+    },
+    {
+      "agent": "安",
+      "area": "名匯",
+      "checkout": "7/26",
+      "code": "RK",
+      "commission_taken": false,
+      "date": "7/22",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784641129122",
+      "name": "名匯普通房",
+      "nights": 4,
+      "req": 60,
+      "status": "pending",
+      "total_req": 240,
+      "washed": 0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
