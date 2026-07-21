@@ -117,7 +117,7 @@
       "倫敦人": {
         "rolling": 1710,
         "rooms": 21,
-        "washed": 1002.9
+        "washed": 1070.9
       },
       "新濠天地": {
         "rolling": 1620,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-21 17:15",
+  "last_update": "2026-07-21 19:16",
   "records": [
     {
       "agent": "Fifi",
@@ -2997,6 +2997,24 @@
       "status": "pending",
       "total_req": 240,
       "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": true,
+      "date": "7/22",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784654340890",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "taken_amount": 8024,
+      "total_req": 0,
+      "washed": 68
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
