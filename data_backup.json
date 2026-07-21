@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-21 03:32",
+  "last_update": "2026-07-21 06:25",
   "records": [
     {
       "agent": "Fifi",
@@ -2929,6 +2929,57 @@
       "status": "pending",
       "total_req": 450,
       "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "摩珀斯",
+      "checkout": "8/10",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "8/9",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784612539795",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 1,
+      "req": 80,
+      "status": "pending",
+      "total_req": 80,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "摩珀斯",
+      "checkout": "8/10",
+      "code": "PK",
+      "commission_taken": false,
+      "date": "8/9",
+      "hall": "",
+      "hotel": "新濠天地",
+      "id": "r1784612548920",
+      "name": "摩珀斯豪華客房(大床)",
+      "nights": 1,
+      "req": 80,
+      "status": "pending",
+      "total_req": 80,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "07/19",
+      "hall": "御匾會",
+      "hotel": "倫敦人",
+      "id": "w1784613380812_0",
+      "isWashFree": true,
+      "name": "Hong Soon Young 7696",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 140.0
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
