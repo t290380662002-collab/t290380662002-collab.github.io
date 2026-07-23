@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-23 10:19",
+  "last_update": "2026-07-23 12:22",
   "records": [
     {
       "agent": "Fifi",
@@ -3068,6 +3068,26 @@
       "req": 60,
       "status": "pending",
       "total_req": 60,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/8",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4559708",
+      "date": "8/5",
+      "guest": "CHO  SOOHYUNG",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784802575681_0",
+      "name": "雙床",
+      "nights": 3,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 180,
       "washed": 0
     }
   ],
