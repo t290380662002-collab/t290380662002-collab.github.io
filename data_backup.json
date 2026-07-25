@@ -34,8 +34,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 60,
-        "rooms": 1,
+        "rolling": 120,
+        "rooms": 2,
         "washed": 155
       },
       "新濠天地": {
@@ -49,8 +49,8 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 780,
-        "rooms": 13,
+        "rolling": 900,
+        "rooms": 15,
         "washed": 1362.2
       }
     },
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-25 07:12",
+  "last_update": "2026-07-25 09:43",
   "records": [
     {
       "agent": "Fifi",
@@ -3088,6 +3088,120 @@
       "rooms": 1,
       "status": "pending",
       "total_req": 180,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "名匯",
+      "checkout": "7/26",
+      "code": "RK",
+      "commission_taken": false,
+      "date": "7/25",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784963738576",
+      "name": "名匯普通房",
+      "nights": 1,
+      "req": 60,
+      "status": "pending",
+      "total_req": 60,
+      "washed": 0
+    },
+    {
+      "agent": "H",
+      "area": "萬豪",
+      "checkout": "7/25",
+      "code": "JW01",
+      "commission_taken": false,
+      "date": "7/23",
+      "hall": "",
+      "hotel": "銀河",
+      "id": "r1784963781325",
+      "name": "萬豪大床",
+      "nights": 2,
+      "req": 60,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/9",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4544551",
+      "date": "8/7",
+      "guest": "PARK JAEMIN",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784967723974_0",
+      "name": "雙床",
+      "nights": 2,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/16",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4544552",
+      "date": "8/14",
+      "guest": "PARK,JAEMIN",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784967740945_0",
+      "name": "雙床",
+      "nights": 2,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/23",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4544553",
+      "date": "8/21",
+      "guest": "PARK,JAEMIN",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784967762065_0",
+      "name": "雙床",
+      "nights": 2,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "韓國",
+      "area": "酒店",
+      "checkout": "8/30",
+      "code": "TC",
+      "commission_taken": false,
+      "confirmation": "4544554",
+      "date": "8/28",
+      "guest": "PARK,JAEMIN",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1784967779182_0",
+      "name": "雙床",
+      "nights": 2,
+      "req": 60,
+      "rooms": 1,
+      "status": "pending",
+      "total_req": 120,
       "washed": 0
     }
   ],
