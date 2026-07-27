@@ -115,8 +115,8 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1710,
-        "rooms": 21,
+        "rolling": 1770,
+        "rooms": 22,
         "washed": 1070.9
       },
       "新濠天地": {
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-07-27 17:40",
+  "last_update": "2026-07-27 19:23",
   "records": [
     {
       "agent": "Fifi",
@@ -3185,6 +3185,23 @@
       "rooms": 1,
       "status": "pending",
       "total_req": 120,
+      "washed": 0
+    },
+    {
+      "agent": "安",
+      "area": "酒店",
+      "checkout": "7/29",
+      "code": "KC",
+      "commission_taken": false,
+      "date": "7/28",
+      "hall": "",
+      "hotel": "倫敦人",
+      "id": "r1785176945581",
+      "name": "路易套房",
+      "nights": 1,
+      "req": 60,
+      "status": "pending",
+      "total_req": 60,
       "washed": 0
     }
   ],
