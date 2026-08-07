@@ -12,9 +12,9 @@
         "washed": 0
       },
       "新濠天地": {
-        "rolling": 1120,
-        "rooms": 14,
-        "washed": 2001.9
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
       },
       "永利皇宮": {
         "rolling": 0,
@@ -34,13 +34,13 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 120,
-        "rooms": 2,
-        "washed": 155
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 152
       },
       "新濠天地": {
-        "rolling": 520,
-        "rooms": 7,
+        "rolling": 0,
+        "rooms": 0,
         "washed": 0
       },
       "永利皇宮": {
@@ -49,9 +49,9 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 840,
-        "rooms": 14,
-        "washed": 1362.2
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
       }
     },
     "Ring": {
@@ -115,14 +115,14 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1770,
-        "rooms": 22,
-        "washed": 1070.9
+        "rolling": 660,
+        "rooms": 8,
+        "washed": 0
       },
       "新濠天地": {
-        "rolling": 1620,
-        "rooms": 28,
-        "washed": 450
+        "rolling": 160,
+        "rooms": 2,
+        "washed": 0
       },
       "永利皇宮": {
         "rolling": 0,
@@ -130,9 +130,9 @@
         "washed": 0
       },
       "銀河": {
-        "rolling": 1440,
-        "rooms": 24,
-        "washed": 2357.6
+        "rolling": 0,
+        "rooms": 0,
+        "washed": 0
       }
     },
     "韓國": {
@@ -142,9 +142,9 @@
         "washed": 0
       },
       "倫敦人": {
-        "rolling": 1860,
-        "rooms": 31,
-        "washed": 2518.1
+        "rolling": 1170,
+        "rooms": 15,
+        "washed": 0
       },
       "新濠天地": {
         "rolling": 0,
@@ -197,7 +197,7 @@
       "rate": 1.2
     }
   ],
-  "last_update": "2026-08-07 14:12",
+  "last_update": "2026-08-07 15:53",
   "records": [
     {
       "agent": "Fifi",
@@ -3110,26 +3110,6 @@
     {
       "agent": "韓國",
       "area": "酒店",
-      "checkout": "8/9",
-      "code": "TC",
-      "commission_taken": false,
-      "confirmation": "4544551",
-      "date": "8/7",
-      "guest": "PARK JAEMIN",
-      "hall": "",
-      "hotel": "倫敦人",
-      "id": "r1784967723974_0",
-      "name": "雙床",
-      "nights": 2,
-      "req": 60,
-      "rooms": 1,
-      "status": "pending",
-      "total_req": 120,
-      "washed": 0
-    },
-    {
-      "agent": "韓國",
-      "area": "酒店",
       "checkout": "8/16",
       "code": "TC",
       "commission_taken": false,
@@ -3358,6 +3338,23 @@
       "status": "done",
       "total_req": 0,
       "washed": 210.3
+    },
+    {
+      "agent": "H",
+      "area": "(獨立洗碼)",
+      "code": "-",
+      "commission_taken": false,
+      "date": "8/5",
+      "hall": "勵盈1",
+      "hotel": "倫敦人",
+      "id": "w1786116378021",
+      "isWashFree": true,
+      "name": "獨立洗碼",
+      "nights": 0,
+      "req": 0,
+      "status": "done",
+      "total_req": 0,
+      "washed": 152
     }
   ],
   "title": "Agent 洗碼統計 2026年6月"
